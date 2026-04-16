@@ -1170,7 +1170,128 @@ $('loadSampleBtn').addEventListener('click', ()=>{
   $('csvInput').value = `商品,描述,價格,價格 - 貨幣,價格變化 % 1天,成交量 1天,相對成交量 1天,市場資本,市場資本 - 貨幣,本益比,"基本每股盈餘, 過去12個月","基本每股盈餘, 過去12個月 - 貨幣","稀釋每股盈餘成長率 %, TTM年增率","股息殖利率 %, 過去12個月",部門,分析師評級\n1597,直得,117,TWD,1.2987012987012987,6967255,2.3923140958077287,10258340744,TWD,128.72703267686214,0.9089,TWD,-15.38819586669149,0.606060606060606,生產製造,強力買入\n2360,致茂,2050,TWD,1.4851485148514851,6768309,1.5947442287703182,855348311768,TWD,74.5492497799888,27.4986,TWD,121.70390138108407,0.445544554455445,電子科技,強力買入\n2379,瑞昱,540,TWD,2.857142857142857,5860577,1.9643523254652933,270644132996,TWD,19.115991588963702,28.2486,TWD,-4.4163525502642615,4.85714285714286,電子科技,買入\n3209,全科,47,TWD,2.1739130434782608,5661955,1.7551299054441785,10827994720,TWD,15.74803149606299,2.9845,TWD,0.5932117698608069,5.40116956521739,電子科技,無評級\n3221,台嘉碩,45.7,TWD,9.987966305655851,21112481,1.8403083691032651,4274917725.0000005,TWD,577.7496839443742,0.0791,TWD,-91.8688322368421,2.16698916967509,電子科技,無評級\n3236,千如,35.8,TWD,3.7681159420289774,14760222,2.774532788675926,3622521057,TWD,111.66562694946974,0.3206,TWD,657.919621749409,1.01449275362319,電子科技,無評級\n3363,上詮,830,TWD,0.9732360097323601,7104769,2.5445203467966278,91357549850,TWD,5389.61038961039,0.154,TWD,,0,生產製造,強力買入\n3443,創意,3345,TWD,8.957654723127035,4238415,1.5498021361919643,411416538696,TWD,119.35132820723244,28.0265,TWD,9.421240444454856,0.521172638436482,電子科技,買入\n3645,達邁,100.5,TWD,7.4866310160427805,40776749,3.117616783247408,12786517342,TWD,65.78947368421052,1.5276,TWD,-10.209839534473636,1.27799251336898,加工業,無評級\n4979,華星光,586,TWD,9.943714821763603,32773935,5.947450269261766,74873349045,TWD,110.3952375569873,5.3082,TWD,40.25788722718385,0.289799812382739,電子科技,無評級\n6175,立敦,63.5,TWD,1.7628205128205152,18192664,2.2158915009911158,9356057382,TWD,23.782771535580526,2.67,TWD,-14.164469877194108,2.80448717948718,電子科技,無評級\n6271,同欣電,185,TWD,1.092896174863388,20196785,2.2900401344662575,38197229004,TWD,24.303092404298365,7.6122,TWD,-6.819433733612429,1.63934426229508,電子科技,買入\n6672,騰輝電子-KY,160,TWD,2.8938906752411575,11114136,1.7651598399063768,11060052578,TWD,33.21224701608718,4.8175,TWD,-2.8298842228407737,2.15434083601286,電子科技,無評級\n6909,創控,59,TWD,1.7241379310344827,9331147,2.955499013466107,3898887955,TWD,59.656218402426695,0.989,TWD,-35.26215880081168,1.72408620689655,電子科技,無評級\n8261,富鼎,116,TWD,6.422018348623854,5802825,2.7924915083417075,12957744232,TWD,,,,,2.92714770642202,電子科技,無評級`;
   showStatus('已載入你目前這種 TradingView CSV 範例。','ok');
 });
+<!-- ====== V3 無腦持倉監控 ====== -->
+<section class="card">
+  <h2>📈 持倉監控 V3（無腦版）</h2>
 
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+    <input id="v3_symbol" placeholder="股票代號">
+    <input id="v3_buy" type="number" placeholder="買入價">
+    <input id="v3_current" type="number" placeholder="目前價">
+  </div>
+
+  <div style="margin-top:10px">
+    <button onclick="v3_calc()" class="primary">更新判斷</button>
+    <button onclick="v3_add()" class="ghost">加入持倉</button>
+  </div>
+
+  <div id="v3_output" class="output-box" style="margin-top:10px">尚未計算</div>
+
+  <table style="width:100%;margin-top:10px">
+    <thead>
+      <tr>
+        <th>狀態</th>
+        <th>股票</th>
+        <th>買入</th>
+        <th>現價</th>
+        <th>報酬%</th>
+        <th>損益</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="v3_list"></tbody>
+  </table>
+</section>
+
+<script>
+let v3_positions = [];
+
+function v3_core(buy, current, qty=1000, highest=null){
+  if(!highest || current > highest) highest = current;
+
+  const stop = buy * 0.93;
+  const tp1 = buy * 1.10;
+  const tp2 = buy * 1.15;
+
+  const pnl = (current - buy) / buy * 100;
+  const profit = (current - buy) * qty;
+  const draw = (current - highest) / highest * 100;
+
+  let state="持有", color="green";
+
+  if(current <= stop){ state="🔴 停損"; color="red"; }
+  else if(current >= tp2){ state="🟢 全出"; color="green"; }
+  else if(draw <= -4 && current > buy){ state="🔥 移動停利"; color="orange"; }
+  else if(current >= tp1){ state="🟡 停利1"; color="orange"; }
+
+  return {state, color, stop, tp1, tp2, pnl, profit, highest};
+}
+
+function v3_calc(){
+  const buy = Number(document.getElementById('v3_buy').value);
+  const current = Number(document.getElementById('v3_current').value);
+
+  if(!buy || !current) return;
+
+  const r = v3_core(buy, current);
+
+  document.getElementById('v3_output').innerHTML = `
+    <div style="font-size:26px;color:${r.color};font-weight:bold">${r.state}</div>
+    報酬率：${r.pnl.toFixed(2)}%<br>
+    損益：${r.profit.toFixed(0)}<br>
+    停損：${r.stop.toFixed(2)}<br>
+    停利1：${r.tp1.toFixed(2)}<br>
+    停利2：${r.tp2.toFixed(2)}
+  `;
+}
+
+function v3_add(){
+  const symbol = document.getElementById('v3_symbol').value;
+  const buy = Number(document.getElementById('v3_buy').value);
+  const current = Number(document.getElementById('v3_current').value);
+
+  if(!symbol || !buy || !current) return;
+
+  let exist = v3_positions.find(p=>p.symbol===symbol);
+
+  if(exist){
+    exist.current = current;
+    exist.data = v3_core(exist.buy, current, 1000, exist.data.highest);
+  }else{
+    let data = v3_core(buy, current);
+    v3_positions.push({symbol, buy, current, data});
+  }
+
+  v3_render();
+}
+
+function v3_render(){
+  const tbody = document.getElementById('v3_list');
+  tbody.innerHTML = "";
+
+  v3_positions.forEach((p,i)=>{
+    const r = v3_core(p.buy, p.current, 1000, p.data.highest);
+    p.data = r;
+
+    tbody.innerHTML += `
+      <tr>
+        <td style="color:${r.color}">${r.state}</td>
+        <td>${p.symbol}</td>
+        <td>${p.buy}</td>
+        <td>${p.current}</td>
+        <td>${r.pnl.toFixed(2)}%</td>
+        <td>${r.profit.toFixed(0)}</td>
+        <td><button onclick="v3_del(${i})">刪</button></td>
+      </tr>
+    `;
+  });
+}
+
+function v3_del(i){
+  v3_positions.splice(i,1);
+  v3_render();
+}
+</script>
 loadLocal();
 </script>
 </body>
