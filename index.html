@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI 短線奪冠王｜持倉監控完整版</title>
+<title>AI 短線奪冠王｜V2 極簡實戰版</title>
 <style>
 :root{
   --bg:#08101d;--bg2:#0c1425;--panel:#10192b;--panel2:#16233a;--line:rgba(255,255,255,.08);
@@ -54,13 +54,31 @@ button{border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:80
 .action-btn{padding:6px 10px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,255,255,.08);color:#e5e7eb}
 @media (max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+
+.mini-note{font-size:12px;color:#94a3b8}
+.trade-panel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+.big-signal{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);margin-top:12px}
+.big-signal .state{font-size:26px;font-weight:900}
+.big-signal .desc{font-size:13px;color:#cbd5e1}
+.quick-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:12px}
+.quick-kpi{padding:12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
+.quick-kpi .label{font-size:12px;color:#94a3b8;margin-bottom:4px}
+.quick-kpi .value{font-size:20px;font-weight:800}
+@media (max-width: 900px){
+  .trade-panel,.quick-kpis{grid-template-columns:1fr 1fr}
+}
+@media (max-width: 640px){
+  .trade-panel,.quick-kpis{grid-template-columns:1fr}
+  .big-signal{flex-direction:column;align-items:flex-start}
+}
+
 </style>
 </head>
 <body>
 <div class="wrap">
   <section class="hero">
     <div class="card panel">
-      <div class="eyebrow">🚀 AI 短線奪冠王｜持倉監控完整版</div>
+      <div class="eyebrow">🚀 AI 短線奪冠王｜V2 極簡實戰版</div>
       <h1>直接吃 TradingView CSV，自動解析、排序、挑 1–2 檔、生成交易計畫</h1>
       <div class="sub">這版支援你現在的 TradingView 匯出格式。<b>會自動辨識中文欄位</b>，有技術指標就跑 <b>Full 模式</b>，沒有技術指標也會自動切到 <b>Lite 模式</b> 並明確告訴你差在哪。</div>
       <div class="metrics" style="margin-top:16px">
@@ -771,6 +789,7 @@ function applyDecisionMode(previewOnly=false){
   return result;
 }
 
+
 function fmtMoney(n){
   if(n===null || n===undefined || Number.isNaN(n)) return '—';
   return Number(n).toLocaleString('zh-TW', {maximumFractionDigits:2});
@@ -781,6 +800,15 @@ function fmtPct(n){
 }
 function safeNum(v){ return v===null || v===undefined || v==='' ? null : Number(v); }
 
+function getPositionDefaults(){
+  return {
+    stopLossPct: safeNum($('stopLossPct')?.value) ?? 7,
+    tp1Pct: safeNum($('tp1Pct')?.value) ?? 10,
+    tp2Pct: safeNum($('tp2Pct')?.value) ?? 15,
+    trailPullback: safeNum($('trailPullback')?.value) ?? 4
+  };
+}
+
 function autoFillFromSelection(){
   const target = (lastResult.finalTop && lastResult.finalTop[0]) || (lastResult.top && lastResult.top[0]);
   if(!target){
@@ -790,33 +818,62 @@ function autoFillFromSelection(){
   $('holdSymbol').value = target.symbol || '';
   $('holdName').value = target.name || '';
   $('currentPrice').value = target.price ?? '';
-  if(target.stopLoss !== null && target.stopLoss !== undefined) $('stopLossPrice').value = Number(target.stopLoss).toFixed(2);
-  if(target.takeProfit1 !== null && target.takeProfit1 !== undefined) $('takeProfit1Price').value = Number(target.takeProfit1).toFixed(2);
-  if(target.takeProfit2 !== null && target.takeProfit2 !== undefined) $('takeProfit2Price').value = Number(target.takeProfit2).toFixed(2);
+  const defaults = getPositionDefaults();
+  if(target.price !== null && target.price !== undefined && !$('buyPrice').value){
+    $('buyPrice').value = Number(target.price).toFixed(2);
+  }
   showStatus(`已帶入最終標的：${target.symbol} ${target.name || ''}`,'ok');
+}
+
+function collectPositionInputs(){
+  const d = getPositionDefaults();
+  return {
+    symbol: $('holdSymbol').value.trim(),
+    name: $('holdName').value.trim(),
+    qty: safeNum($('holdQty').value) ?? 0,
+    buyPrice: safeNum($('buyPrice').value),
+    currentPrice: safeNum($('currentPrice').value),
+    highestPrice: safeNum($('highestPrice').value),
+    stopLossPct: d.stopLossPct,
+    tp1Pct: d.tp1Pct,
+    tp2Pct: d.tp2Pct,
+    trailPullback: d.trailPullback
+  };
+}
+
+function derivePricesFromBuy(buy, stopLossPct, tp1Pct, tp2Pct){
+  if(buy===null) return {stopPrice:null,tp1Price:null,tp2Price:null};
+  return {
+    stopPrice: buy * (1 - stopLossPct/100),
+    tp1Price: buy * (1 + tp1Pct/100),
+    tp2Price: buy * (1 + tp2Pct/100)
+  };
 }
 
 function computePositionMetrics(pos){
   const buy = safeNum(pos.buyPrice);
   const current = safeNum(pos.currentPrice);
-  const stop = safeNum(pos.stopLossPrice);
-  const tp1 = safeNum(pos.takeProfit1Price);
-  const tp2 = safeNum(pos.takeProfit2Price);
   const qty = safeNum(pos.qty) ?? 0;
   let highest = safeNum(pos.highestPrice);
+  const stopLossPct = safeNum(pos.stopLossPct) ?? 7;
+  const tp1Pct = safeNum(pos.tp1Pct) ?? 10;
+  const tp2Pct = safeNum(pos.tp2Pct) ?? 15;
+  const trailPullback = safeNum(pos.trailPullback) ?? 4;
+
+  const derived = derivePricesFromBuy(buy, stopLossPct, tp1Pct, tp2Pct);
+  const stop = derived.stopPrice;
+  const tp1 = derived.tp1Price;
+  const tp2 = derived.tp2Price;
 
   if(current !== null){
     if(highest === null || current > highest) highest = current;
   }
 
-  const pnlPct = (buy && current) ? ((current - buy) / buy * 100) : null;
+  const pnlPct = (buy !== null && current !== null && buy !== 0) ? ((current - buy) / buy * 100) : null;
   const pnlAmt = (buy !== null && current !== null) ? ((current - buy) * qty) : null;
   const toStopPct = (current !== null && stop !== null && current !== 0) ? ((stop - current) / current * 100) : null;
   const toTp1Pct = (current !== null && tp1 !== null && current !== 0) ? ((tp1 - current) / current * 100) : null;
   const toTp2Pct = (current !== null && tp2 !== null && current !== 0) ? ((tp2 - current) / current * 100) : null;
-
-  const trailPullback = safeNum(pos.trailPullback) ?? 4;
-  const warnNearPct = safeNum(pos.warnNearPct) ?? 2;
 
   let drawdownFromHighPct = null;
   let trailTriggered = false;
@@ -832,24 +889,24 @@ function computePositionMetrics(pos){
   if(stop !== null && current !== null && current <= stop){
     status = '停損出場';
     statusClass = 'badge-red';
-    reason = '目前價已跌破停損價。';
+    reason = `目前價已跌破自動停損價 ${stop.toFixed(2)}。`;
   } else if(tp2 !== null && current !== null && current >= tp2){
     status = '全數停利';
     statusClass = 'badge-green';
-    reason = '目前價已達第二停利目標。';
+    reason = `目前價已達第二停利 ${tp2.toFixed(2)}，可全數了結。`;
   } else if(trailTriggered && pnlPct !== null && pnlPct > 0){
     status = '移動停利';
     statusClass = 'badge-yellow';
-    reason = `從持倉最高價回撤超過 ${trailPullback}% ，建議保住獲利。`;
+    reason = `從最高價回撤超過 ${trailPullback}% ，建議保住獲利。`;
   } else if(tp1 !== null && current !== null && current >= tp1){
     status = '分批停利';
     statusClass = 'badge-yellow';
-    reason = '目前價已達第一停利目標，可先減碼一半。';
-  } else if(toTp1Pct !== null && toTp1Pct <= warnNearPct && toTp1Pct >= 0){
+    reason = `目前價已達第一停利 ${tp1.toFixed(2)}，可先減碼一半。`;
+  } else if(toTp1Pct !== null && toTp1Pct <= 2 && toTp1Pct >= 0){
     status = '接近停利';
     statusClass = 'badge-yellow';
     reason = `距離第一停利只差 ${toTp1Pct.toFixed(2)}% 。`;
-  } else if(toStopPct !== null && Math.abs(toStopPct) <= warnNearPct){
+  } else if(toStopPct !== null && Math.abs(toStopPct) <= 2){
     status = '接近停損';
     statusClass = 'badge-red';
     reason = `距離停損只剩 ${Math.abs(toStopPct).toFixed(2)}% 。`;
@@ -858,6 +915,9 @@ function computePositionMetrics(pos){
   return {
     ...pos,
     highestPrice: highest,
+    stopLossPrice: stop,
+    takeProfit1Price: tp1,
+    takeProfit2Price: tp2,
     pnlPct, pnlAmt, toStopPct, toTp1Pct, toTp2Pct,
     drawdownFromHighPct, trailTriggered,
     status, statusClass, reason
@@ -870,41 +930,35 @@ function renderPositionPreview(metrics){
     return;
   }
   $('positionStatusBox').innerHTML = `
-    <div><span class="badge-status ${metrics.statusClass}">${metrics.status}</span></div>
-    <div class="kpi-grid">
-      <div class="kpi"><div class="label">目前報酬率</div><div class="value">${fmtPct(metrics.pnlPct)}</div></div>
-      <div class="kpi"><div class="label">未實現損益</div><div class="value">${fmtMoney(metrics.pnlAmt)}</div></div>
-      <div class="kpi"><div class="label">距離停損</div><div class="value">${fmtPct(metrics.toStopPct)}</div></div>
-      <div class="kpi"><div class="label">距離停利1</div><div class="value">${fmtPct(metrics.toTp1Pct)}</div></div>
-      <div class="kpi"><div class="label">距離停利2</div><div class="value">${fmtPct(metrics.toTp2Pct)}</div></div>
-      <div class="kpi"><div class="label">持倉最高價</div><div class="value">${fmtMoney(metrics.highestPrice)}</div></div>
-      <div class="kpi"><div class="label">從高點回撤</div><div class="value">${fmtPct(metrics.drawdownFromHighPct)}</div></div>
-      <div class="kpi"><div class="label">系統判斷</div><div class="value" style="font-size:16px">${metrics.reason}</div></div>
+    <div class="big-signal">
+      <div>
+        <div class="state"><span class="badge-status ${metrics.statusClass}">${metrics.status}</span></div>
+        <div class="desc">${metrics.reason}</div>
+      </div>
+      <div class="desc">${metrics.symbol || ''} ${metrics.name || ''}</div>
+    </div>
+    <div class="quick-kpis">
+      <div class="quick-kpi"><div class="label">目前報酬率</div><div class="value">${fmtPct(metrics.pnlPct)}</div></div>
+      <div class="quick-kpi"><div class="label">未實現損益</div><div class="value">${fmtMoney(metrics.pnlAmt)}</div></div>
+      <div class="quick-kpi"><div class="label">自動停損價</div><div class="value">${fmtMoney(metrics.stopLossPrice)}</div></div>
+      <div class="quick-kpi"><div class="label">自動停利1</div><div class="value">${fmtMoney(metrics.takeProfit1Price)}</div></div>
+      <div class="quick-kpi"><div class="label">自動停利2</div><div class="value">${fmtMoney(metrics.takeProfit2Price)}</div></div>
+      <div class="quick-kpi"><div class="label">距離停損</div><div class="value">${fmtPct(metrics.toStopPct)}</div></div>
+      <div class="quick-kpi"><div class="label">距離停利1</div><div class="value">${fmtPct(metrics.toTp1Pct)}</div></div>
+      <div class="quick-kpi"><div class="label">距離停利2</div><div class="value">${fmtPct(metrics.toTp2Pct)}</div></div>
+      <div class="quick-kpi"><div class="label">持倉最高價</div><div class="value">${fmtMoney(metrics.highestPrice)}</div></div>
+      <div class="quick-kpi"><div class="label">從高點回撤</div><div class="value">${fmtPct(metrics.drawdownFromHighPct)}</div></div>
     </div>
   `;
 }
 
-function collectPositionInputs(){
-  return {
-    symbol: $('holdSymbol').value.trim(),
-    name: $('holdName').value.trim(),
-    qty: safeNum($('holdQty').value) ?? 0,
-    buyPrice: safeNum($('buyPrice').value),
-    currentPrice: safeNum($('currentPrice').value),
-    stopLossPrice: safeNum($('stopLossPrice').value),
-    takeProfit1Price: safeNum($('takeProfit1Price').value),
-    takeProfit2Price: safeNum($('takeProfit2Price').value),
-    highestPrice: safeNum($('highestPrice').value),
-    trailPullback: safeNum($('trailPullback').value) ?? 4,
-    warnNearPct: safeNum($('warnNearPct').value) ?? 2
-  };
-}
-
 function clearPositionInputs(){
-  ['holdSymbol','holdName','buyPrice','currentPrice','stopLossPrice','takeProfit1Price','takeProfit2Price','highestPrice'].forEach(id => $(id).value = '');
+  ['holdSymbol','holdName','buyPrice','currentPrice','highestPrice'].forEach(id => $(id).value = '');
   $('holdQty').value = 1000;
+  $('stopLossPct').value = 7;
+  $('tp1Pct').value = 10;
+  $('tp2Pct').value = 15;
   $('trailPullback').value = 4;
-  $('warnNearPct').value = 2;
   renderPositionPreview(null);
 }
 
@@ -938,7 +992,7 @@ function addOrUpdatePosition(){
 function renderPositionsTable(){
   const tbody = $('positionsTableBody');
   if(!positions.length){
-    tbody.innerHTML = '<tr><td colspan="12" class="muted">尚無持倉資料。</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="small">尚無持倉資料。</td></tr>';
     return;
   }
   tbody.innerHTML = positions.map((p, idx) => {
@@ -956,7 +1010,6 @@ function renderPositionsTable(){
         <td>${fmtMoney(m.takeProfit1Price)}</td>
         <td>${fmtMoney(m.takeProfit2Price)}</td>
         <td>${fmtMoney(m.highestPrice)}</td>
-        <td>${fmtPct(m.drawdownFromHighPct)}</td>
         <td>
           <button class="action-btn" onclick="loadPositionToForm(${idx})">載入</button>
           <button class="action-btn" onclick="removePosition(${idx})">刪除</button>
@@ -967,20 +1020,19 @@ function renderPositionsTable(){
 }
 
 function loadPositionToForm(idx){
-  const p = positions[idx];
+  const p = computePositionMetrics(positions[idx]);
   if(!p) return;
   $('holdSymbol').value = p.symbol || '';
   $('holdName').value = p.name || '';
   $('holdQty').value = p.qty ?? 0;
   $('buyPrice').value = p.buyPrice ?? '';
   $('currentPrice').value = p.currentPrice ?? '';
-  $('stopLossPrice').value = p.stopLossPrice ?? '';
-  $('takeProfit1Price').value = p.takeProfit1Price ?? '';
-  $('takeProfit2Price').value = p.takeProfit2Price ?? '';
   $('highestPrice').value = p.highestPrice ?? '';
+  $('stopLossPct').value = p.stopLossPct ?? 7;
+  $('tp1Pct').value = p.tp1Pct ?? 10;
+  $('tp2Pct').value = p.tp2Pct ?? 15;
   $('trailPullback').value = p.trailPullback ?? 4;
-  $('warnNearPct').value = p.warnNearPct ?? 2;
-  renderPositionPreview(computePositionMetrics(p));
+  renderPositionPreview(p);
 }
 
 function removePosition(idx){
@@ -1001,12 +1053,13 @@ function exportPositions(){
   const blob = new Blob([JSON.stringify(positions, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'positions_monitor.json';
+  a.download = 'positions_monitor_v2.json';
   a.click();
   URL.revokeObjectURL(a.href);
 }
 
 function analyze(){
+
   const text = $('csvInput').value.trim();
   if(!text){ showStatus('請先貼上 CSV 內容或載入 CSV 檔。','warn'); return; }
   try{
@@ -1042,7 +1095,11 @@ function saveLocal(){
     decisionMode: $('decisionMode').value,
     autoHeatThreshold: $('autoHeatThreshold').value,
     autoScoreGap: $('autoScoreGap').value,
-    positions
+    positions,
+    stopLossPct: $('stopLossPct')?.value,
+    tp1Pct: $('tp1Pct')?.value,
+    tp2Pct: $('tp2Pct')?.value,
+    trailPullback: $('trailPullback')?.value
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   showStatus('已儲存到本機瀏覽器。', 'ok');
