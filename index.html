@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI 短線奪冠王｜全自動最終版</title>
+<title>AI 短線奪冠王｜AI 覆蓋版</title>
 <style>
 :root{
   --bg:#08101d;--bg2:#0c1425;--panel:#10192b;--panel2:#16233a;--line:rgba(255,255,255,.08);
@@ -117,6 +117,19 @@ button{border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:80
       <div style="height:14px"></div>
       <h3>系統判讀</h3>
       <div id="summaryBox" class="output-box">尚未分析。</div>
+      <div class="card" style="margin-top:14px;padding:14px;border-radius:18px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08)">
+        <h3>AI 覆蓋區</h3>
+        <div class="small">把 GPT / Gemini 的回覆整段貼進來，系統會自動抓出 1～2 檔股票，覆蓋目前主攻股與副攻股。</div>
+        <div class="field" style="margin-top:10px;margin-bottom:10px"><label for="aiOverrideInput">貼上 AI 回覆</label><textarea id="aiOverrideInput" placeholder="例如：主攻股：8261 富鼎
+副攻股：3236 千如
+或整段分析全文也可以。" style="min-height:110px"></textarea></div>
+        <div class="toolbar">
+          <button class="primary" id="applyAiBtn">套用 AI 覆蓋</button>
+          <button class="ghost" id="resetLocalBtn">切回本地結果</button>
+          <button class="ghost" id="parseAiBtn">只解析不套用</button>
+        </div>
+        <div id="aiParseBox" class="output-box" style="margin-top:10px;min-height:72px">尚未解析 AI 回覆。</div>
+      </div>
       <div class="toolbar" style="margin-top:12px;">
         <button class="primary" id="copyPlanBtn">複製交易計畫</button>
         <button class="ghost" id="exportJsonBtn">匯出 JSON</button>
@@ -152,8 +165,8 @@ button{border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:80
 </div>
 <script>
 const $ = id => document.getElementById(id);
-const STORAGE_KEY = 'ai_stock_selector_final_auto_v1';
-let lastResult = { rows: [], top: [], mode: '未分析', detected: [] };
+const STORAGE_KEY = 'ai_stock_selector_ai_override_v1';
+let lastResult = { rows: [], top: [], localTop: [], finalTop: [], mode: '未分析', detected: [], override: null };
 
 function showStatus(msg, type='ok'){
   const box = $('statusBox');
@@ -357,7 +370,58 @@ function scoreRow(r, fullMode){
   return { ...r, score: finalScore, status, mode: fullMode ? 'Full' : 'Lite', reasons };
 }
 
-function buildTopCards(topRows, capital){
+function parseAiCandidates(text){
+  const raw = String(text || '').trim();
+  if(!raw) return [];
+  const matches = raw.match(/(^|[^\d])(\d{4,6})(?!\d)/g) || [];
+  const codes = [];
+  for(const chunk of matches){
+    const m = chunk.match(/(\d{4,6})/);
+    if(m && !codes.includes(m[1])) codes.push(m[1]);
+    if(codes.length >= 2) break;
+  }
+  return codes;
+}
+
+function describeAiParse(codes, matchedRows){
+  if(!codes.length) return '沒有抓到股票代號。請直接貼 AI 回覆全文，並確認裡面有像 8261、3236 這樣的股票代號。';
+  const found = matchedRows.map(r=>`${r.symbol} ${r.name || ''}`).join('、') || '無';
+  const miss = codes.filter(c=>!matchedRows.some(r=>r.symbol===c));
+  return `已解析代號：${codes.join('、')}
+已匹配目前清單：${found}${miss.length ? `
+未在本次 CSV 清單找到：${miss.join('、')}` : ''}`;
+}
+
+function renderSelection(topRows, sourceLabel){
+  $('topPicks').innerHTML = buildTopCards(topRows, parseNum($('capital').value) || 200000, sourceLabel);
+  $('planOutput').textContent = generatePlan(topRows, sourceLabel);
+}
+
+function applyAiOverride(onlyPreview=false){
+  if(!lastResult.rows.length){ showStatus('請先完成 CSV 分析，再貼 AI 回覆。','warn'); return; }
+  const codes = parseAiCandidates($('aiOverrideInput').value);
+  const matched = codes.map(c => lastResult.rows.find(r => String(r.symbol) === String(c))).filter(Boolean);
+  $('aiParseBox').textContent = describeAiParse(codes, matched);
+  if(onlyPreview) return;
+  if(!matched.length){ showStatus('AI 回覆裡沒有抓到本次清單內的股票代號。','warn'); return; }
+  lastResult.override = 'AI';
+  lastResult.finalTop = matched.map(r => ({...r}));
+  lastResult.top = lastResult.finalTop;
+  renderSelection(lastResult.finalTop, 'AI 覆蓋');
+  showStatus(`已套用 AI 覆蓋：${matched.map(r=>r.symbol).join('、')}`,'ok');
+}
+
+function resetToLocalSelection(){
+  if(!lastResult.localTop.length){ showStatus('目前沒有本地結果可切回。','warn'); return; }
+  lastResult.override = null;
+  lastResult.top = lastResult.localTop.map(r => ({...r}));
+  lastResult.finalTop = lastResult.top;
+  renderSelection(lastResult.top, '本地模型');
+  $('aiParseBox').textContent = '已切回本地結果。';
+  showStatus('已切回本地結果。','ok');
+}
+
+function buildTopCards(topRows, capital, sourceLabel="本地模型"){
   if(!topRows.length) return '<div class="muted">沒有可用結果。</div>';
   return topRows.map((r, i)=>{
     const role = i===0 ? '🎯 主攻股' : '🥈 副攻股';
@@ -365,7 +429,7 @@ function buildTopCards(topRows, capital){
     const budget = Math.round(capital * alloc / 100);
     const shares = r.price ? Math.floor(budget / r.price) : 0;
     return `<div class="top-card">
-      <div class="small">${role}｜${r.mode} 模式</div>
+      <div class="small">${role}｜${r.mode} 模式｜${sourceLabel}</div>
       <strong>${r.symbol} ${r.name || ''}</strong>
       <div class="small" style="margin-top:8px">分數：<b>${r.score}</b>｜狀態：<b>${r.status}</b></div>
       <div class="small">配置：<b>${alloc}% ≈ ${budget.toLocaleString('zh-TW')} 元</b>${shares ? `｜約 ${shares.toLocaleString('zh-TW')} 股` : ''}</div>
@@ -374,7 +438,7 @@ function buildTopCards(topRows, capital){
   }).join('');
 }
 
-function generatePlan(topRows){
+function generatePlan(topRows, sourceLabel="本地模型"){
   if(!topRows.length) return '尚未生成。';
   const capital = parseNum($('capital').value) || 200000;
   const t1 = parseNum($('targetMin').value) || 10;
@@ -397,7 +461,7 @@ function generatePlan(topRows){
 - 觀察重點：${r.reasons.slice(0,4).join('、')}
 `;
   }).join('\n');
-  return `操作週期：${period}\n目標：+${t1}% 先收一半，+${t2}% 全出；若跌破停損，無條件執行。\n\n${rows}\n整體失效條件：大盤轉弱、入選股開高走低爆量長黑、或相對量明顯衰退。`;
+  return `決策來源：${sourceLabel}\n操作週期：${period}\n目標：+${t1}% 先收一半，+${t2}% 全出；若跌破停損，無條件執行。\n\n${rows}\n整體失效條件：大盤轉弱、入選股開高走低爆量長黑、或相對量明顯衰退。`;
 }
 
 function renderTable(rows){
@@ -467,12 +531,12 @@ function analyze(){
     const top = filteredTop.length ? filteredTop : scored.slice(0,pickCount);
 
     renderDetectedFields(parsed.detected, parsed.fullMode);
-    $('topPicks').innerHTML = buildTopCards(top, parseNum($('capital').value) || 200000);
+    renderSelection(top, '本地模型');
     $('summaryBox').textContent = buildSummary(scored, parsed.fullMode);
-    $('planOutput').textContent = generatePlan(top);
+    $('aiParseBox').textContent = '尚未解析 AI 回覆。';
     renderTable(scored);
     $('resultStats').textContent = `共 ${scored.length} 檔｜模式 ${parsed.fullMode ? 'Full' : 'Lite'}｜更新 ${new Date().toLocaleString('zh-TW')}`;
-    lastResult = { rows: scored, top, mode: parsed.fullMode ? 'Full' : 'Lite', detected: parsed.detected };
+    lastResult = { rows: scored, top: top.map(r=>({...r})), localTop: top.map(r=>({...r})), finalTop: top.map(r=>({...r})), mode: parsed.fullMode ? 'Full' : 'Lite', detected: parsed.detected, override: null };
     showStatus(`分析完成：共 ${scored.length} 檔，已自動挑出 ${top.length} 檔。`, 'ok');
   }catch(err){
     console.error(err);
@@ -485,7 +549,8 @@ function saveLocal(){
     capital: $('capital').value, pickCount: $('pickCount').value, period: $('period').value,
     targetMin: $('targetMin').value, targetMax: $('targetMax').value, stopLoss: $('stopLoss').value,
     rsiLow: $('rsiLow').value, rsiHigh: $('rsiHigh').value, maxDev: $('maxDev').value,
-    csvInput: $('csvInput').value
+    csvInput: $('csvInput').value,
+    aiOverrideInput: $('aiOverrideInput').value
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   showStatus('已儲存到本機瀏覽器。', 'ok');
@@ -501,7 +566,18 @@ function loadLocal(){
 }
 
 function clearAll(){
-  $('csvInput').value=''; $('csvFile').value=''; $('topPicks').innerHTML=''; $('summaryBox').textContent='尚未分析。'; $('planOutput').textContent='尚未生成。'; $('rankingBody').innerHTML='<tr><td colspan="16" class="muted">還沒有資料。</td></tr>'; $('detectedFields').innerHTML=''; $('metricMode').textContent='待載入'; $('resultStats').textContent='尚未計算'; lastResult = { rows: [], top: [], mode: '未分析', detected: [] };
+  $('csvInput').value='';
+  $('csvFile').value='';
+  $('aiOverrideInput').value='';
+  $('topPicks').innerHTML='';
+  $('summaryBox').textContent='尚未分析。';
+  $('planOutput').textContent='尚未生成。';
+  $('aiParseBox').textContent='尚未解析 AI 回覆。';
+  $('rankingBody').innerHTML='<tr><td colspan="16" class="muted">還沒有資料。</td></tr>';
+  $('detectedFields').innerHTML='';
+  $('metricMode').textContent='待載入';
+  $('resultStats').textContent='尚未計算';
+  lastResult = { rows: [], top: [], localTop: [], finalTop: [], mode: '未分析', detected: [], override: null };
   showStatus('已清空。','ok');
 }
 
@@ -523,6 +599,9 @@ $('clearBtn').addEventListener('click', clearAll);
 $('exportJsonBtn').addEventListener('click', exportJSON);
 $('copyPlanBtn').addEventListener('click', ()=>copyText($('planOutput').textContent, '交易計畫已複製。'));
 $('copyPromptBtn').addEventListener('click', ()=>copyText(buildPrompt(lastResult.rows), 'AI 分析提示詞已複製。'));
+$('applyAiBtn').addEventListener('click', ()=>applyAiOverride(false));
+$('parseAiBtn').addEventListener('click', ()=>applyAiOverride(true));
+$('resetLocalBtn').addEventListener('click', resetToLocalSelection);
 $('csvFile').addEventListener('change', async (e)=>{
   const file = e.target.files && e.target.files[0];
   if(!file) return;
