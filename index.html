@@ -52,6 +52,7 @@ button{border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:80
 .kpi .label{font-size:12px;color:#94a3b8;margin-bottom:4px}
 .kpi .value{font-size:20px;font-weight:800}
 .action-btn{padding:6px 10px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,255,255,.08);color:#e5e7eb}
+@media (max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 </style>
 </head>
@@ -205,9 +206,107 @@ button{border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:80
     <div id="planOutput" class="output-box">尚未生成。</div>
   </section>
 </div>
+
+  <section class="card panel" style="margin-top:18px;">
+    <h2>📈 持倉監控中心</h2>
+    <div class="small">把你實際買進的標的記錄進來，系統會自動計算報酬率、停損、停利、移動停利與賣出狀態。這一區不影響前面的選股，只負責執行與監控。</div>
+
+    <div class="grid3" style="margin-top:10px">
+      <div class="field">
+        <label for="holdSymbol">股票代號</label>
+        <input id="holdSymbol" placeholder="例如 8261">
+      </div>
+      <div class="field">
+        <label for="holdName">股票名稱</label>
+        <input id="holdName" placeholder="例如 富鼎">
+      </div>
+      <div class="field">
+        <label for="holdQty">股數</label>
+        <input id="holdQty" type="number" value="1000">
+      </div>
+    </div>
+
+    <div class="grid4">
+      <div class="field">
+        <label for="buyPrice">買入價</label>
+        <input id="buyPrice" type="number" step="0.01" placeholder="例如 116">
+      </div>
+      <div class="field">
+        <label for="currentPrice">目前價</label>
+        <input id="currentPrice" type="number" step="0.01" placeholder="手動更新">
+      </div>
+      <div class="field">
+        <label for="stopLossPrice">停損價</label>
+        <input id="stopLossPrice" type="number" step="0.01" placeholder="例如 108">
+      </div>
+      <div class="field">
+        <label for="takeProfit1Price">停利一價</label>
+        <input id="takeProfit1Price" type="number" step="0.01" placeholder="例如 127.5">
+      </div>
+    </div>
+
+    <div class="grid4">
+      <div class="field">
+        <label for="takeProfit2Price">停利二價</label>
+        <input id="takeProfit2Price" type="number" step="0.01" placeholder="例如 133.5">
+      </div>
+      <div class="field">
+        <label for="highestPrice">持倉最高價</label>
+        <input id="highestPrice" type="number" step="0.01" placeholder="可留空，自動更新">
+      </div>
+      <div class="field">
+        <label for="trailPullback">移動停利回撤 %</label>
+        <input id="trailPullback" type="number" step="0.1" value="4">
+      </div>
+      <div class="field">
+        <label for="warnNearPct">接近提醒 %</label>
+        <input id="warnNearPct" type="number" step="0.1" value="2">
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="primary" id="calcPositionBtn">更新監控狀態</button>
+      <button class="ghost" id="addPositionBtn">加入持倉列表</button>
+      <button class="ghost" id="loadFromSelectionBtn">從最終標的帶入</button>
+      <button class="ghost" id="clearPositionInputsBtn">清空輸入</button>
+    </div>
+
+    <div id="positionStatusBox" class="output-box" style="margin-top:10px;min-height:120px">尚未建立持倉監控。</div>
+
+    <div class="toolbar" style="margin-top:10px">
+      <button class="ghost" id="refreshAllPositionsBtn">全部持倉重新計算</button>
+      <button class="ghost" id="exportPositionsBtn">匯出持倉 JSON</button>
+      <button class="ghost" id="clearAllPositionsBtn">清空全部持倉</button>
+    </div>
+
+    <div class="table-wrap" style="margin-top:10px">
+      <table>
+        <thead>
+          <tr>
+            <th>狀態</th>
+            <th>股票</th>
+            <th>買入價</th>
+            <th>現價</th>
+            <th>報酬率</th>
+            <th>未實現損益</th>
+            <th>停損</th>
+            <th>停利1</th>
+            <th>停利2</th>
+            <th>最高價</th>
+            <th>移動停利</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="positionsTableBody">
+          <tr><td colspan="12" class="muted">尚無持倉資料。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
 <script>
 const $ = id => document.getElementById(id);
-const STORAGE_KEY = 'ai_stock_selector_position_monitor_full_v1';
+const STORAGE_KEY = 'ai_stock_selector_position_monitor_full_v2';
 let lastResult = { rows: [], top: [], localTop: [], finalTop: [], mode: '未分析', detected: [], override: null };
 
 function showStatus(msg, type='ok'){
@@ -839,7 +938,7 @@ function addOrUpdatePosition(){
 function renderPositionsTable(){
   const tbody = $('positionsTableBody');
   if(!positions.length){
-    tbody.innerHTML = '<tr><td colspan="12" class="small">尚無持倉資料。</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" class="muted">尚無持倉資料。</td></tr>';
     return;
   }
   tbody.innerHTML = positions.map((p, idx) => {
@@ -1002,14 +1101,6 @@ $('autoDecisionBtn').addEventListener('click', ()=>{
   applyDecisionMode(false);
 });
 $('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true));
-$('calcPositionBtn').addEventListener('click', updatePositionPreview);
-$('addPositionBtn').addEventListener('click', addOrUpdatePosition);
-$('loadFromSelectionBtn').addEventListener('click', autoFillFromSelection);
-$('clearPositionInputsBtn').addEventListener('click', clearPositionInputs);
-$('refreshAllPositionsBtn').addEventListener('click', refreshAllPositions);
-$('exportPositionsBtn').addEventListener('click', exportPositions);
-$('clearAllPositionsBtn').addEventListener('click', ()=>{ positions = []; saveLocal(); renderPositionsTable(); showStatus('已清空全部持倉。','ok'); clearPositionInputs(); });
-
 
 $('csvFile').addEventListener('change', async (e)=>{
   const file = e.target.files && e.target.files[0];
@@ -1024,7 +1115,6 @@ $('loadSampleBtn').addEventListener('click', ()=>{
 });
 
 loadLocal();
-renderPositionsTable();
 </script>
 </body>
 </html>
