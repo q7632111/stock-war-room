@@ -27,6 +27,7 @@ button.ghost{background:transparent;color:#e6f1ff;border:1px solid var(--border)
 <body>
 <div class="wrap">
 <div class="title">⚡ 戰情室 AI 整合版｜飛輪風控戰情版 ⚡</div>
+<div class="small" style="margin-bottom:12px">最後同步時間：<span id="lastSyncTime">尚未同步</span></div>
 
 <div class="panel"><div class="kpis">
 <div class="kpi"><div class="label">總資金</div><div class="v" id="cap">200000</div></div>
@@ -116,6 +117,17 @@ button.ghost{background:transparent;color:#e6f1ff;border:1px solid var(--border)
   </div>
 </div>
 
+<div class="panel">
+  <h3>AI 風控總指揮</h3>
+  <div class="grid3">
+    <div class="list-item"><div class="small">今日操作模式</div><div id="riskMode" style="font-size:20px;color:#ffd166;margin-top:6px">待機</div></div>
+    <div class="list-item"><div class="small">總風險曝險</div><div id="totalRiskExposure" style="font-size:20px;color:#00f7ff;margin-top:6px">0</div></div>
+    <div class="list-item"><div class="small">AI 風控評分</div><div id="riskScore" style="font-size:20px;color:#00ff88;margin-top:6px">100</div></div>
+  </div>
+  <div style="height:10px"></div>
+  <div class="list" id="riskAdviceList"></div>
+</div>
+
 <div class="panel"><h3>戰場（4檔）</h3><div class="slots" id="slots"></div></div>
 
 <div class="row">
@@ -135,6 +147,10 @@ button.ghost{background:transparent;color:#e6f1ff;border:1px solid var(--border)
 
 <script>
 let pf=[]; let hist=[]; let bank=0; let exp=0; let level=1; let pricesUpdatedAt='';
+function updateSyncTime(){ const el=document.getElementById('lastSyncTime'); if(el) el.textContent=new Date().toLocaleString('zh-TW'); }
+function daysHeld(s){ if(!s.entryDate) return 0; return Math.floor((Date.now()-new Date(s.entryDate).getTime())/(1000*60*60*24)); }
+function returnPct(s){ return s.entry ? ((s.price-s.entry)/s.entry)*100 : 0; }
+function shouldTimeExit(s){ return daysHeld(s) > 30 && returnPct(s) < 3; }
 function num(x){ let n=parseFloat(x); return isNaN(n)?0:n; }
 function money(x){ return Math.round(x).toLocaleString('zh-TW'); }
 function getCapital(){ return num(document.getElementById('capitalInput').value)||200000; }
@@ -225,7 +241,7 @@ function build(){
       const avgBudget=cap/maxPos, riskPerShare=Math.max(1,entry-stop), maxRiskCash=getCapital()*getRiskPct()/100;
       const riskBasedQty=Math.floor(maxRiskCash/riskPerShare), budgetBasedQty=Math.floor(avgBudget/entry);
       const qty=Math.max(1,Math.min(riskBasedQty||1,budgetBasedQty||1));
-      pf.push({code:String(s.code),entry,price:entry,stop,tp1,tp2,qty,manualQty:qty,pnl:0,half:false});
+      pf.push({code:String(s.code),entry,price:entry,stop,tp1,tp2,qty,manualQty:qty,pnl:0,half:false,entryDate:new Date().toISOString()});
     });
     render(); updateTodayAction();
   }catch(e){ alert('JSON 格式錯誤'); }
@@ -235,15 +251,67 @@ function updatePrice(){
   document.getElementById('price').value.split('\n').forEach(l=>{
     const p=l.trim().split(/\s+/); if(p.length<2) return;
     const code=(p[0]||'').replace(/\D/g,''), price=num(p[p.length-1]), s=pf.find(x=>x.code==code);
-    if(s && price){ s.price=price; s.pnl=(price-s.entry)*s.qty; if(!s.half && price>=s.tp1){ const halfQty=Math.max(1,Math.floor(s.qty/2)); const gain=(price-s.entry)*halfQty; bank+=gain; s.qty=s.qty-halfQty; s.manualQty=s.qty; s.half=true; exp+=10; } }
+    if(s && price){ s.price=price; s.pnl=(price-s.entry)*s.qty; if(!s.half && price>=s.tp1){ const halfQty=Math.max(1,Math.floor(s.qty/2)); const gain=(price-s.entry)*halfQty; bank+=gain; s.qty=s.qty-halfQty; s.manualQty=s.qty; s.half=true; s.stop=s.entry; exp+=10; } }
   });
-  pricesUpdatedAt=new Date().toLocaleString('zh-TW'); render(); updateTodayAction();
+  pricesUpdatedAt=new Date().toLocaleString('zh-TW'); updateSyncTime(); render(); updateTodayAction();
 }
 
 function setQty(i,val){ const v=parseInt(val,10); if(!v||v<=0) return; pf[i].manualQty=v; pf[i].qty=v; pf[i].pnl=(pf[i].price-pf[i].entry)*pf[i].qty; render(); updateTodayAction(); }
 function state(s){ if(s.price<=s.stop) return 'red'; if(s.price>=s.tp1) return 'green'; if(s.price<=s.stop*1.03) return 'yellow'; return 'normal'; }
 function riskCash(s){ return Math.max(0,(s.entry-s.stop)*s.qty); }
 function usagePct(s){ const cap=getCapital(); return cap?((s.entry*s.qty)/cap)*100:0; }
+function rewardCash2(s){ return Math.max(0,(s.tp2-s.entry)*s.qty); }
+function rrScore(s){ const risk=riskCash(s); const reward=rewardCash2(s); return risk ? reward/risk : 0; }
+function totalRisk(){ return pf.reduce((sum,s)=>sum+riskCash(s),0); }
+function riskStatusText(s){
+  if(s.price<=s.stop) return '停損處理';
+  if(s.price<=s.stop*1.03) return '危險觀察';
+  if(s.price>=s.tp1) return '可收割';
+  if(rrScore(s)<1.2) return '報酬偏弱';
+  return '正常';
+}
+
+function renderRiskPanel(){
+  const totalCap=getCapital();
+  const maxRiskCash=totalCap*getRiskPct()/100;
+  const exposure=totalRisk();
+  const redCount=pf.filter(s=>s.price<=s.stop).length;
+  const yellowCount=pf.filter(s=>s.price>s.stop && s.price<=s.stop*1.03).length;
+  const highRiskCount=pf.filter(s=>riskCash(s)>maxRiskCash || usagePct(s)>40).length;
+  let score=100;
+  score -= redCount*30;
+  score -= yellowCount*15;
+  score -= highRiskCount*12;
+  score -= Math.max(0, ((exposure/(totalCap||1))*100)-getRiskPct())*2;
+  score=Math.max(0,Math.round(score));
+
+  const modeEl=document.getElementById('riskMode');
+  const exposureEl=document.getElementById('totalRiskExposure');
+  const scoreEl=document.getElementById('riskScore');
+  const adviceEl=document.getElementById('riskAdviceList');
+  if(modeEl){
+    let mode='正常監控';
+    if(redCount) mode='停損優先';
+    else if(highRiskCount) mode='先降風險';
+    else if(yellowCount) mode='防守觀察';
+    else if(pf.some(s=>s.price>=s.tp1)) mode='收割模式';
+    else if(pf.length<getMaxPos()) mode='可補位';
+    modeEl.textContent=mode;
+  }
+  if(exposureEl) exposureEl.textContent=money(exposure);
+  if(scoreEl) scoreEl.textContent=String(score);
+  if(adviceEl){
+    const items=[];
+    if(!pf.length) items.push('目前沒有持股，先用 AI 嚴選建立第一輪部隊。');
+    if(redCount) items.push(`有 ${redCount} 檔跌破停損，今天第一優先是砍掉弱股。`);
+    if(highRiskCount) items.push(`有 ${highRiskCount} 檔單檔風險或資金占比過高，先調整股數。`);
+    if(yellowCount) items.push(`有 ${yellowCount} 檔進入危險區，避免加碼，專注監控。`);
+    const lowRR=pf.filter(s=>rrScore(s)<1.2);
+    if(lowRR.length) items.push(`風報比偏弱：${lowRR.map(s=>s.code).join(', ')}，優先列入換股觀察。`);
+    if(!items.length) items.push('整體風險可控，依今日唯一指令執行即可。');
+    adviceEl.innerHTML=items.map(v=>`<div class="list-item">${v}</div>`).join('');
+  }
+}
 
 function render(){
   let el=document.getElementById('slots'), riskEl=document.getElementById('riskTable'); el.innerHTML=''; riskEl.innerHTML=''; let used=0,total=0;
@@ -251,10 +319,11 @@ function render(){
     used+=s.entry*s.qty; total+=s.pnl; const cls=state(s), progress=(s.tp2>s.stop)?((s.price-s.stop)/(s.tp2-s.stop))*100:0;
     const distStop=s.price-s.stop, distTp1=s.tp1-s.price, riskTooHigh=riskCash(s)>getCapital()*getRiskPct()/100, usageTooHigh=usagePct(s)>40;
     const statusBadge=cls==='red'?'立即處理':cls==='yellow'?'接近停損':cls==='green'?'進利潤區':'續抱觀察';
-    el.innerHTML += `<div class="card ${cls}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><b>${s.code}</b></div><span class="badge ${cls}">${statusBadge}</span></div><div class="grid2 small" style="margin-top:8px"><div>現價 ${s.price}</div><div>成本 ${s.entry}</div><div>停損 ${s.stop}</div><div>停利 ${s.tp1}/${s.tp2}</div></div><div class="grid2 small" style="margin-top:8px"><div>股數 <input style="width:80px;display:inline-block" value="${s.manualQty}" onchange="setQty(${i},this.value)"></div><div>損益 ${s.pnl.toFixed(0)}</div><div>距停損 ${distStop.toFixed(1)}</div><div>距停利1 ${distTp1.toFixed(1)}</div></div><div class="bar"><div style="width:${Math.max(0,Math.min(100,progress))}%"></div></div><div class="grid2 small" style="margin-top:8px"><div>停損風險 ${money(riskCash(s))}</div><div>資金占比 ${usagePct(s).toFixed(1)}%</div></div><div class="small" style="margin-top:6px;color:${riskTooHigh||usageTooHigh?'#ffd166':'#8aa0d0'}">${riskTooHigh?'⚠ 單檔風險超過上限。':''} ${usageTooHigh?'⚠ 單檔資金占比過高。':''}</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button onclick="exitS(${i},'停損')">❌ 停損</button><button onclick="exitS(${i},'停利')">💰 停利</button><button class="ghost" onclick="removeS(${i})">移除</button></div></div>`;
+    const rr=rrScore(s);
+    el.innerHTML += `<div class="card ${cls}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><b>${s.code}</b></div><span class="badge ${cls}">${statusBadge}</span></div><div class="grid2 small" style="margin-top:8px"><div>現價 ${s.price}</div><div>成本 ${s.entry}</div><div>停損 ${s.stop}</div><div>停利 ${s.tp1}/${s.tp2}</div></div><div class="grid2 small" style="margin-top:8px"><div>股數 <input style="width:80px;display:inline-block" value="${s.manualQty}" onchange="setQty(${i},this.value)"></div><div>損益 ${s.pnl.toFixed(0)}</div><div>距停損 ${distStop.toFixed(1)}</div><div>距停利1 ${distTp1.toFixed(1)}</div><div>持有天數 ${daysHeld(s)}</div><div>報酬率 ${returnPct(s).toFixed(2)}%</div></div><div class="bar"><div style="width:${Math.max(0,Math.min(100,progress))}%"></div></div><div class="grid2 small" style="margin-top:8px"><div>停損風險 ${money(riskCash(s))}</div><div>資金占比 ${usagePct(s).toFixed(1)}%</div><div>風報比 ${rr ? rr.toFixed(2) : '--'}</div><div>狀態 ${riskStatusText(s)}</div></div><div class="small" style="margin-top:6px;color:${riskTooHigh||usageTooHigh||shouldTimeExit(s)?'#ffd166':'#8aa0d0'}">${riskTooHigh?'⚠ 單檔風險超過上限。':''} ${usageTooHigh?'⚠ 單檔資金占比過高。':''} ${shouldTimeExit(s)?'⚠ 超過30天且報酬低於3%，建議換牌。':''}</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button onclick="exitS(${i},'停損')">❌ 停損</button><button onclick="exitS(${i},'停利')">💰 停利</button><button class="ghost" onclick="removeS(${i})">移除</button></div></div>`;
     riskEl.innerHTML += `<tr><td>${s.code}</td><td>${s.qty}</td><td>${money(s.entry*s.qty)}</td><td>${money(riskCash(s))}</td><td>${usagePct(s).toFixed(1)}%</td><td>${statusBadge}</td></tr>`;
   });
-  document.getElementById('used').innerText=money(used); document.getElementById('pnl').innerText=money(total); document.getElementById('bank').innerText=money(bank); level=Math.floor(exp/50)+1; document.getElementById('lvl').innerText='Lv'+level; calc();
+  document.getElementById('used').innerText=money(used); document.getElementById('pnl').innerText=money(total); document.getElementById('bank').innerText=money(bank); level=Math.floor(exp/50)+1; document.getElementById('lvl').innerText='Lv'+level; calc(); renderRiskPanel();
 }
 
 function exitS(i,type){ const s=pf[i]; bank+=Math.max(0,s.pnl); exp+=s.pnl>0?20:5; hist.push({...s,type}); pf.splice(i,1); renderHist(); render(); updateTodayAction(); }
@@ -264,17 +333,19 @@ function calc(){ let win=0; hist.forEach(s=>{ if(s.pnl>0) win++; }); document.ge
 
 function updateTodayAction(){
   const action=document.getElementById('todayAction'), reason=document.getElementById('todayReason'), checklist=document.getElementById('todayChecklist'); checklist.innerHTML='';
-  const maxRiskCash=getCapital()*getRiskPct()/100, redList=pf.filter(s=>s.price<=s.stop), yellowList=pf.filter(s=>s.price>s.stop && s.price<=s.stop*1.03), greenList=pf.filter(s=>s.price>=s.tp1), riskList=pf.filter(s=>riskCash(s)>maxRiskCash || usagePct(s)>40), maxPos=getMaxPos();
+  const maxRiskCash=getCapital()*getRiskPct()/100, redList=pf.filter(s=>s.price<=s.stop), yellowList=pf.filter(s=>s.price>s.stop && s.price<=s.stop*1.03), greenList=pf.filter(s=>s.price>=s.tp1), timeExitList=pf.filter(s=>shouldTimeExit(s)), riskList=pf.filter(s=>riskCash(s)>maxRiskCash || usagePct(s)>40), maxPos=getMaxPos();
   if(!pf.length && !getCandidateList().length){ action.textContent='先輸入候選股'; reason.textContent='先在左上輸入候選股票代號，再用 AI 嚴選按鈕建立第一輪部隊。'; }
   else if(!pf.length){ action.textContent='先執行 AI 嚴選'; reason.textContent='你已有候選股，但還沒建立持股。現在最重要的是讓 AI 先挑出最強標的。'; }
   else if(!pricesUpdatedAt){ action.textContent='先更新盤後價格'; reason.textContent='目前持股已建立，但還沒有最新價格。先貼盤後價格，才能啟動停損、停利與風控判斷。'; }
   else if(redList.length){ action.textContent='先處理停損股'; reason.textContent=`有 ${redList.length} 檔已跌破停損。今天第一優先不是找新股，而是先把失敗部位處理掉。`; }
+  else if(timeExitList.length){ action.textContent='先換掉鈍化股'; reason.textContent=`有 ${timeExitList.length} 檔超過 30 天且報酬低於 3%。今天先換牌，不要讓資金卡在弱股。`; }
   else if(riskList.length){ action.textContent='先降風險'; reason.textContent=`有 ${riskList.length} 檔單檔風險或資金占比過高。今天先調整股數，讓系統回到可控範圍。`; }
   else if(yellowList.length){ action.textContent='盯緊接近停損股'; reason.textContent=`有 ${yellowList.length} 檔接近停損 3% 範圍內。今天重點是監控，不是亂補位。`; }
   else if(greenList.length){ action.textContent='檢查是否續抱或收割'; reason.textContent=`有 ${greenList.length} 檔已進入停利區。今天重點是決定續抱、分批停利或全出。`; }
   else if(pf.length < maxPos){ action.textContent='可以補位'; reason.textContent=`目前持股 ${pf.length}/${maxPos}，而且沒有高優先級風險事件。今天可以把空位留給 AI 下一輪嚴選。`; }
   else { action.textContent='續抱監控'; reason.textContent='目前沒有明顯停損、停利或超風險事件。今天任務很單純：更新價格、確認部位、不要多做。'; }
-  const items=[]; items.push(pricesUpdatedAt?`✅ 最新價格更新時間：${pricesUpdatedAt}`:'⚠ 尚未更新今日價格'); items.push(`📦 目前持股數：${pf.length}/${getMaxPos()}`); items.push(`💧 水庫：${money(bank)}`); items.push(`🛡 單檔風險上限：${money(maxRiskCash)}`); if(redList.length) items.push(`❌ 跌破停損：${redList.map(s=>s.code).join(', ')}`); if(yellowList.length) items.push(`⚠ 接近停損：${yellowList.map(s=>s.code).join(', ')}`); if(greenList.length) items.push(`💰 進入停利區：${greenList.map(s=>s.code).join(', ')}`); if(riskList.length) items.push(`🚨 風險過高：${riskList.map(s=>s.code).join(', ')}`); if(pf.length < getMaxPos()) items.push(`➕ 還可補位：${getMaxPos()-pf.length} 檔`); checklist.innerHTML=items.map(v=>`<div class="list-item">${v}</div>`).join('');
+  const items=[]; items.push(pricesUpdatedAt?`✅ 最新價格更新時間：${pricesUpdatedAt}`:'⚠ 尚未更新今日價格'); items.push(`📦 目前持股數：${pf.length}/${getMaxPos()}`); items.push(`💧 水庫：${money(bank)}`); items.push(`🛡 單檔風險上限：${money(maxRiskCash)}`); if(redList.length) items.push(`❌ 跌破停損：${redList.map(s=>s.code).join(', ')}`); if(yellowList.length) items.push(`⚠ 接近停損：${yellowList.map(s=>s.code).join(', ')}`); if(greenList.length) items.push(`💰 進入停利區：${greenList.map(s=>s.code).join(', ')}`);
+  if(timeExitList.length) items.push(`🔄 建議時間換牌：${timeExitList.map(s=>s.code).join(', ')}`); if(riskList.length) items.push(`🚨 風險過高：${riskList.map(s=>s.code).join(', ')}`); if(pf.length < getMaxPos()) items.push(`➕ 還可補位：${getMaxPos()-pf.length} 檔`); checklist.innerHTML=items.map(v=>`<div class="list-item">${v}</div>`).join('');
 }
 
 recalcAll(); renderHist(); updateTodayAction(); loadDemoCodes(); loadSavedKey();
