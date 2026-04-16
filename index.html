@@ -84,6 +84,7 @@ button.ghost{background:transparent;color:#e6f1ff;border:1px solid var(--border)
           <button class="ghost" onclick="toggleKeyVisibility()">顯示 / 隱藏 Key</button>
           <button class="ghost" onclick="clearSavedKey()">清除已記住 Key</button>
         </div>
+        <div id="aiStatus" class="small" style="margin-top:8px;color:#ffd166"></div>
         <div style="height:8px"></div>
         <button class="ghost" onclick="loadDemoCodes()">載入示範候選股</button>
       </div>
@@ -190,29 +191,54 @@ function toggleKeyVisibility(){
   input.type = input.type === 'password' ? 'text' : 'password';
 }
 
+async function fetchWithRetry(url, options, retries = 3, delay = 1500) {
+  const status = document.getElementById('aiStatus');
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) {
+        let data = null;
+        try { data = await res.json(); } catch(e) {}
+        if (res.status === 503 || data?.error?.status === 'UNAVAILABLE') {
+          throw new Error('AI busy');
+        }
+        throw new Error(data?.error?.message || 'API error');
+      }
+      if(status) status.innerText = 'AI 嚴選成功 ✅';
+      return await res.json();
+    } catch (err) {
+      if(status) status.innerText = `AI 忙碌中...（第 ${i + 1} 次）`;
+      if (i === retries - 1) throw err;
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+}
+
 async function runAiSelection(){
   const key=document.getElementById('geminiKey').value.trim();
   saveKeyToLocal();
   const codes=getCandidateList();
   const btn=document.getElementById('runAiBtn');
+  const status=document.getElementById('aiStatus');
   if(!key){ alert('先貼上 Gemini API Key'); return; }
   if(!codes.length){ alert('先輸入候選股票代號'); return; }
   const prompt=buildAiPrompt(codes);
   document.getElementById('promptPreview').value=prompt;
   const original=btn.textContent; btn.disabled=true; btn.textContent='AI 嚴選中...';
+  if(status) status.innerText='送出 AI 請求中...';
   try{
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.4, responseMimeType:'application/json'} })
-    });
-    if(!res.ok){ const err=await res.text(); throw new Error(err || 'Gemini API 呼叫失敗'); }
-    const data=await res.json();
+    const data=await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`,
+      {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.4, responseMimeType:'application/json'} })},
+      3, 1800
+    );
     const text=(data?.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');
     if(!text.trim()) throw new Error('AI 沒有回傳內容');
     document.getElementById('ai').value=text.trim();
     build();
-  }catch(err){ alert('AI 嚴選失敗：'+(err?.message||err)); }
-  finally{ btn.disabled=false; btn.textContent=original; }
+  }catch(err){
+    if(status) status.innerText='AI 暫時忙碌，請稍後再試';
+    alert('AI 嚴選失敗：' + (err?.message || err));
+  }finally{ btn.disabled=false; btn.textContent=original; }
 }
 
 function copyJsonTemplate(){
@@ -251,9 +277,25 @@ function updatePrice(){
   document.getElementById('price').value.split('\n').forEach(l=>{
     const p=l.trim().split(/\s+/); if(p.length<2) return;
     const code=(p[0]||'').replace(/\D/g,''), price=num(p[p.length-1]), s=pf.find(x=>x.code==code);
-    if(s && price){ s.price=price; s.pnl=(price-s.entry)*s.qty; if(!s.half && price>=s.tp1){ const halfQty=Math.max(1,Math.floor(s.qty/2)); const gain=(price-s.entry)*halfQty; bank+=gain; s.qty=s.qty-halfQty; s.manualQty=s.qty; s.half=true; s.stop=s.entry; exp+=10; } }
+    if(s && price){
+      s.price=price;
+      s.pnl=(price-s.entry)*s.qty;
+      if(!s.half && price>=s.tp1){
+        const halfQty=Math.max(1,Math.floor(s.qty/2));
+        const gain=(price-s.entry)*halfQty;
+        bank+=gain;
+        s.qty=s.qty-halfQty;
+        s.manualQty=s.qty;
+        s.half=true;
+        s.stop=s.entry;
+        exp+=10;
+      }
+    }
   });
-  pricesUpdatedAt=new Date().toLocaleString('zh-TW'); updateSyncTime(); render(); updateTodayAction();
+  pricesUpdatedAt=new Date().toLocaleString('zh-TW');
+  updateSyncTime();
+  render();
+  updateTodayAction();
 }
 
 function setQty(i,val){ const v=parseInt(val,10); if(!v||v<=0) return; pf[i].manualQty=v; pf[i].qty=v; pf[i].pnl=(pf[i].price-pf[i].entry)*pf[i].qty; render(); updateTodayAction(); }
@@ -263,13 +305,7 @@ function usagePct(s){ const cap=getCapital(); return cap?((s.entry*s.qty)/cap)*1
 function rewardCash2(s){ return Math.max(0,(s.tp2-s.entry)*s.qty); }
 function rrScore(s){ const risk=riskCash(s); const reward=rewardCash2(s); return risk ? reward/risk : 0; }
 function totalRisk(){ return pf.reduce((sum,s)=>sum+riskCash(s),0); }
-function riskStatusText(s){
-  if(s.price<=s.stop) return '停損處理';
-  if(s.price<=s.stop*1.03) return '危險觀察';
-  if(s.price>=s.tp1) return '可收割';
-  if(rrScore(s)<1.2) return '報酬偏弱';
-  return '正常';
-}
+function riskStatusText(s){ if(s.price<=s.stop) return '停損處理'; if(s.price<=s.stop*1.03) return '危險觀察'; if(s.price>=s.tp1) return '可收割'; if(rrScore(s)<1.2) return '報酬偏弱'; return '正常'; }
 
 function renderRiskPanel(){
   const totalCap=getCapital();
@@ -318,7 +354,8 @@ function render(){
   pf.forEach((s,i)=>{
     used+=s.entry*s.qty; total+=s.pnl; const cls=state(s), progress=(s.tp2>s.stop)?((s.price-s.stop)/(s.tp2-s.stop))*100:0;
     const distStop=s.price-s.stop, distTp1=s.tp1-s.price, riskTooHigh=riskCash(s)>getCapital()*getRiskPct()/100, usageTooHigh=usagePct(s)>40;
-    const statusBadge=cls==='red'?'立即處理':cls==='yellow'?'接近停損':cls==='green'?'進利潤區':'續抱觀察';
+    const timeExit = shouldTimeExit(s);
+    const statusBadge=timeExit ? '時間換牌' : (cls==='red'?'立即處理':cls==='yellow'?'接近停損':cls==='green'?'進利潤區':'續抱觀察');
     const rr=rrScore(s);
     el.innerHTML += `<div class="card ${cls}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><b>${s.code}</b></div><span class="badge ${cls}">${statusBadge}</span></div><div class="grid2 small" style="margin-top:8px"><div>現價 ${s.price}</div><div>成本 ${s.entry}</div><div>停損 ${s.stop}</div><div>停利 ${s.tp1}/${s.tp2}</div></div><div class="grid2 small" style="margin-top:8px"><div>股數 <input style="width:80px;display:inline-block" value="${s.manualQty}" onchange="setQty(${i},this.value)"></div><div>損益 ${s.pnl.toFixed(0)}</div><div>距停損 ${distStop.toFixed(1)}</div><div>距停利1 ${distTp1.toFixed(1)}</div><div>持有天數 ${daysHeld(s)}</div><div>報酬率 ${returnPct(s).toFixed(2)}%</div></div><div class="bar"><div style="width:${Math.max(0,Math.min(100,progress))}%"></div></div><div class="grid2 small" style="margin-top:8px"><div>停損風險 ${money(riskCash(s))}</div><div>資金占比 ${usagePct(s).toFixed(1)}%</div><div>風報比 ${rr ? rr.toFixed(2) : '--'}</div><div>狀態 ${riskStatusText(s)}</div></div><div class="small" style="margin-top:6px;color:${riskTooHigh||usageTooHigh||shouldTimeExit(s)?'#ffd166':'#8aa0d0'}">${riskTooHigh?'⚠ 單檔風險超過上限。':''} ${usageTooHigh?'⚠ 單檔資金占比過高。':''} ${shouldTimeExit(s)?'⚠ 超過30天且報酬低於3%，建議換牌。':''}</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button onclick="exitS(${i},'停損')">❌ 停損</button><button onclick="exitS(${i},'停利')">💰 停利</button><button class="ghost" onclick="removeS(${i})">移除</button></div></div>`;
     riskEl.innerHTML += `<tr><td>${s.code}</td><td>${s.qty}</td><td>${money(s.entry*s.qty)}</td><td>${money(riskCash(s))}</td><td>${usagePct(s).toFixed(1)}%</td><td>${statusBadge}</td></tr>`;
@@ -344,8 +381,7 @@ function updateTodayAction(){
   else if(greenList.length){ action.textContent='檢查是否續抱或收割'; reason.textContent=`有 ${greenList.length} 檔已進入停利區。今天重點是決定續抱、分批停利或全出。`; }
   else if(pf.length < maxPos){ action.textContent='可以補位'; reason.textContent=`目前持股 ${pf.length}/${maxPos}，而且沒有高優先級風險事件。今天可以把空位留給 AI 下一輪嚴選。`; }
   else { action.textContent='續抱監控'; reason.textContent='目前沒有明顯停損、停利或超風險事件。今天任務很單純：更新價格、確認部位、不要多做。'; }
-  const items=[]; items.push(pricesUpdatedAt?`✅ 最新價格更新時間：${pricesUpdatedAt}`:'⚠ 尚未更新今日價格'); items.push(`📦 目前持股數：${pf.length}/${getMaxPos()}`); items.push(`💧 水庫：${money(bank)}`); items.push(`🛡 單檔風險上限：${money(maxRiskCash)}`); if(redList.length) items.push(`❌ 跌破停損：${redList.map(s=>s.code).join(', ')}`); if(yellowList.length) items.push(`⚠ 接近停損：${yellowList.map(s=>s.code).join(', ')}`); if(greenList.length) items.push(`💰 進入停利區：${greenList.map(s=>s.code).join(', ')}`);
-  if(timeExitList.length) items.push(`🔄 建議時間換牌：${timeExitList.map(s=>s.code).join(', ')}`); if(riskList.length) items.push(`🚨 風險過高：${riskList.map(s=>s.code).join(', ')}`); if(pf.length < getMaxPos()) items.push(`➕ 還可補位：${getMaxPos()-pf.length} 檔`); checklist.innerHTML=items.map(v=>`<div class="list-item">${v}</div>`).join('');
+  const items=[]; items.push(pricesUpdatedAt?`✅ 最新價格更新時間：${pricesUpdatedAt}`:'⚠ 尚未更新今日價格'); items.push(`📦 目前持股數：${pf.length}/${getMaxPos()}`); items.push(`💧 水庫：${money(bank)}`); items.push(`🛡 單檔風險上限：${money(maxRiskCash)}`); if(redList.length) items.push(`❌ 跌破停損：${redList.map(s=>s.code).join(', ')}`); if(yellowList.length) items.push(`⚠ 接近停損：${yellowList.map(s=>s.code).join(', ')}`); if(greenList.length) items.push(`💰 進入停利區：${greenList.map(s=>s.code).join(', ')}`); if(timeExitList.length) items.push(`🔄 建議時間換牌：${timeExitList.map(s=>s.code).join(', ')}`); if(riskList.length) items.push(`🚨 風險過高：${riskList.map(s=>s.code).join(', ')}`); if(pf.length < getMaxPos()) items.push(`➕ 還可補位：${getMaxPos()-pf.length} 檔`); checklist.innerHTML=items.map(v=>`<div class="list-item">${v}</div>`).join('');
 }
 
 recalcAll(); renderHist(); updateTodayAction(); loadDemoCodes(); loadSavedKey();
