@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI 短線奪冠王｜AI 覆蓋版</title>
+<title>AI 短線奪冠王｜自動判斷完整版</title>
 <style>
 :root{
   --bg:#08101d;--bg2:#0c1425;--panel:#10192b;--panel2:#16233a;--line:rgba(255,255,255,.08);
@@ -47,7 +47,7 @@ button{border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:80
 <div class="wrap">
   <section class="hero">
     <div class="card panel">
-      <div class="eyebrow">🚀 AI 短線奪冠王｜全自動最終版</div>
+      <div class="eyebrow">🚀 AI 短線奪冠王｜自動判斷完整版</div>
       <h1>直接吃 TradingView CSV，自動解析、排序、挑 1–2 檔、生成交易計畫</h1>
       <div class="sub">這版支援你現在的 TradingView 匯出格式。<b>會自動辨識中文欄位</b>，有技術指標就跑 <b>Full 模式</b>，沒有技術指標也會自動切到 <b>Lite 模式</b> 並明確告訴你差在哪。</div>
       <div class="metrics" style="margin-top:16px">
@@ -130,6 +130,36 @@ button{border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:80
         </div>
         <div id="aiParseBox" class="output-box" style="margin-top:10px;min-height:72px">尚未解析 AI 回覆。</div>
       </div>
+
+      <div class="card" style="margin-top:14px;padding:14px;border-radius:18px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08)">
+        <h3>🧠 決策模式區</h3>
+        <div class="small">你可以手動選模式，也可以讓系統自動判斷。自動判斷時，會優先考慮「交集」、再看本地分數優勢、AI 是否帶來明顯修正，以及過熱風險。</div>
+        <div class="grid3" style="margin-top:10px">
+          <div class="field">
+            <label for="decisionMode">決策模式</label>
+            <select id="decisionMode">
+              <option value="auto" selected>自動判斷（推薦）</option>
+              <option value="intersection">交集模式</option>
+              <option value="local">本地優先</option>
+              <option value="ai">AI優先</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="autoHeatThreshold">過熱乖離門檻 %</label>
+            <input id="autoHeatThreshold" type="number" value="20">
+          </div>
+          <div class="field">
+            <label for="autoScoreGap">本地分數優勢門檻</label>
+            <input id="autoScoreGap" type="number" value="12">
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="primary" id="runDecisionBtn">套用決策模式</button>
+          <button class="ghost" id="autoDecisionBtn">一鍵自動判斷</button>
+          <button class="ghost" id="showDecisionBtn">只看判斷不套用</button>
+        </div>
+        <div id="decisionBox" class="output-box" style="margin-top:10px;min-height:96px">尚未執行決策模式。</div>
+      </div>
       <div class="toolbar" style="margin-top:12px;">
         <button class="primary" id="copyPlanBtn">複製交易計畫</button>
         <button class="ghost" id="exportJsonBtn">匯出 JSON</button>
@@ -165,7 +195,7 @@ button{border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:80
 </div>
 <script>
 const $ = id => document.getElementById(id);
-const STORAGE_KEY = 'ai_stock_selector_ai_override_v1';
+const STORAGE_KEY = 'ai_stock_selector_auto_decision_full_v1';
 let lastResult = { rows: [], top: [], localTop: [], finalTop: [], mode: '未分析', detected: [], override: null };
 
 function showStatus(msg, type='ok'){
@@ -519,6 +549,117 @@ function buildPrompt(rows){
   return `你現在是一位頂尖的台股短線交易員，請根據以下候選股做最後的菁英遴選。\n\n【候選股】${top}\n【目前排序模式】${mode}\n【操作週期】${period}\n【目標】${t1}%~${t2}% 波段利潤\n\n請針對這些股票：\n1. 查近 1 週新聞、法人動向與題材熱度。\n2. 精選 1~2 檔最適合短線操作的股票。\n3. 避開乖離過大、已過熱或利多出盡的標的。\n4. 用表格輸出：進場區間、停損點、+${t1}% / +${t2}% 停利規劃。\n5. 最後用一句話提醒未來一週最重要風險。`;
 }
 
+function getIntersectionRows(localTop, aiTop){
+  const aiCodes = new Set((aiTop || []).map(r=>String(r.symbol)));
+  return (localTop || []).filter(r => aiCodes.has(String(r.symbol)));
+}
+
+function rankRowsByCodes(rows, codes){
+  return codes.map(code => rows.find(r => String(r.symbol) === String(code))).filter(Boolean);
+}
+
+function buildDecisionAnalysis(mode='auto'){
+  const localTop = (lastResult.localTop || []).map(r => ({...r}));
+  const aiTop = (lastResult.override === 'AI' ? (lastResult.finalTop || []).map(r => ({...r})) : []);
+  const fullRows = lastResult.rows || [];
+  const pickCount = parseInt($('pickCount').value, 10) || 2;
+  const scoreGap = parseNum($('autoScoreGap').value) ?? 12;
+  const heatThreshold = parseNum($('autoHeatThreshold').value) ?? 20;
+
+  if(!localTop.length){
+    return { modeUsed: mode, chosen: [], summary: '請先完成本地分析。' };
+  }
+
+  const intersection = getIntersectionRows(localTop, aiTop);
+  const hotAi = aiTop.filter(r => r.deviation !== null && r.deviation > heatThreshold);
+  const localAvg = localTop.length ? localTop.reduce((a,b)=>a+(b.score||0),0)/localTop.length : 0;
+  const aiAvg = aiTop.length ? aiTop.reduce((a,b)=>a+(b.score||0),0)/aiTop.length : 0;
+
+  let modeUsed = mode;
+  let chosen = [];
+  let lines = [];
+
+  if(mode === 'auto'){
+    lines.push(`本地候選：${localTop.map(r=>r.symbol).join('、') || '無'}`);
+    lines.push(`AI候選：${aiTop.map(r=>r.symbol).join('、') || '無'}`);
+    lines.push(`交集：${intersection.map(r=>r.symbol).join('、') || '無'}`);
+    lines.push(`本地平均分：${localAvg.toFixed(1)}｜AI平均分：${aiAvg.toFixed(1)}`);
+
+    if(!aiTop.length){
+      modeUsed = 'local';
+      lines.push('判定：尚未套用 AI 覆蓋，因此先採用本地優先。');
+    } else if(intersection.length >= 1){
+      modeUsed = 'intersection';
+      lines.push('判定：本地與 AI 有交集，優先採用交集模式。');
+    } else if(hotAi.length >= Math.min(1, aiTop.length)){
+      modeUsed = 'local';
+      lines.push(`判定：AI 候選存在過熱風險（>${heatThreshold}% 乖離），改採本地優先。`);
+    } else if((localAvg - aiAvg) >= scoreGap){
+      modeUsed = 'local';
+      lines.push(`判定：本地平均分明顯領先 AI（差 ${Math.round(localAvg-aiAvg)} 分），採本地優先。`);
+    } else if(aiAvg > localAvg && hotAi.length === 0){
+      modeUsed = 'ai';
+      lines.push('判定：AI 候選分數更高且無明顯過熱，採 AI 優先。');
+    } else {
+      modeUsed = 'local';
+      lines.push('判定：沒有形成明確 AI 優勢，維持本地優先。');
+    }
+  }
+
+  if(modeUsed === 'intersection'){
+    chosen = intersection.slice(0, pickCount);
+    if(chosen.length < pickCount){
+      const supplement = localTop.filter(r => !chosen.some(x => x.symbol === r.symbol)).slice(0, pickCount - chosen.length);
+      chosen = chosen.concat(supplement);
+      lines.push(`交集不足 ${pickCount} 檔，已用本地候選補足：${supplement.map(r=>r.symbol).join('、') || '無'}`);
+    }
+  } else if(modeUsed === 'ai'){
+    chosen = aiTop.slice(0, pickCount);
+    if(chosen.length < pickCount){
+      const supplement = localTop.filter(r => !chosen.some(x => x.symbol === r.symbol)).slice(0, pickCount - chosen.length);
+      chosen = chosen.concat(supplement);
+      lines.push(`AI 候選不足 ${pickCount} 檔，已用本地候選補足：${supplement.map(r=>r.symbol).join('、') || '無'}`);
+    }
+  } else {
+    chosen = localTop.slice(0, pickCount);
+  }
+
+  lines.push(`最終模式：${modeUsed === 'intersection' ? '交集模式' : modeUsed === 'ai' ? 'AI優先' : '本地優先'}`);
+  lines.push(`最終標的：${chosen.map(r => `${r.symbol} ${r.name || ''}`).join('、') || '無'}`);
+
+  return {
+    modeUsed,
+    chosen,
+    summary: lines.join('\n')
+  };
+}
+
+function applyDecisionMode(previewOnly=false){
+  const mode = $('decisionMode').value || 'auto';
+  const result = buildDecisionAnalysis(mode);
+  $('decisionBox').textContent = result.summary;
+
+  if(previewOnly) return result;
+  if(!result.chosen.length){
+    showStatus('目前沒有可套用的決策結果。','warn');
+    return result;
+  }
+
+  const sourceLabelMap = {
+    auto: '自動判斷',
+    intersection: '交集模式',
+    local: '本地優先',
+    ai: 'AI優先'
+  };
+
+  lastResult.override = result.modeUsed === 'ai' ? 'AI' : (result.modeUsed === 'intersection' ? 'Intersection' : null);
+  lastResult.top = result.chosen.map(r => ({...r}));
+  lastResult.finalTop = result.chosen.map(r => ({...r}));
+  renderSelection(lastResult.finalTop, sourceLabelMap[mode] || '自動判斷');
+  showStatus(`已套用${sourceLabelMap[result.modeUsed] || '決策模式'}：${result.chosen.map(r=>r.symbol).join('、')}`,'ok');
+  return result;
+}
+
 function analyze(){
   const text = $('csvInput').value.trim();
   if(!text){ showStatus('請先貼上 CSV 內容或載入 CSV 檔。','warn'); return; }
@@ -534,6 +675,7 @@ function analyze(){
     renderSelection(top, '本地模型');
     $('summaryBox').textContent = buildSummary(scored, parsed.fullMode);
     $('aiParseBox').textContent = '尚未解析 AI 回覆。';
+    $('decisionBox').textContent = '尚未執行決策模式。';
     renderTable(scored);
     $('resultStats').textContent = `共 ${scored.length} 檔｜模式 ${parsed.fullMode ? 'Full' : 'Lite'}｜更新 ${new Date().toLocaleString('zh-TW')}`;
     lastResult = { rows: scored, top: top.map(r=>({...r})), localTop: top.map(r=>({...r})), finalTop: top.map(r=>({...r})), mode: parsed.fullMode ? 'Full' : 'Lite', detected: parsed.detected, override: null };
@@ -550,7 +692,10 @@ function saveLocal(){
     targetMin: $('targetMin').value, targetMax: $('targetMax').value, stopLoss: $('stopLoss').value,
     rsiLow: $('rsiLow').value, rsiHigh: $('rsiHigh').value, maxDev: $('maxDev').value,
     csvInput: $('csvInput').value,
-    aiOverrideInput: $('aiOverrideInput').value
+    aiOverrideInput: $('aiOverrideInput').value,
+    decisionMode: $('decisionMode').value,
+    autoHeatThreshold: $('autoHeatThreshold').value,
+    autoScoreGap: $('autoScoreGap').value
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   showStatus('已儲存到本機瀏覽器。', 'ok');
@@ -573,6 +718,7 @@ function clearAll(){
   $('summaryBox').textContent='尚未分析。';
   $('planOutput').textContent='尚未生成。';
   $('aiParseBox').textContent='尚未解析 AI 回覆。';
+  $('decisionBox').textContent='尚未執行決策模式。';
   $('rankingBody').innerHTML='<tr><td colspan="16" class="muted">還沒有資料。</td></tr>';
   $('detectedFields').innerHTML='';
   $('metricMode').textContent='待載入';
@@ -602,6 +748,13 @@ $('copyPromptBtn').addEventListener('click', ()=>copyText(buildPrompt(lastResult
 $('applyAiBtn').addEventListener('click', ()=>applyAiOverride(false));
 $('parseAiBtn').addEventListener('click', ()=>applyAiOverride(true));
 $('resetLocalBtn').addEventListener('click', resetToLocalSelection);
+$('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false));
+$('autoDecisionBtn').addEventListener('click', ()=>{
+  $('decisionMode').value = 'auto';
+  applyDecisionMode(false);
+});
+$('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true));
+
 $('csvFile').addEventListener('change', async (e)=>{
   const file = e.target.files && e.target.files[0];
   if(!file) return;
