@@ -104,11 +104,19 @@ button.ghost{background:transparent;color:#e6f1ff;border:1px solid var(--border)
 
 <div class="row">
   <div class="panel">
-    <h3>盤後更新</h3>
-    <textarea id="price" rows="8" placeholder="3363 735&#10;6438 172"></textarea>
+    <h3>盤後自動更新</h3>
+    <div class="small">系統會依目前戰隊中的股票代號，自動抓取股價並更新風控判斷。若資料源暫時失敗，再使用備援價格貼上。</div>
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-      <button onclick="updatePrice()">📊 更新市場數據</button>
-      <button class="ghost" onclick="loadDemoPrice()">載入示範價格</button>
+      <button onclick="autoUpdatePrices()">🤖 自動更新戰隊股價</button>
+      <button class="ghost" onclick="toggleManualPriceArea()">顯示 / 隱藏 備援價格貼上</button>
+    </div>
+    <div id="priceUpdateStatus" class="small" style="margin-top:8px;color:#ffd166"></div>
+    <div id="manualPriceWrap" style="display:none;margin-top:10px">
+      <textarea id="price" rows="8" placeholder="3363 735&#10;6438 172"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button onclick="updatePrice()">📊 用備援價格更新</button>
+        <button class="ghost" onclick="loadDemoPrice()">載入示範價格</button>
+      </div>
     </div>
   </div>
 
@@ -247,7 +255,13 @@ function copyJsonTemplate(){
 }
 function loadDemoCodes(){ document.getElementById('candidateCodes').value='3363 6438 4979 5452'; }
 function loadDemoAI(){ document.getElementById('ai').value=JSON.stringify({stocks:[{code:'3363',entry:'720-735',stop_loss:'680',take_profit_1:'800',take_profit_2:'840'},{code:'6438',entry:'168-172',stop_loss:'158',take_profit_1:'187',take_profit_2:'195'}]},null,2); }
-function loadDemoPrice(){ document.getElementById('price').value='3363 735\n6438 172'; }
+function loadDemoPrice(){ const el=document.getElementById('price'); if(el) el.value='3363 735
+6438 172'; }
+function toggleManualPriceArea(){
+  const wrap=document.getElementById('manualPriceWrap');
+  if(!wrap) return;
+  wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+}
 
 function recalcAll(){
   const cap=getCapital(), riskPct=getRiskPct(), maxPos=getMaxPos();
@@ -271,6 +285,48 @@ function build(){
     });
     render(); updateTodayAction();
   }catch(e){ alert('JSON 格式錯誤'); }
+}
+
+async function autoUpdatePrices(){
+  const status=document.getElementById('priceUpdateStatus');
+  const codes=pf.map(s=>String(s.code)).filter(Boolean);
+  if(!codes.length){
+    if(status) status.innerText='目前沒有戰隊持股可更新';
+    return;
+  }
+  if(status) status.innerText='正在自動抓取戰隊股價...';
+
+  const results=[];
+  let successCount=0;
+
+  for(const code of codes){
+    try{
+      const url=`https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_${code}.tw|otc_${code}.tw&json=1&delay=0`;
+      const res=await fetch(url,{method:'GET'});
+      if(!res.ok) throw new Error('fetch failed');
+      const data=await res.json();
+      const msgArray=data?.msgArray || [];
+      const item=msgArray.find(x=>String(x.c)===String(code));
+      const rawPrice=item?.z && item.z !== '-' ? item.z : (item?.b && item.b !== '-' ? String(item.b).split('_')[0] : '');
+      const price=num(rawPrice);
+      if(!price) throw new Error('no price');
+      results.push(`${code} ${price}`);
+      successCount++;
+    }catch(err){
+      console.log('autoUpdatePrices fail', code, err);
+    }
+  }
+
+  if(successCount===0){
+    if(status) status.innerText='自動抓價失敗，請改用備援價格貼上';
+    return;
+  }
+
+  const priceEl=document.getElementById('price');
+  if(priceEl) priceEl.value=results.join('
+');
+  updatePrice();
+  if(status) status.innerText=`自動更新完成：${successCount}/${codes.length} 檔`;
 }
 
 function updatePrice(){
