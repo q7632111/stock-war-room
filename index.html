@@ -1,1298 +1,266 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI 短線奪冠王｜V2 極簡實戰版</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 指揮官戰情室 V6</title>
+
 <style>
-:root{
-  --bg:#08101d;--bg2:#0c1425;--panel:#10192b;--panel2:#16233a;--line:rgba(255,255,255,.08);
-  --text:#eef4ff;--muted:#9fb0d1;--accent:#5eead4;--accent2:#60a5fa;--ok:#34d399;--warn:#fbbf24;--danger:#f87171;
-  --shadow:0 18px 40px rgba(0,0,0,.35);--radius:22px;
-}
-*{box-sizing:border-box}
-body{margin:0;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:
-radial-gradient(circle at top right, rgba(96,165,250,.18), transparent 28%),
-radial-gradient(circle at top left, rgba(94,234,212,.12), transparent 22%),
-linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);min-height:100vh}
-.wrap{max-width:1560px;margin:0 auto;padding:22px}
-.hero,.layout,.layout2,.grid,.grid3,.metrics{display:grid;gap:18px}
-.hero{grid-template-columns:1.15fr .85fr}.layout{grid-template-columns:1.05fr .95fr}.grid{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:repeat(4,1fr)}
-.card{background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.018));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(10px)}
-.panel{padding:20px}
-h1{font-size:clamp(28px,4vw,42px);line-height:1.1;margin:14px 0 10px} h2{margin:0 0 12px;font-size:20px} h3{margin:0 0 8px;font-size:16px}
-.sub,.muted,.small{color:var(--muted);line-height:1.72}.small{font-size:12px}.muted{font-size:13px}
-.eyebrow,.badge,.chip{display:inline-flex;align-items:center;gap:8px;border-radius:999px}
-.eyebrow{padding:7px 12px;background:rgba(94,234,212,.08);border:1px solid rgba(94,234,212,.18);color:var(--accent);font-size:12px;letter-spacing:.05em}
-.metric{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:16px;padding:14px}.metric .label{color:var(--muted);font-size:12px}.metric .value{font-weight:800;font-size:22px;margin-top:8px}
-.field{display:flex;flex-direction:column;gap:8px;margin-bottom:14px} label{font-size:13px;color:var(--muted)}
-input,textarea,select{width:100%;background:#0d1528;color:var(--text);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:13px 14px;outline:none;font:inherit;transition:.18s ease}
-textarea{min-height:140px;resize:vertical} input:focus,textarea:focus,select:focus{border-color:rgba(96,165,250,.55);box-shadow:0 0 0 3px rgba(96,165,250,.14)}
-button{border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:800;cursor:pointer;transition:transform .08s ease,opacity .18s ease} button:hover{opacity:.96} button:active{transform:translateY(1px)}
-.toolbar,.chips,.top-picks{display:flex;flex-wrap:wrap;gap:10px}.toolbar{margin-top:8px}
-.primary{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#06111f}.ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}.danger{background:rgba(248,113,113,.14);color:#fecaca;border:1px solid rgba(248,113,113,.25)}
-.status{display:none;margin-top:12px;padding:12px 14px;border-radius:14px;font-size:13px}.okBox{background:rgba(52,211,153,.16);color:#d1fae5;border:1px solid rgba(52,211,153,.22)}.warnBox{background:rgba(251,191,36,.14);color:#fde68a;border:1px solid rgba(251,191,36,.22)}.dangerBox{background:rgba(248,113,113,.14);color:#fecaca;border:1px solid rgba(248,113,113,.22)}
-.chip{padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:12px;color:var(--muted)}
-.logic-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.logic-item{padding:12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid var(--line);font-size:13px;color:var(--muted);line-height:1.6}
-.output-box{background:#091121;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;min-height:180px;white-space:pre-wrap;line-height:1.72;font-size:14px;overflow:auto}
-.table-wrap{overflow:auto} table{width:100%;border-collapse:collapse;min-width:1320px;font-size:14px} th,td{border-bottom:1px solid rgba(255,255,255,.08);padding:11px 10px;text-align:left;vertical-align:top} th{color:var(--muted);font-weight:600;position:sticky;top:0;background:#10192b}
-.badge{padding:6px 9px;font-size:12px;font-weight:800}.b-ok{background:rgba(52,211,153,.12);color:#bbf7d0;border:1px solid rgba(52,211,153,.2)}.b-warn{background:rgba(251,191,36,.12);color:#fde68a;border:1px solid rgba(251,191,36,.2)}.b-danger{background:rgba(248,113,113,.12);color:#fecaca;border:1px solid rgba(248,113,113,.2)}
-.top-card{padding:16px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid var(--line);min-width:260px;flex:1}.top-card strong{font-size:18px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.right{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
-.note{padding:14px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
-@media (max-width:1100px){.hero,.layout,.metrics,.grid3,.logic-list{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
-@media (max-width:760px){.wrap{padding:14px}.hero,.layout,.metrics,.grid,.grid3,.logic-list{grid-template-columns:1fr}.panel{padding:16px}.toolbar{flex-direction:column}button{width:100%}}
-
-.badge-status{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700}
-.badge-green{background:rgba(34,197,94,.18);color:#86efac}
-.badge-yellow{background:rgba(250,204,21,.16);color:#fde68a}
-.badge-red{background:rgba(248,113,113,.16);color:#fca5a5}
-.badge-blue{background:rgba(96,165,250,.16);color:#bfdbfe}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:10px}
-.kpi{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}
-.kpi .label{font-size:12px;color:#94a3b8;margin-bottom:4px}
-.kpi .value{font-size:20px;font-weight:800}
-.action-btn{padding:6px 10px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,255,255,.08);color:#e5e7eb}
-@media (max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-
-
-.mini-note{font-size:12px;color:#94a3b8}
-.trade-panel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
-.big-signal{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);margin-top:12px}
-.big-signal .state{font-size:26px;font-weight:900}
-.big-signal .desc{font-size:13px;color:#cbd5e1}
-.quick-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:12px}
-.quick-kpi{padding:12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
-.quick-kpi .label{font-size:12px;color:#94a3b8;margin-bottom:4px}
-.quick-kpi .value{font-size:20px;font-weight:800}
-@media (max-width: 900px){
-  .trade-panel,.quick-kpis{grid-template-columns:1fr 1fr}
-}
-@media (max-width: 640px){
-  .trade-panel,.quick-kpis{grid-template-columns:1fr}
-  .big-signal{flex-direction:column;align-items:flex-start}
+body{
+  margin:0;
+  font-family:-apple-system;
+  background:radial-gradient(circle at top,#0f172a,#020617);
+  color:#e2e8f0;
 }
 
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:15px;
+}
+
+.section{
+  background:#111827;
+  padding:15px;
+  border-radius:16px;
+  margin-bottom:15px;
+}
+
+.title{font-size:26px;font-weight:bold;margin-bottom:10px}
+
+.big{font-size:22px;font-weight:bold}
+
+.green{color:#4ade80}
+.yellow{color:#facc15}
+.red{color:#f87171}
+
+textarea,input{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  background:#1f2937;
+  color:#fff;
+  margin-top:5px;
+}
+
+button{
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#2563eb;
+  color:#fff;
+  width:100%;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.card{
+  background:#020617;
+  border-radius:14px;
+  padding:12px;
+}
+
+.stat{
+  background:#111827;
+  padding:8px;
+  border-radius:8px;
+  text-align:center;
+}
 </style>
 </head>
+
 <body>
-<div class="wrap">
-  <section class="hero">
-    <div class="card panel">
-      <div class="eyebrow">🚀 AI 短線奪冠王｜V2 極簡實戰版</div>
-      <h1>直接吃 TradingView CSV，自動解析、排序、挑 1–2 檔、生成交易計畫</h1>
-      <div class="sub">這版支援你現在的 TradingView 匯出格式。<b>會自動辨識中文欄位</b>，有技術指標就跑 <b>Full 模式</b>，沒有技術指標也會自動切到 <b>Lite 模式</b> 並明確告訴你差在哪。</div>
-      <div class="metrics" style="margin-top:16px">
-        <div class="metric"><div class="label">輸入來源</div><div class="value">CSV / 貼上</div></div>
-        <div class="metric"><div class="label">解析方式</div><div class="value">自動欄位對應</div></div>
-        <div class="metric"><div class="label">評分模式</div><div class="value" id="metricMode">待載入</div></div>
-        <div class="metric"><div class="label">最終輸出</div><div class="value">主攻 / 副攻</div></div>
-      </div>
-    </div>
-    <div class="card panel">
-      <h2>評分引擎</h2>
-      <div class="logic-list">
-        <div class="logic-item"><b>價格 > 15</b><br>避開低價妖股與過差流動性。</div>
-        <div class="logic-item"><b>相對成交量 > 1.5</b><br>確認今天真的有資金異常放大。</div>
-        <div class="logic-item"><b>量能基礎夠大</b><br>日成交量夠大，進出比較不會卡。</div>
-        <div class="logic-item"><b>漲幅不能太爛</b><br>今天至少要有表態，不要死魚股。</div>
-        <div class="logic-item"><b>Full 模式加看：SMA20 / SMA60 / RSI / 20MA乖離</b><br>這才是完整的「動能 + 不追高」版。</div>
-        <div class="logic-item"><b>Lite 模式加權：部門 / 分析師評級</b><br>當匯出缺技術欄位時，改用情緒與題材輔助。</div>
-      </div>
-      <div class="chips" style="margin-top:12px">
-        <div class="chip">支援 你目前的 CSV 格式</div>
-        <div class="chip">自動偵測缺欄位</div>
-        <div class="chip">自動排序</div>
-        <div class="chip">自動生成交易計畫</div>
-      </div>
-    </div>
-  </section>
 
-  <section class="layout" style="margin-top:18px;">
-    <div class="card panel">
-      <h2>輸入區</h2>
-      <div class="grid3">
-        <div class="field"><label for="capital">總資金（元）</label><input id="capital" type="number" value="200000"></div>
-        <div class="field"><label for="pickCount">精選檔數</label><select id="pickCount"><option value="2">2 檔</option><option value="1">1 檔</option></select></div>
-        <div class="field"><label for="period">持有週期</label><input id="period" value="1 個月"></div>
-      </div>
-      <div class="grid3">
-        <div class="field"><label for="targetMin">第一停利 %</label><input id="targetMin" type="number" value="10"></div>
-        <div class="field"><label for="targetMax">第二停利 %</label><input id="targetMax" type="number" value="15"></div>
-        <div class="field"><label for="stopLoss">固定停損 %</label><input id="stopLoss" type="number" value="7"></div>
-      </div>
-      <div class="grid3">
-        <div class="field"><label for="rsiLow">RSI 理想下限</label><input id="rsiLow" type="number" value="65"></div>
-        <div class="field"><label for="rsiHigh">RSI 理想上限</label><input id="rsiHigh" type="number" value="75"></div>
-        <div class="field"><label for="maxDev">20MA 最大乖離 %</label><input id="maxDev" type="number" value="15"></div>
-      </div>
-      <div class="field"><label for="csvInput">貼上 TradingView CSV 內容</label><textarea id="csvInput" placeholder="把 TradingView 匯出的 CSV 直接整段貼進來。
-也支援你目前這種格式：商品,描述,價格,價格 - 貨幣,價格變化 % 1天,成交量 1天,相對成交量 1天..."></textarea></div>
-      <div class="field"><label for="csvFile">或直接選擇 CSV 檔案</label><input id="csvFile" type="file" accept=".csv,text/csv"></div>
-      <div class="toolbar">
-        <button class="primary" id="analyzeBtn">開始全自動分析</button>
-        <button class="ghost" id="loadSampleBtn">載入你目前格式範例</button>
-        <button class="ghost" id="saveBtn">儲存本機</button>
-        <button class="ghost" id="copyPromptBtn">複製 AI 分析提示詞</button>
-        <button class="danger" id="clearBtn">清空</button>
-      </div>
-      <div id="statusBox" class="status"></div>
-      <div class="note small" style="margin-top:14px">
-        <b>Full 模式需要欄位：</b> SMA(20)、SMA(60)、RSI(14)。<br>
-        <b>你現在的 CSV 沒有這些欄位也沒關係，</b> 系統會先用 Lite 模式自動排。之後你若在 TradingView 多加這 3 欄再匯出，同一版就會自動升級成 Full 模式。
-      </div>
-    </div>
+<div class="container">
 
-    <div class="card panel">
-      <h2>分析摘要</h2>
-      <div class="top-picks" id="topPicks"></div>
-      <div style="height:14px"></div>
-      <h3>系統判讀</h3>
-      <div id="summaryBox" class="output-box">尚未分析。</div>
-      <div class="card" style="margin-top:14px;padding:14px;border-radius:18px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08)">
-        <h3>AI 覆蓋區</h3>
-        <div class="small">把 GPT / Gemini 的回覆整段貼進來，系統會自動抓出 1～2 檔股票，覆蓋目前主攻股與副攻股。</div>
-        <div class="field" style="margin-top:10px;margin-bottom:10px"><label for="aiOverrideInput">貼上 AI 回覆</label><textarea id="aiOverrideInput" placeholder="例如：主攻股：8261 富鼎
-副攻股：3236 千如
-或整段分析全文也可以。" style="min-height:110px"></textarea></div>
-        <div class="toolbar">
-          <button class="primary" id="applyAiBtn">套用 AI 覆蓋</button>
-          <button class="ghost" id="resetLocalBtn">切回本地結果</button>
-          <button class="ghost" id="parseAiBtn">只解析不套用</button>
-        </div>
-        <div id="aiParseBox" class="output-box" style="margin-top:10px;min-height:72px">尚未解析 AI 回覆。</div>
-      </div>
+<div class="title">🚀 AI 指揮官戰情室</div>
 
-      <div class="card" style="margin-top:14px;padding:14px;border-radius:18px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08)">
-        <h3>🧠 決策模式區</h3>
-        <div class="small">你可以手動選模式，也可以讓系統自動判斷。自動判斷時，會優先考慮「交集」、再看本地分數優勢、AI 是否帶來明顯修正，以及過熱風險。</div>
-        <div class="grid3" style="margin-top:10px">
-          <div class="field">
-            <label for="decisionMode">決策模式</label>
-            <select id="decisionMode">
-              <option value="auto" selected>自動判斷（推薦）</option>
-              <option value="intersection">交集模式</option>
-              <option value="local">本地優先</option>
-              <option value="ai">AI優先</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="autoHeatThreshold">過熱乖離門檻 %</label>
-            <input id="autoHeatThreshold" type="number" value="20">
-          </div>
-          <div class="field">
-            <label for="autoScoreGap">本地分數優勢門檻</label>
-            <input id="autoScoreGap" type="number" value="12">
-          </div>
-        </div>
-        <div class="toolbar">
-          <button class="primary" id="runDecisionBtn">套用決策模式</button>
-          <button class="ghost" id="autoDecisionBtn">一鍵自動判斷</button>
-          <button class="ghost" id="showDecisionBtn">只看判斷不套用</button>
-        </div>
-        <div id="decisionBox" class="output-box" style="margin-top:10px;min-height:96px">尚未執行決策模式。</div>
-      </div>
-      <div class="toolbar" style="margin-top:12px;">
-        <button class="primary" id="copyPlanBtn">複製交易計畫</button>
-        <button class="ghost" id="exportJsonBtn">匯出 JSON</button>
-      </div>
-      <div class="chips" id="detectedFields" style="margin-top:12px"></div>
-    </div>
-  </section>
-
-  <section class="card panel" style="margin-top:18px;">
-    <div class="right">
-      <div>
-        <h2>自動排名結果</h2>
-        <div class="small">分數不是報牌，是幫你把候選股按「更接近你策略」排序。建議只做前 1–2 檔。</div>
-      </div>
-      <div class="small mono" id="resultStats">尚未計算</div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>排名</th><th>股票</th><th>模式</th><th>總分</th><th>狀態</th><th>價格</th><th>日量</th><th>相對量</th><th>日漲跌%</th><th>SMA20</th><th>SMA60</th><th>RSI</th><th>20MA乖離</th><th>部門</th><th>評級</th><th>評分理由</th>
-          </tr>
-        </thead>
-        <tbody id="rankingBody"><tr><td colspan="16" class="muted">還沒有資料。</td></tr></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="card panel" style="margin-top:18px;">
-    <h2>自動交易計畫</h2>
-    <div id="planOutput" class="output-box">尚未生成。</div>
-  </section>
+<!-- ===== 今日指令 ===== -->
+<div class="section">
+<div class="big" id="command">📌 今日指令：等待資料</div>
 </div>
 
-  <section class="card panel" style="margin-top:18px;">
-    <h2>📈 持倉監控中心</h2>
-    <div class="small">把你實際買進的標的記錄進來，系統會自動計算報酬率、停損、停利、移動停利與賣出狀態。這一區不影響前面的選股，只負責執行與監控。</div>
+<!-- ===== 選股 ===== -->
+<div class="section">
+<h3>📊 CSV選股</h3>
+<textarea id="csv" rows="4"></textarea>
+<button onclick="analyze()">分析</button>
+<div id="local"></div>
+</div>
 
-    <div class="grid3" style="margin-top:10px">
-      <div class="field">
-        <label for="holdSymbol">股票代號</label>
-        <input id="holdSymbol" placeholder="例如 8261">
-      </div>
-      <div class="field">
-        <label for="holdName">股票名稱</label>
-        <input id="holdName" placeholder="例如 富鼎">
-      </div>
-      <div class="field">
-        <label for="holdQty">股數</label>
-        <input id="holdQty" type="number" value="1000">
-      </div>
-    </div>
+<!-- ===== AI ===== -->
+<div class="section">
+<h3>🤖 AI覆蓋</h3>
+<textarea id="ai" rows="4"></textarea>
+<button onclick="parseAI()">解析</button>
+<div id="aiRes"></div>
+</div>
 
-    <div class="grid4">
-      <div class="field">
-        <label for="buyPrice">買入價</label>
-        <input id="buyPrice" type="number" step="0.01" placeholder="例如 116">
-      </div>
-      <div class="field">
-        <label for="currentPrice">目前價</label>
-        <input id="currentPrice" type="number" step="0.01" placeholder="手動更新">
-      </div>
-      <div class="field">
-        <label for="stopLossPrice">停損價</label>
-        <input id="stopLossPrice" type="number" step="0.01" placeholder="例如 108">
-      </div>
-      <div class="field">
-        <label for="takeProfit1Price">停利一價</label>
-        <input id="takeProfit1Price" type="number" step="0.01" placeholder="例如 127.5">
-      </div>
-    </div>
+<!-- ===== 決策 ===== -->
+<div class="section">
+<h3>🧠 決策核心</h3>
+<button onclick="decide()">一鍵決策</button>
+<div id="decision"></div>
+<div id="radar"></div>
+</div>
 
-    <div class="grid4">
-      <div class="field">
-        <label for="takeProfit2Price">停利二價</label>
-        <input id="takeProfit2Price" type="number" step="0.01" placeholder="例如 133.5">
-      </div>
-      <div class="field">
-        <label for="highestPrice">持倉最高價</label>
-        <input id="highestPrice" type="number" step="0.01" placeholder="可留空，自動更新">
-      </div>
-      <div class="field">
-        <label for="trailPullback">移動停利回撤 %</label>
-        <input id="trailPullback" type="number" step="0.1" value="4">
-      </div>
-      <div class="field">
-        <label for="warnNearPct">接近提醒 %</label>
-        <input id="warnNearPct" type="number" step="0.1" value="2">
-      </div>
-    </div>
+<!-- ===== 持倉 ===== -->
+<div class="section">
+<h3>📈 持倉監控</h3>
 
-    <div class="toolbar">
-      <button class="primary" id="calcPositionBtn">更新監控狀態</button>
-      <button class="ghost" id="addPositionBtn">加入持倉列表</button>
-      <button class="ghost" id="loadFromSelectionBtn">從最終標的帶入</button>
-      <button class="ghost" id="clearPositionInputsBtn">清空輸入</button>
-    </div>
+<div class="grid">
+<input id="symbol" placeholder="股票">
+<input id="buy" type="number" placeholder="買入價">
+<input id="current" type="number" placeholder="現價">
+</div>
 
-    <div id="positionStatusBox" class="output-box" style="margin-top:10px;min-height:120px">尚未建立持倉監控。</div>
+<button onclick="add()">加入</button>
 
-    <div class="toolbar" style="margin-top:10px">
-      <button class="ghost" id="refreshAllPositionsBtn">全部持倉重新計算</button>
-      <button class="ghost" id="exportPositionsBtn">匯出持倉 JSON</button>
-      <button class="ghost" id="clearAllPositionsBtn">清空全部持倉</button>
-    </div>
+<div id="cards" class="cards"></div>
+</div>
 
-    <div class="table-wrap" style="margin-top:10px">
-      <table>
-        <thead>
-          <tr>
-            <th>狀態</th>
-            <th>股票</th>
-            <th>買入價</th>
-            <th>現價</th>
-            <th>報酬率</th>
-            <th>未實現損益</th>
-            <th>停損</th>
-            <th>停利1</th>
-            <th>停利2</th>
-            <th>最高價</th>
-            <th>移動停利</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody id="positionsTableBody">
-          <tr><td colspan="12" class="muted">尚無持倉資料。</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+</div>
 
 <script>
-const $ = id => document.getElementById(id);
-const STORAGE_KEY = 'ai_stock_selector_position_monitor_full_v2';
-let lastResult = { rows: [], top: [], localTop: [], finalTop: [], mode: '未分析', detected: [], override: null };
 
-function showStatus(msg, type='ok'){
-  const box = $('statusBox');
-  box.style.display = 'block';
-  box.className = 'status ' + (type==='danger' ? 'dangerBox' : type==='warn' ? 'warnBox' : 'okBox');
-  box.textContent = msg;
-  clearTimeout(showStatus.timer);
-  showStatus.timer = setTimeout(()=>box.style.display='none', 2800);
-}
+let localPick=[], aiPick=[], finalPick=[], positions=[]
 
-function normalizeHeader(s=''){
-  return String(s).trim().toLowerCase().replace(/[\s\-_%％,，\"\(\)（）]/g,'');
-}
-
-function parseCSV(text){
-  const rows=[]; let row=[]; let cur=''; let inQuotes=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i], n=text[i+1];
-    if(c==='\r') continue;
-    if(c==='"'){
-      if(inQuotes && n==='"'){ cur+='"'; i++; }
-      else inQuotes=!inQuotes;
-    } else if(c===',' && !inQuotes){ row.push(cur); cur=''; }
-    else if(c==='\n' && !inQuotes){ row.push(cur); rows.push(row); row=[]; cur=''; }
-    else cur+=c;
-  }
-  if(cur.length || row.length){ row.push(cur); rows.push(row); }
-  return rows.filter(r=>r.some(v=>String(v).trim()!==''));
-}
-
-function parseNum(v){
-  if(v===undefined || v===null) return null;
-  const s = String(v).replace(/,/g,'').trim();
-  if(s==='') return null;
-  const n = Number(s);
-  return Number.isFinite(n) ? n : null;
-}
-
-function formatNum(n,d=2){ return n===null || n===undefined || !Number.isFinite(n) ? '—' : n.toLocaleString('zh-TW',{maximumFractionDigits:d,minimumFractionDigits:0}); }
-function fmtPct(n,d=2){ return n===null || n===undefined || !Number.isFinite(n) ? '—' : `${n.toFixed(d)}%`; }
-function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
-
-function pickField(map, keys){
-  for(const k of keys){
-    const nk = normalizeHeader(k);
-    if(map[nk] !== undefined) return map[nk];
-  }
-  return null;
-}
-
-function pickFieldFuzzy(map, keys, includesKeys=[]){
-  const exact = pickField(map, keys);
-  if(exact !== null) return exact;
-  const entries = Object.entries(map);
-  for(const raw of includesKeys){
-    const needle = normalizeHeader(raw);
-    const hit = entries.find(([k]) => k.includes(needle));
-    if(hit) return hit[1];
-  }
-  return null;
-}
-
-function buildFieldMap(headers){
-  const map={};
-  headers.forEach((h,i)=>{ map[normalizeHeader(h)] = i; });
-  return map;
-}
-
-function transformData(text){
-  const raw = parseCSV(text);
-  if(raw.length < 2) throw new Error('CSV 內容不足，至少需要標題列與 1 筆資料。');
-  const headers = raw[0].map(h=>String(h).trim());
-  const m = buildFieldMap(headers);
-
-  const idx = {
-    symbol: pickField(m,['商品','代號','ticker','symbol']),
-    name: pickField(m,['描述','名稱','name','description']),
-    price: pickField(m,['價格','close','last']),
-    changePct: pickField(m,['價格變化1天','價格變化1天','漲跌1天','漲跌','change1d','pricechange1day']),
-    volume: pickField(m,['成交量1天','成交量','volume1day','volume']),
-    relVolume: pickField(m,['相對成交量1天','相對成交量','relativevolume1day','relativevolume']),
-    marketCap: pickField(m,['市場資本','市值','marketcap']),
-    pe: pickField(m,['本益比','pe']),
-    eps: pickField(m,['基本每股盈餘過去12個月','基本每股盈餘ttm','eps','basicepspast12months']),
-    epsGrowth: pickField(m,['稀釋每股盈餘成長率ttm年增率','每股盈餘緩慢成長ttm年增率','epsgrowth','dilutedepsgrowthrate']),
-    dividendYield: pickField(m,['股息殖利率過去12個月','股息殖利率ttm','dividendyield','dividendyieldpast12months']),
-    sector: pickField(m,['部門','sector']),
-    analyst: pickField(m,['分析師評級','rating','analystrating']),
-    sma20: pickFieldFuzzy(m,['sma20','簡單移動平均20','ma20','sma20價格'],['簡單移動平均線20','移動平均線20','sma20']),
-    sma60: pickFieldFuzzy(m,['sma60','簡單移動平均60','ma60','sma60價格'],['簡單移動平均線60','移動平均線60','sma60']),
-    rsi: pickFieldFuzzy(m,['rsi14','rsi','相對強弱指數14'],['相對強弱指標14','相對強弱指數14','rsi14','rsi'])
-  };
-
-  const detected = Object.entries(idx).filter(([,v])=>v!==null).map(([k])=>k);
-  const rows = raw.slice(1).map(cols=>{
-    const price = idx.price!==null ? parseNum(cols[idx.price]) : null;
-    const sma20 = idx.sma20!==null ? parseNum(cols[idx.sma20]) : null;
-    const sma60 = idx.sma60!==null ? parseNum(cols[idx.sma60]) : null;
-    const rsi = idx.rsi!==null ? parseNum(cols[idx.rsi]) : null;
-    const deviation = price!==null && sma20 ? ((price-sma20)/sma20)*100 : null;
-    return {
-      symbol: idx.symbol!==null ? String(cols[idx.symbol]||'').trim() : '',
-      name: idx.name!==null ? String(cols[idx.name]||'').trim() : '',
-      price,
-      changePct: idx.changePct!==null ? parseNum(cols[idx.changePct]) : null,
-      volume: idx.volume!==null ? parseNum(cols[idx.volume]) : null,
-      relVolume: idx.relVolume!==null ? parseNum(cols[idx.relVolume]) : null,
-      marketCap: idx.marketCap!==null ? parseNum(cols[idx.marketCap]) : null,
-      pe: idx.pe!==null ? parseNum(cols[idx.pe]) : null,
-      eps: idx.eps!==null ? parseNum(cols[idx.eps]) : null,
-      epsGrowth: idx.epsGrowth!==null ? parseNum(cols[idx.epsGrowth]) : null,
-      dividendYield: idx.dividendYield!==null ? parseNum(cols[idx.dividendYield]) : null,
-      sector: idx.sector!==null ? String(cols[idx.sector]||'').trim() : '',
-      analyst: idx.analyst!==null ? String(cols[idx.analyst]||'').trim() : '',
-      sma20, sma60, rsi, deviation
-    };
-  }).filter(r=>r.symbol || r.name);
-
-  return { rows, headers, detected, fullMode: idx.sma20!==null && idx.sma60!==null && idx.rsi!==null };
-}
-
-function scoreRow(r, fullMode){
-  const reasons=[]; let score=0;
-  const maxDev = parseNum($('maxDev').value) ?? 15;
-  const rsiLow = parseNum($('rsiLow').value) ?? 65;
-  const rsiHigh = parseNum($('rsiHigh').value) ?? 75;
-
-  if(r.price!==null){
-    if(r.price > 15){ score += 8; reasons.push('價格門檻合格'); } else { score -= 8; reasons.push('價格過低'); }
-  }
-  if(r.volume!==null){
-    if(r.volume >= 20000000){ score += 15; reasons.push('成交量很大'); }
-    else if(r.volume >= 10000000){ score += 10; reasons.push('成交量合格'); }
-    else if(r.volume >= 5000000){ score += 6; reasons.push('成交量尚可'); }
-    else { score += 1; reasons.push('成交量偏小'); }
-  }
-  if(r.relVolume!==null){
-    if(r.relVolume >= 3){ score += 22; reasons.push('相對量爆發'); }
-    else if(r.relVolume >= 2){ score += 18; reasons.push('相對量很強'); }
-    else if(r.relVolume >= 1.5){ score += 14; reasons.push('相對量合格'); }
-    else if(r.relVolume >= 1.2){ score += 7; reasons.push('有些放量'); }
-    else { score -= 6; reasons.push('相對量不足'); }
-  }
-  if(r.changePct!==null){
-    if(r.changePct >= 8){ score += 18; reasons.push('今日強表態'); }
-    else if(r.changePct >= 4){ score += 13; reasons.push('今日明顯轉強'); }
-    else if(r.changePct > 0){ score += 8; reasons.push('今日收紅'); }
-    else { score -= 10; reasons.push('今日未表態'); }
-  }
-
-  const sectorText = (r.sector||'');
-  if(/電子|半導體|科技|ai/i.test(sectorText)){ score += 6; reasons.push('題材偏科技強勢族群'); }
-  else if(/生技|電機|重電|通訊|網通/i.test(sectorText)){ score += 4; reasons.push('具題材性'); }
-
-  const analyst = (r.analyst||'');
-  if(/強力買入/.test(analyst)){ score += 6; reasons.push('分析師評級強力買入'); }
-  else if(/買入/.test(analyst)){ score += 4; reasons.push('分析師評級買入'); }
-  else if(/賣出/.test(analyst)){ score -= 6; reasons.push('分析師評級偏弱'); }
-
-  if(fullMode){
-    if(r.price!==null && r.sma20!==null){
-      if(r.price > r.sma20){ score += 10; reasons.push('站上 SMA20'); } else { score -= 12; reasons.push('跌破 SMA20'); }
-    }
-    if(r.sma20!==null && r.sma60!==null){
-      if(r.sma20 > r.sma60){ score += 10; reasons.push('SMA20 > SMA60 多頭結構'); } else { score -= 12; reasons.push('均線結構不佳'); }
-    }
-    if(r.rsi!==null){
-      if(r.rsi >= rsiLow && r.rsi <= rsiHigh){ score += 12; reasons.push('RSI 落在主升段'); }
-      else if(r.rsi > rsiHigh && r.rsi <= 80){ score += 4; reasons.push('RSI 偏熱'); }
-      else if(r.rsi >= 58 && r.rsi < rsiLow){ score += 4; reasons.push('RSI 接近啟動'); }
-      else if(r.rsi > 80){ score -= 10; reasons.push('RSI 過熱'); }
-      else { score -= 4; reasons.push('RSI 偏弱'); }
-    }
-    if(r.deviation!==null){
-      if(r.deviation <= maxDev && r.deviation >= 0){ score += 10; reasons.push('20MA 乖離健康'); }
-      else if(r.deviation < 0){ score -= 10; reasons.push('價格在 20MA 下方'); }
-      else { score -= 14; reasons.push('20MA 乖離過大'); }
-    }
-  } else {
-    // Lite 模式沒有技術欄位時，避免太依賴基本面，僅做簡化排序
-    if(r.pe!==null){
-      if(r.pe > 0 && r.pe < 80){ score += 3; reasons.push('本益比尚可'); }
-      else if(r.pe >= 80){ score -= 2; reasons.push('本益比偏高'); }
-    }
-    if(r.epsGrowth!==null){
-      if(r.epsGrowth > 20){ score += 5; reasons.push('EPS 成長有亮點'); }
-      else if(r.epsGrowth < -20){ score -= 4; reasons.push('EPS 年增偏弱'); }
-    }
-  }
-
-  // 排除極端雜訊
-  if(r.marketCap!==null && r.marketCap < 3000000000){ score -= 3; reasons.push('市值偏小'); }
-  if(r.price!==null && r.price > 3000){ score -= 2; reasons.push('高價股需更強動能'); }
-
-  const finalScore = clamp(Math.round(score), 0, 100);
-  let status = '觀察';
-  if(finalScore >= 75) status = '可進攻';
-  else if(finalScore >= 60) status = '偏強';
-  else if(finalScore >= 45) status = '觀察';
-  else status = '淘汰';
-  return { ...r, score: finalScore, status, mode: fullMode ? 'Full' : 'Lite', reasons };
-}
-
-function parseAiCandidates(text){
-  const raw = String(text || '').trim();
-  if(!raw) return [];
-  const matches = raw.match(/(^|[^\d])(\d{4,6})(?!\d)/g) || [];
-  const codes = [];
-  for(const chunk of matches){
-    const m = chunk.match(/(\d{4,6})/);
-    if(m && !codes.includes(m[1])) codes.push(m[1]);
-    if(codes.length >= 2) break;
-  }
-  return codes;
-}
-
-function describeAiParse(codes, matchedRows){
-  if(!codes.length) return '沒有抓到股票代號。請直接貼 AI 回覆全文，並確認裡面有像 8261、3236 這樣的股票代號。';
-  const found = matchedRows.map(r=>`${r.symbol} ${r.name || ''}`).join('、') || '無';
-  const miss = codes.filter(c=>!matchedRows.some(r=>r.symbol===c));
-  return `已解析代號：${codes.join('、')}
-已匹配目前清單：${found}${miss.length ? `
-未在本次 CSV 清單找到：${miss.join('、')}` : ''}`;
-}
-
-function renderSelection(topRows, sourceLabel){
-  $('topPicks').innerHTML = buildTopCards(topRows, parseNum($('capital').value) || 200000, sourceLabel);
-  $('planOutput').textContent = generatePlan(topRows, sourceLabel);
-}
-
-function applyAiOverride(onlyPreview=false){
-  if(!lastResult.rows.length){ showStatus('請先完成 CSV 分析，再貼 AI 回覆。','warn'); return; }
-  const codes = parseAiCandidates($('aiOverrideInput').value);
-  const matched = codes.map(c => lastResult.rows.find(r => String(r.symbol) === String(c))).filter(Boolean);
-  $('aiParseBox').textContent = describeAiParse(codes, matched);
-  if(onlyPreview) return;
-  if(!matched.length){ showStatus('AI 回覆裡沒有抓到本次清單內的股票代號。','warn'); return; }
-  lastResult.override = 'AI';
-  lastResult.finalTop = matched.map(r => ({...r}));
-  lastResult.top = lastResult.finalTop;
-  renderSelection(lastResult.finalTop, 'AI 覆蓋');
-  showStatus(`已套用 AI 覆蓋：${matched.map(r=>r.symbol).join('、')}`,'ok');
-}
-
-function resetToLocalSelection(){
-  if(!lastResult.localTop.length){ showStatus('目前沒有本地結果可切回。','warn'); return; }
-  lastResult.override = null;
-  lastResult.top = lastResult.localTop.map(r => ({...r}));
-  lastResult.finalTop = lastResult.top;
-  renderSelection(lastResult.top, '本地模型');
-  $('aiParseBox').textContent = '已切回本地結果。';
-  showStatus('已切回本地結果。','ok');
-}
-
-function buildTopCards(topRows, capital, sourceLabel="本地模型"){
-  if(!topRows.length) return '<div class="muted">沒有可用結果。</div>';
-  return topRows.map((r, i)=>{
-    const role = i===0 ? '🎯 主攻股' : '🥈 副攻股';
-    const alloc = topRows.length===1 ? 100 : (i===0 ? 60 : 40);
-    const budget = Math.round(capital * alloc / 100);
-    const shares = r.price ? Math.floor(budget / r.price) : 0;
-    return `<div class="top-card">
-      <div class="small">${role}｜${r.mode} 模式｜${sourceLabel}</div>
-      <strong>${r.symbol} ${r.name || ''}</strong>
-      <div class="small" style="margin-top:8px">分數：<b>${r.score}</b>｜狀態：<b>${r.status}</b></div>
-      <div class="small">配置：<b>${alloc}% ≈ ${budget.toLocaleString('zh-TW')} 元</b>${shares ? `｜約 ${shares.toLocaleString('zh-TW')} 股` : ''}</div>
-      <div class="small">理由：${r.reasons.slice(0,3).join('、')}</div>
-    </div>`;
-  }).join('');
-}
-
-function generatePlan(topRows, sourceLabel="本地模型"){
-  if(!topRows.length) return '尚未生成。';
-  const capital = parseNum($('capital').value) || 200000;
-  const t1 = parseNum($('targetMin').value) || 10;
-  const t2 = parseNum($('targetMax').value) || 15;
-  const sl = parseNum($('stopLoss').value) || 7;
-  const period = $('period').value.trim() || '1 個月';
-  const rows = topRows.map((r, i)=>{
-    const alloc = topRows.length===1 ? 100 : (i===0 ? 60 : 40);
-    const budget = Math.round(capital * alloc / 100);
-    const entryLow = r.price ? +(r.price * 0.995).toFixed(2) : null;
-    const entryHigh = r.price ? +(r.price * 1.01).toFixed(2) : null;
-    const stop = r.price ? +(r.price * (1 - sl/100)).toFixed(2) : null;
-    const tp1 = r.price ? +(r.price * (1 + t1/100)).toFixed(2) : null;
-    const tp2 = r.price ? +(r.price * (1 + t2/100)).toFixed(2) : null;
-    return `【${i===0 ? '主攻股' : '副攻股'}】${r.symbol} ${r.name || ''}
-- 建議進場區間：${entryLow!==null ? formatNum(entryLow,2) : '—'} ~ ${entryHigh!==null ? formatNum(entryHigh,2) : '—'}
-- 嚴格停損：${stop!==null ? formatNum(stop,2) : '—'}（約 -${sl}%）
-- 分批停利：${tp1!==null ? formatNum(tp1,2) : '—'} 先出一半；${tp2!==null ? formatNum(tp2,2) : '—'} 全數了結
-- 倉位配置：${alloc}%（約 ${budget.toLocaleString('zh-TW')} 元）
-- 觀察重點：${r.reasons.slice(0,4).join('、')}
-`;
-  }).join('\n');
-  return `決策來源：${sourceLabel}\n操作週期：${period}\n目標：+${t1}% 先收一半，+${t2}% 全出；若跌破停損，無條件執行。\n\n${rows}\n整體失效條件：大盤轉弱、入選股開高走低爆量長黑、或相對量明顯衰退。`;
-}
-
-function renderTable(rows){
-  const body = $('rankingBody');
-  if(!rows.length){ body.innerHTML = '<tr><td colspan="16" class="muted">沒有可用資料。</td></tr>'; return; }
-  body.innerHTML = rows.map((r,idx)=>{
-    const cls = r.status==='可進攻' ? 'b-ok' : r.status==='偏強' ? 'b-warn' : r.status==='淘汰' ? 'b-danger' : 'b-warn';
-    return `<tr>
-      <td>${idx+1}</td>
-      <td><b>${r.symbol}</b> ${r.name || ''}</td>
-      <td>${r.mode}</td>
-      <td><b>${r.score}</b></td>
-      <td><span class="badge ${cls}">${r.status}</span></td>
-      <td>${formatNum(r.price,2)}</td>
-      <td>${r.volume!==null ? formatNum(r.volume,0) : '—'}</td>
-      <td>${formatNum(r.relVolume,2)}</td>
-      <td>${fmtPct(r.changePct,2)}</td>
-      <td>${formatNum(r.sma20,2)}</td>
-      <td>${formatNum(r.sma60,2)}</td>
-      <td>${formatNum(r.rsi,2)}</td>
-      <td>${fmtPct(r.deviation,2)}</td>
-      <td>${r.sector || '—'}</td>
-      <td>${r.analyst || '—'}</td>
-      <td>${r.reasons.join('、')}</td>
-    </tr>`;
-  }).join('');
-}
-
-function renderDetectedFields(detected, fullMode){
-  $('detectedFields').innerHTML = [
-    `<div class="chip">模式：${fullMode ? 'Full' : 'Lite'}</div>`,
-    ...detected.map(f=>`<div class="chip">已抓到：${f}</div>`)
-  ].join('');
-  $('metricMode').textContent = fullMode ? 'Full' : 'Lite';
-}
-
-function buildSummary(rows, fullMode){
-  if(!rows.length) return '沒有可分析資料。';
-  const top = rows.slice(0, Math.min(rows.length, 3));
-  const heat = top.map(r=>`${r.symbol}${r.name ? ' '+r.name : ''}`).join('、');
-  const modeText = fullMode
-    ? '這次是 Full 模式，因為 CSV 內含 SMA20 / SMA60 / RSI，能完整檢查趨勢、主升段與 20MA 乖離。'
-    : '這次是 Lite 模式，因為 CSV 缺少 SMA20 / SMA60 / RSI；排序主要依靠價格、量能、相對量、當日表態、部門與評級，適合做第一層快篩，但精度低於 Full 模式。';
-  const leader = rows[0];
-  return `${modeText}\n\n目前排序最前面的族群是：${heat}。\n\n第一名 ${leader.symbol} ${leader.name || ''} 之所以排前面，主因是：${leader.reasons.slice(0,5).join('、')}。\n\n操作原則：只做前 1–2 檔，不分散；若隔日開太高或開高走低，寧可放棄，不硬追。`;
-}
-
-function buildPrompt(rows){
-  if(!rows.length) return '尚未分析，無法生成提示詞。';
-  const top = rows.slice(0,6).map(r=>`${r.symbol} ${r.name || ''}`).join('、');
-  const mode = rows[0].mode;
-  const period = $('period').value.trim() || '1 個月';
-  const t1 = parseNum($('targetMin').value) || 10;
-  const t2 = parseNum($('targetMax').value) || 15;
-  return `你現在是一位頂尖的台股短線交易員，請根據以下候選股做最後的菁英遴選。\n\n【候選股】${top}\n【目前排序模式】${mode}\n【操作週期】${period}\n【目標】${t1}%~${t2}% 波段利潤\n\n請針對這些股票：\n1. 查近 1 週新聞、法人動向與題材熱度。\n2. 精選 1~2 檔最適合短線操作的股票。\n3. 避開乖離過大、已過熱或利多出盡的標的。\n4. 用表格輸出：進場區間、停損點、+${t1}% / +${t2}% 停利規劃。\n5. 最後用一句話提醒未來一週最重要風險。`;
-}
-
-function getIntersectionRows(localTop, aiTop){
-  const aiCodes = new Set((aiTop || []).map(r=>String(r.symbol)));
-  return (localTop || []).filter(r => aiCodes.has(String(r.symbol)));
-}
-
-function rankRowsByCodes(rows, codes){
-  return codes.map(code => rows.find(r => String(r.symbol) === String(code))).filter(Boolean);
-}
-
-function buildDecisionAnalysis(mode='auto'){
-  const localTop = (lastResult.localTop || []).map(r => ({...r}));
-  const aiTop = (lastResult.override === 'AI' ? (lastResult.finalTop || []).map(r => ({...r})) : []);
-  const fullRows = lastResult.rows || [];
-  const pickCount = parseInt($('pickCount').value, 10) || 2;
-  const scoreGap = parseNum($('autoScoreGap').value) ?? 12;
-  const heatThreshold = parseNum($('autoHeatThreshold').value) ?? 20;
-
-  if(!localTop.length){
-    return { modeUsed: mode, chosen: [], summary: '請先完成本地分析。' };
-  }
-
-  const intersection = getIntersectionRows(localTop, aiTop);
-  const hotAi = aiTop.filter(r => r.deviation !== null && r.deviation > heatThreshold);
-  const localAvg = localTop.length ? localTop.reduce((a,b)=>a+(b.score||0),0)/localTop.length : 0;
-  const aiAvg = aiTop.length ? aiTop.reduce((a,b)=>a+(b.score||0),0)/aiTop.length : 0;
-
-  let modeUsed = mode;
-  let chosen = [];
-  let lines = [];
-
-  if(mode === 'auto'){
-    lines.push(`本地候選：${localTop.map(r=>r.symbol).join('、') || '無'}`);
-    lines.push(`AI候選：${aiTop.map(r=>r.symbol).join('、') || '無'}`);
-    lines.push(`交集：${intersection.map(r=>r.symbol).join('、') || '無'}`);
-    lines.push(`本地平均分：${localAvg.toFixed(1)}｜AI平均分：${aiAvg.toFixed(1)}`);
-
-    if(!aiTop.length){
-      modeUsed = 'local';
-      lines.push('判定：尚未套用 AI 覆蓋，因此先採用本地優先。');
-    } else if(intersection.length >= 1){
-      modeUsed = 'intersection';
-      lines.push('判定：本地與 AI 有交集，優先採用交集模式。');
-    } else if(hotAi.length >= Math.min(1, aiTop.length)){
-      modeUsed = 'local';
-      lines.push(`判定：AI 候選存在過熱風險（>${heatThreshold}% 乖離），改採本地優先。`);
-    } else if((localAvg - aiAvg) >= scoreGap){
-      modeUsed = 'local';
-      lines.push(`判定：本地平均分明顯領先 AI（差 ${Math.round(localAvg-aiAvg)} 分），採本地優先。`);
-    } else if(aiAvg > localAvg && hotAi.length === 0){
-      modeUsed = 'ai';
-      lines.push('判定：AI 候選分數更高且無明顯過熱，採 AI 優先。');
-    } else {
-      modeUsed = 'local';
-      lines.push('判定：沒有形成明確 AI 優勢，維持本地優先。');
-    }
-  }
-
-  if(modeUsed === 'intersection'){
-    chosen = intersection.slice(0, pickCount);
-    if(chosen.length < pickCount){
-      const supplement = localTop.filter(r => !chosen.some(x => x.symbol === r.symbol)).slice(0, pickCount - chosen.length);
-      chosen = chosen.concat(supplement);
-      lines.push(`交集不足 ${pickCount} 檔，已用本地候選補足：${supplement.map(r=>r.symbol).join('、') || '無'}`);
-    }
-  } else if(modeUsed === 'ai'){
-    chosen = aiTop.slice(0, pickCount);
-    if(chosen.length < pickCount){
-      const supplement = localTop.filter(r => !chosen.some(x => x.symbol === r.symbol)).slice(0, pickCount - chosen.length);
-      chosen = chosen.concat(supplement);
-      lines.push(`AI 候選不足 ${pickCount} 檔，已用本地候選補足：${supplement.map(r=>r.symbol).join('、') || '無'}`);
-    }
-  } else {
-    chosen = localTop.slice(0, pickCount);
-  }
-
-  lines.push(`最終模式：${modeUsed === 'intersection' ? '交集模式' : modeUsed === 'ai' ? 'AI優先' : '本地優先'}`);
-  lines.push(`最終標的：${chosen.map(r => `${r.symbol} ${r.name || ''}`).join('、') || '無'}`);
-
-  return {
-    modeUsed,
-    chosen,
-    summary: lines.join('\n')
-  };
-}
-
-function applyDecisionMode(previewOnly=false){
-  const mode = $('decisionMode').value || 'auto';
-  const result = buildDecisionAnalysis(mode);
-  $('decisionBox').textContent = result.summary;
-
-  if(previewOnly) return result;
-  if(!result.chosen.length){
-    showStatus('目前沒有可套用的決策結果。','warn');
-    return result;
-  }
-
-  const sourceLabelMap = {
-    auto: '自動判斷',
-    intersection: '交集模式',
-    local: '本地優先',
-    ai: 'AI優先'
-  };
-
-  lastResult.override = result.modeUsed === 'ai' ? 'AI' : (result.modeUsed === 'intersection' ? 'Intersection' : null);
-  lastResult.top = result.chosen.map(r => ({...r}));
-  lastResult.finalTop = result.chosen.map(r => ({...r}));
-  renderSelection(lastResult.finalTop, sourceLabelMap[mode] || '自動判斷');
-  showStatus(`已套用${sourceLabelMap[result.modeUsed] || '決策模式'}：${result.chosen.map(r=>r.symbol).join('、')}`,'ok');
-  return result;
-}
-
-
-function fmtMoney(n){
-  if(n===null || n===undefined || Number.isNaN(n)) return '—';
-  return Number(n).toLocaleString('zh-TW', {maximumFractionDigits:2});
-}
-function fmtPct(n){
-  if(n===null || n===undefined || Number.isNaN(n)) return '—';
-  return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
-}
-function safeNum(v){ return v===null || v===undefined || v==='' ? null : Number(v); }
-
-function getPositionDefaults(){
-  return {
-    stopLossPct: safeNum($('stopLossPct')?.value) ?? 7,
-    tp1Pct: safeNum($('tp1Pct')?.value) ?? 10,
-    tp2Pct: safeNum($('tp2Pct')?.value) ?? 15,
-    trailPullback: safeNum($('trailPullback')?.value) ?? 4
-  };
-}
-
-function autoFillFromSelection(){
-  const target = (lastResult.finalTop && lastResult.finalTop[0]) || (lastResult.top && lastResult.top[0]);
-  if(!target){
-    showStatus('目前沒有可帶入的最終標的。','warn');
-    return;
-  }
-  $('holdSymbol').value = target.symbol || '';
-  $('holdName').value = target.name || '';
-  $('currentPrice').value = target.price ?? '';
-  const defaults = getPositionDefaults();
-  if(target.price !== null && target.price !== undefined && !$('buyPrice').value){
-    $('buyPrice').value = Number(target.price).toFixed(2);
-  }
-  showStatus(`已帶入最終標的：${target.symbol} ${target.name || ''}`,'ok');
-}
-
-function collectPositionInputs(){
-  const d = getPositionDefaults();
-  return {
-    symbol: $('holdSymbol').value.trim(),
-    name: $('holdName').value.trim(),
-    qty: safeNum($('holdQty').value) ?? 0,
-    buyPrice: safeNum($('buyPrice').value),
-    currentPrice: safeNum($('currentPrice').value),
-    highestPrice: safeNum($('highestPrice').value),
-    stopLossPct: d.stopLossPct,
-    tp1Pct: d.tp1Pct,
-    tp2Pct: d.tp2Pct,
-    trailPullback: d.trailPullback
-  };
-}
-
-function derivePricesFromBuy(buy, stopLossPct, tp1Pct, tp2Pct){
-  if(buy===null) return {stopPrice:null,tp1Price:null,tp2Price:null};
-  return {
-    stopPrice: buy * (1 - stopLossPct/100),
-    tp1Price: buy * (1 + tp1Pct/100),
-    tp2Price: buy * (1 + tp2Pct/100)
-  };
-}
-
-function computePositionMetrics(pos){
-  const buy = safeNum(pos.buyPrice);
-  const current = safeNum(pos.currentPrice);
-  const qty = safeNum(pos.qty) ?? 0;
-  let highest = safeNum(pos.highestPrice);
-  const stopLossPct = safeNum(pos.stopLossPct) ?? 7;
-  const tp1Pct = safeNum(pos.tp1Pct) ?? 10;
-  const tp2Pct = safeNum(pos.tp2Pct) ?? 15;
-  const trailPullback = safeNum(pos.trailPullback) ?? 4;
-
-  const derived = derivePricesFromBuy(buy, stopLossPct, tp1Pct, tp2Pct);
-  const stop = derived.stopPrice;
-  const tp1 = derived.tp1Price;
-  const tp2 = derived.tp2Price;
-
-  if(current !== null){
-    if(highest === null || current > highest) highest = current;
-  }
-
-  const pnlPct = (buy !== null && current !== null && buy !== 0) ? ((current - buy) / buy * 100) : null;
-  const pnlAmt = (buy !== null && current !== null) ? ((current - buy) * qty) : null;
-  const toStopPct = (current !== null && stop !== null && current !== 0) ? ((stop - current) / current * 100) : null;
-  const toTp1Pct = (current !== null && tp1 !== null && current !== 0) ? ((tp1 - current) / current * 100) : null;
-  const toTp2Pct = (current !== null && tp2 !== null && current !== 0) ? ((tp2 - current) / current * 100) : null;
-
-  let drawdownFromHighPct = null;
-  let trailTriggered = false;
-  if(highest !== null && current !== null && highest > 0){
-    drawdownFromHighPct = ((current - highest) / highest) * 100;
-    trailTriggered = Math.abs(drawdownFromHighPct) >= trailPullback && current < highest;
-  }
-
-  let status = '持有';
-  let statusClass = 'badge-blue';
-  let reason = '尚未觸發停損或停利條件。';
-
-  if(stop !== null && current !== null && current <= stop){
-    status = '停損出場';
-    statusClass = 'badge-red';
-    reason = `目前價已跌破自動停損價 ${stop.toFixed(2)}。`;
-  } else if(tp2 !== null && current !== null && current >= tp2){
-    status = '全數停利';
-    statusClass = 'badge-green';
-    reason = `目前價已達第二停利 ${tp2.toFixed(2)}，可全數了結。`;
-  } else if(trailTriggered && pnlPct !== null && pnlPct > 0){
-    status = '移動停利';
-    statusClass = 'badge-yellow';
-    reason = `從最高價回撤超過 ${trailPullback}% ，建議保住獲利。`;
-  } else if(tp1 !== null && current !== null && current >= tp1){
-    status = '分批停利';
-    statusClass = 'badge-yellow';
-    reason = `目前價已達第一停利 ${tp1.toFixed(2)}，可先減碼一半。`;
-  } else if(toTp1Pct !== null && toTp1Pct <= 2 && toTp1Pct >= 0){
-    status = '接近停利';
-    statusClass = 'badge-yellow';
-    reason = `距離第一停利只差 ${toTp1Pct.toFixed(2)}% 。`;
-  } else if(toStopPct !== null && Math.abs(toStopPct) <= 2){
-    status = '接近停損';
-    statusClass = 'badge-red';
-    reason = `距離停損只剩 ${Math.abs(toStopPct).toFixed(2)}% 。`;
-  }
-
-  return {
-    ...pos,
-    highestPrice: highest,
-    stopLossPrice: stop,
-    takeProfit1Price: tp1,
-    takeProfit2Price: tp2,
-    pnlPct, pnlAmt, toStopPct, toTp1Pct, toTp2Pct,
-    drawdownFromHighPct, trailTriggered,
-    status, statusClass, reason
-  };
-}
-
-function renderPositionPreview(metrics){
-  if(!metrics){
-    $('positionStatusBox').textContent = '尚未建立持倉監控。';
-    return;
-  }
-  $('positionStatusBox').innerHTML = `
-    <div class="big-signal">
-      <div>
-        <div class="state"><span class="badge-status ${metrics.statusClass}">${metrics.status}</span></div>
-        <div class="desc">${metrics.reason}</div>
-      </div>
-      <div class="desc">${metrics.symbol || ''} ${metrics.name || ''}</div>
-    </div>
-    <div class="quick-kpis">
-      <div class="quick-kpi"><div class="label">目前報酬率</div><div class="value">${fmtPct(metrics.pnlPct)}</div></div>
-      <div class="quick-kpi"><div class="label">未實現損益</div><div class="value">${fmtMoney(metrics.pnlAmt)}</div></div>
-      <div class="quick-kpi"><div class="label">自動停損價</div><div class="value">${fmtMoney(metrics.stopLossPrice)}</div></div>
-      <div class="quick-kpi"><div class="label">自動停利1</div><div class="value">${fmtMoney(metrics.takeProfit1Price)}</div></div>
-      <div class="quick-kpi"><div class="label">自動停利2</div><div class="value">${fmtMoney(metrics.takeProfit2Price)}</div></div>
-      <div class="quick-kpi"><div class="label">距離停損</div><div class="value">${fmtPct(metrics.toStopPct)}</div></div>
-      <div class="quick-kpi"><div class="label">距離停利1</div><div class="value">${fmtPct(metrics.toTp1Pct)}</div></div>
-      <div class="quick-kpi"><div class="label">距離停利2</div><div class="value">${fmtPct(metrics.toTp2Pct)}</div></div>
-      <div class="quick-kpi"><div class="label">持倉最高價</div><div class="value">${fmtMoney(metrics.highestPrice)}</div></div>
-      <div class="quick-kpi"><div class="label">從高點回撤</div><div class="value">${fmtPct(metrics.drawdownFromHighPct)}</div></div>
-    </div>
-  `;
-}
-
-function clearPositionInputs(){
-  ['holdSymbol','holdName','buyPrice','currentPrice','highestPrice'].forEach(id => $(id).value = '');
-  $('holdQty').value = 1000;
-  $('stopLossPct').value = 7;
-  $('tp1Pct').value = 10;
-  $('tp2Pct').value = 15;
-  $('trailPullback').value = 4;
-  renderPositionPreview(null);
-}
-
-function updatePositionPreview(){
-  const pos = collectPositionInputs();
-  if(!pos.symbol || pos.buyPrice === null || pos.currentPrice === null){
-    showStatus('至少要輸入股票代號、買入價、目前價，才能監控。','warn');
-    return null;
-  }
-  const metrics = computePositionMetrics(pos);
-  if(metrics.highestPrice !== null) $('highestPrice').value = Number(metrics.highestPrice).toFixed(2);
-  renderPositionPreview(metrics);
-  return metrics;
-}
-
-function addOrUpdatePosition(){
-  const metrics = updatePositionPreview();
-  if(!metrics) return;
-  const idx = positions.findIndex(p => String(p.symbol) === String(metrics.symbol));
-  if(idx >= 0){
-    positions[idx] = metrics;
-    showStatus(`已更新持倉：${metrics.symbol}`,'ok');
-  }else{
-    positions.push(metrics);
-    showStatus(`已加入持倉：${metrics.symbol}`,'ok');
-  }
-  saveLocal();
-  renderPositionsTable();
-}
-
-function renderPositionsTable(){
-  const tbody = $('positionsTableBody');
-  if(!positions.length){
-    tbody.innerHTML = '<tr><td colspan="11" class="small">尚無持倉資料。</td></tr>';
-    return;
-  }
-  tbody.innerHTML = positions.map((p, idx) => {
-    const m = computePositionMetrics(p);
-    positions[idx] = m;
-    return `
-      <tr>
-        <td><span class="badge-status ${m.statusClass}">${m.status}</span></td>
-        <td>${m.symbol} ${m.name || ''}</td>
-        <td>${fmtMoney(m.buyPrice)}</td>
-        <td>${fmtMoney(m.currentPrice)}</td>
-        <td>${fmtPct(m.pnlPct)}</td>
-        <td>${fmtMoney(m.pnlAmt)}</td>
-        <td>${fmtMoney(m.stopLossPrice)}</td>
-        <td>${fmtMoney(m.takeProfit1Price)}</td>
-        <td>${fmtMoney(m.takeProfit2Price)}</td>
-        <td>${fmtMoney(m.highestPrice)}</td>
-        <td>
-          <button class="action-btn" onclick="loadPositionToForm(${idx})">載入</button>
-          <button class="action-btn" onclick="removePosition(${idx})">刪除</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function loadPositionToForm(idx){
-  const p = computePositionMetrics(positions[idx]);
-  if(!p) return;
-  $('holdSymbol').value = p.symbol || '';
-  $('holdName').value = p.name || '';
-  $('holdQty').value = p.qty ?? 0;
-  $('buyPrice').value = p.buyPrice ?? '';
-  $('currentPrice').value = p.currentPrice ?? '';
-  $('highestPrice').value = p.highestPrice ?? '';
-  $('stopLossPct').value = p.stopLossPct ?? 7;
-  $('tp1Pct').value = p.tp1Pct ?? 10;
-  $('tp2Pct').value = p.tp2Pct ?? 15;
-  $('trailPullback').value = p.trailPullback ?? 4;
-  renderPositionPreview(p);
-}
-
-function removePosition(idx){
-  positions.splice(idx,1);
-  saveLocal();
-  renderPositionsTable();
-  showStatus('已刪除持倉。','ok');
-}
-
-function refreshAllPositions(){
-  positions = positions.map(p => computePositionMetrics(p));
-  saveLocal();
-  renderPositionsTable();
-  showStatus('已重新計算全部持倉。','ok');
-}
-
-function exportPositions(){
-  const blob = new Blob([JSON.stringify(positions, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'positions_monitor_v2.json';
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
+// ===== CSV =====
 function analyze(){
+  const rows=document.getElementById("csv").value.split("\n").slice(1)
 
-  const text = $('csvInput').value.trim();
-  if(!text){ showStatus('請先貼上 CSV 內容或載入 CSV 檔。','warn'); return; }
-  try{
-    const parsed = transformData(text);
-    if(!parsed.rows.length) throw new Error('沒有解析到股票資料。');
-    const scored = parsed.rows.map(r=>scoreRow(r, parsed.fullMode)).sort((a,b)=>b.score-a.score || (b.relVolume||0)-(a.relVolume||0));
-    const pickCount = parseInt($('pickCount').value,10) || 2;
-    const filteredTop = scored.filter(r=>r.status!=='淘汰').slice(0,pickCount);
-    const top = filteredTop.length ? filteredTop : scored.slice(0,pickCount);
+  localPick = rows.map(r=>{
+    let c=r.split(",")
+    return {symbol:c[0],vol:parseFloat(c[6])||0}
+  }).sort((a,b)=>b.vol-a.vol).slice(0,2)
 
-    renderDetectedFields(parsed.detected, parsed.fullMode);
-    renderSelection(top, '本地模型');
-    $('summaryBox').textContent = buildSummary(scored, parsed.fullMode);
-    $('aiParseBox').textContent = '尚未解析 AI 回覆。';
-    $('decisionBox').textContent = '尚未執行決策模式。';
-    renderTable(scored);
-    $('resultStats').textContent = `共 ${scored.length} 檔｜模式 ${parsed.fullMode ? 'Full' : 'Lite'}｜更新 ${new Date().toLocaleString('zh-TW')}`;
-    lastResult = { rows: scored, top: top.map(r=>({...r})), localTop: top.map(r=>({...r})), finalTop: top.map(r=>({...r})), mode: parsed.fullMode ? 'Full' : 'Lite', detected: parsed.detected, override: null };
-    showStatus(`分析完成：共 ${scored.length} 檔，已自動挑出 ${top.length} 檔。`, 'ok');
-  }catch(err){
-    console.error(err);
-    showStatus(err.message || '解析失敗，請檢查 CSV 格式。','danger');
-  }
+  document.getElementById("local").innerText="本地："+localPick.map(x=>x.symbol)
 }
 
-function saveLocal(){
-  const payload = {
-    capital: $('capital').value, pickCount: $('pickCount').value, period: $('period').value,
-    targetMin: $('targetMin').value, targetMax: $('targetMax').value, stopLoss: $('stopLoss').value,
-    rsiLow: $('rsiLow').value, rsiHigh: $('rsiHigh').value, maxDev: $('maxDev').value,
-    csvInput: $('csvInput').value,
-    aiOverrideInput: $('aiOverrideInput').value,
-    decisionMode: $('decisionMode').value,
-    autoHeatThreshold: $('autoHeatThreshold').value,
-    autoScoreGap: $('autoScoreGap').value,
-    positions,
-    stopLossPct: $('stopLossPct')?.value,
-    tp1Pct: $('tp1Pct')?.value,
-    tp2Pct: $('tp2Pct')?.value,
-    trailPullback: $('trailPullback')?.value
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  showStatus('已儲存到本機瀏覽器。', 'ok');
+// ===== AI =====
+function parseAI(){
+  const txt=document.getElementById("ai").value
+  const m=txt.match(/\d{4}/g)
+  aiPick=m?[...new Set(m)].slice(0,2):[]
+  document.getElementById("aiRes").innerText="AI："+aiPick
 }
 
-function loadLocal(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw) return;
-  try{
-    const data = JSON.parse(raw);
-    Object.keys(data).forEach(k=>{ if($(k)) $(k).value = data[k]; });
-  }catch{}
-}
+// ===== 決策 =====
+function decide(){
 
-function clearAll(){
-  $('csvInput').value='';
-  $('csvFile').value='';
-  $('aiOverrideInput').value='';
-  $('topPicks').innerHTML='';
-  $('summaryBox').textContent='尚未分析。';
-  $('planOutput').textContent='尚未生成。';
-  $('aiParseBox').textContent='尚未解析 AI 回覆。';
-  $('decisionBox').textContent='尚未執行決策模式。';
-  $('rankingBody').innerHTML='<tr><td colspan="16" class="muted">還沒有資料。</td></tr>';
-  $('detectedFields').innerHTML='';
-  $('metricMode').textContent='待載入';
-  $('resultStats').textContent='尚未計算';
-  lastResult = { rows: [], top: [], localTop: [], finalTop: [], mode: '未分析', detected: [], override: null };
-  showStatus('已清空。','ok');
-}
+  const local=localPick.map(x=>x.symbol)
 
-function exportJSON(){
-  if(!lastResult.rows.length){ showStatus('尚未分析，無法匯出。','warn'); return; }
-  const blob = new Blob([JSON.stringify(lastResult, null, 2)], {type:'application/json;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `ai_stock_selector_result_${Date.now()}.json`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function copyText(text, ok='已複製'){ navigator.clipboard.writeText(text).then(()=>showStatus(ok,'ok')).catch(()=>showStatus('複製失敗，請手動複製。','danger')); }
-
-$('analyzeBtn').addEventListener('click', analyze);
-$('saveBtn').addEventListener('click', saveLocal);
-$('clearBtn').addEventListener('click', clearAll);
-$('exportJsonBtn').addEventListener('click', exportJSON);
-$('copyPlanBtn').addEventListener('click', ()=>copyText($('planOutput').textContent, '交易計畫已複製。'));
-$('copyPromptBtn').addEventListener('click', ()=>copyText(buildPrompt(lastResult.rows), 'AI 分析提示詞已複製。'));
-$('applyAiBtn').addEventListener('click', ()=>applyAiOverride(false));
-$('parseAiBtn').addEventListener('click', ()=>applyAiOverride(true));
-$('resetLocalBtn').addEventListener('click', resetToLocalSelection);
-$('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false));
-$('autoDecisionBtn').addEventListener('click', ()=>{
-  $('decisionMode').value = 'auto';
-  applyDecisionMode(false);
-});
-$('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true));
-
-$('csvFile').addEventListener('change', async (e)=>{
-  const file = e.target.files && e.target.files[0];
-  if(!file) return;
-  const text = await file.text();
-  $('csvInput').value = text;
-  showStatus(`已載入檔案：${file.name}`,'ok');
-});
-$('loadSampleBtn').addEventListener('click', ()=>{
-  $('csvInput').value = `商品,描述,價格,價格 - 貨幣,價格變化 % 1天,成交量 1天,相對成交量 1天,市場資本,市場資本 - 貨幣,本益比,"基本每股盈餘, 過去12個月","基本每股盈餘, 過去12個月 - 貨幣","稀釋每股盈餘成長率 %, TTM年增率","股息殖利率 %, 過去12個月",部門,分析師評級\n1597,直得,117,TWD,1.2987012987012987,6967255,2.3923140958077287,10258340744,TWD,128.72703267686214,0.9089,TWD,-15.38819586669149,0.606060606060606,生產製造,強力買入\n2360,致茂,2050,TWD,1.4851485148514851,6768309,1.5947442287703182,855348311768,TWD,74.5492497799888,27.4986,TWD,121.70390138108407,0.445544554455445,電子科技,強力買入\n2379,瑞昱,540,TWD,2.857142857142857,5860577,1.9643523254652933,270644132996,TWD,19.115991588963702,28.2486,TWD,-4.4163525502642615,4.85714285714286,電子科技,買入\n3209,全科,47,TWD,2.1739130434782608,5661955,1.7551299054441785,10827994720,TWD,15.74803149606299,2.9845,TWD,0.5932117698608069,5.40116956521739,電子科技,無評級\n3221,台嘉碩,45.7,TWD,9.987966305655851,21112481,1.8403083691032651,4274917725.0000005,TWD,577.7496839443742,0.0791,TWD,-91.8688322368421,2.16698916967509,電子科技,無評級\n3236,千如,35.8,TWD,3.7681159420289774,14760222,2.774532788675926,3622521057,TWD,111.66562694946974,0.3206,TWD,657.919621749409,1.01449275362319,電子科技,無評級\n3363,上詮,830,TWD,0.9732360097323601,7104769,2.5445203467966278,91357549850,TWD,5389.61038961039,0.154,TWD,,0,生產製造,強力買入\n3443,創意,3345,TWD,8.957654723127035,4238415,1.5498021361919643,411416538696,TWD,119.35132820723244,28.0265,TWD,9.421240444454856,0.521172638436482,電子科技,買入\n3645,達邁,100.5,TWD,7.4866310160427805,40776749,3.117616783247408,12786517342,TWD,65.78947368421052,1.5276,TWD,-10.209839534473636,1.27799251336898,加工業,無評級\n4979,華星光,586,TWD,9.943714821763603,32773935,5.947450269261766,74873349045,TWD,110.3952375569873,5.3082,TWD,40.25788722718385,0.289799812382739,電子科技,無評級\n6175,立敦,63.5,TWD,1.7628205128205152,18192664,2.2158915009911158,9356057382,TWD,23.782771535580526,2.67,TWD,-14.164469877194108,2.80448717948718,電子科技,無評級\n6271,同欣電,185,TWD,1.092896174863388,20196785,2.2900401344662575,38197229004,TWD,24.303092404298365,7.6122,TWD,-6.819433733612429,1.63934426229508,電子科技,買入\n6672,騰輝電子-KY,160,TWD,2.8938906752411575,11114136,1.7651598399063768,11060052578,TWD,33.21224701608718,4.8175,TWD,-2.8298842228407737,2.15434083601286,電子科技,無評級\n6909,創控,59,TWD,1.7241379310344827,9331147,2.955499013466107,3898887955,TWD,59.656218402426695,0.989,TWD,-35.26215880081168,1.72408620689655,電子科技,無評級\n8261,富鼎,116,TWD,6.422018348623854,5802825,2.7924915083417075,12957744232,TWD,,,,,2.92714770642202,電子科技,無評級`;
-  showStatus('已載入你目前這種 TradingView CSV 範例。','ok');
-});
-<!-- ====== V3 無腦持倉監控 ====== -->
-<section class="card">
-  <h2>📈 持倉監控 V3（無腦版）</h2>
-
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-    <input id="v3_symbol" placeholder="股票代號">
-    <input id="v3_buy" type="number" placeholder="買入價">
-    <input id="v3_current" type="number" placeholder="目前價">
-  </div>
-
-  <div style="margin-top:10px">
-    <button onclick="v3_calc()" class="primary">更新判斷</button>
-    <button onclick="v3_add()" class="ghost">加入持倉</button>
-  </div>
-
-  <div id="v3_output" class="output-box" style="margin-top:10px">尚未計算</div>
-
-  <table style="width:100%;margin-top:10px">
-    <thead>
-      <tr>
-        <th>狀態</th>
-        <th>股票</th>
-        <th>買入</th>
-        <th>現價</th>
-        <th>報酬%</th>
-        <th>損益</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody id="v3_list"></tbody>
-  </table>
-</section>
-
-<script>
-let v3_positions = [];
-
-function v3_core(buy, current, qty=1000, highest=null){
-  if(!highest || current > highest) highest = current;
-
-  const stop = buy * 0.93;
-  const tp1 = buy * 1.10;
-  const tp2 = buy * 1.15;
-
-  const pnl = (current - buy) / buy * 100;
-  const profit = (current - buy) * qty;
-  const draw = (current - highest) / highest * 100;
-
-  let state="持有", color="green";
-
-  if(current <= stop){ state="🔴 停損"; color="red"; }
-  else if(current >= tp2){ state="🟢 全出"; color="green"; }
-  else if(draw <= -4 && current > buy){ state="🔥 移動停利"; color="orange"; }
-  else if(current >= tp1){ state="🟡 停利1"; color="orange"; }
-
-  return {state, color, stop, tp1, tp2, pnl, profit, highest};
-}
-
-function v3_calc(){
-  const buy = Number(document.getElementById('v3_buy').value);
-  const current = Number(document.getElementById('v3_current').value);
-
-  if(!buy || !current) return;
-
-  const r = v3_core(buy, current);
-
-  document.getElementById('v3_output').innerHTML = `
-    <div style="font-size:26px;color:${r.color};font-weight:bold">${r.state}</div>
-    報酬率：${r.pnl.toFixed(2)}%<br>
-    損益：${r.profit.toFixed(0)}<br>
-    停損：${r.stop.toFixed(2)}<br>
-    停利1：${r.tp1.toFixed(2)}<br>
-    停利2：${r.tp2.toFixed(2)}
-  `;
-}
-
-function v3_add(){
-  const symbol = document.getElementById('v3_symbol').value;
-  const buy = Number(document.getElementById('v3_buy').value);
-  const current = Number(document.getElementById('v3_current').value);
-
-  if(!symbol || !buy || !current) return;
-
-  let exist = v3_positions.find(p=>p.symbol===symbol);
-
-  if(exist){
-    exist.current = current;
-    exist.data = v3_core(exist.buy, current, 1000, exist.data.highest);
+  if(aiPick.length===0){
+    finalPick=local
   }else{
-    let data = v3_core(buy, current);
-    v3_positions.push({symbol, buy, current, data});
+    const inter=aiPick.filter(x=>local.includes(x))
+    finalPick=inter.length?inter:aiPick
   }
 
-  v3_render();
+  document.getElementById("decision").innerHTML =
+    "<div class='big'>🔥 最終："+finalPick+"</div>"
+
+  // 雷達
+  document.getElementById("radar").innerHTML =
+    "一致性："+(aiPick.join()==local.join()?"🟢 高":"🟡 分歧")
+
+  updateCommand()
 }
 
-function v3_render(){
-  const tbody = document.getElementById('v3_list');
-  tbody.innerHTML = "";
+// ===== 核心 =====
+function core(b,c){
 
-  v3_positions.forEach((p,i)=>{
-    const r = v3_core(p.buy, p.current, 1000, p.data.highest);
-    p.data = r;
+  const stop=b*0.93
+  const tp1=b*1.1
+  const tp2=b*1.15
 
-    tbody.innerHTML += `
-      <tr>
-        <td style="color:${r.color}">${r.state}</td>
-        <td>${p.symbol}</td>
-        <td>${p.buy}</td>
-        <td>${p.current}</td>
-        <td>${r.pnl.toFixed(2)}%</td>
-        <td>${r.profit.toFixed(0)}</td>
-        <td><button onclick="v3_del(${i})">刪</button></td>
-      </tr>
-    `;
-  });
+  let action="持有",color="green"
+
+  if(c<=stop){action="停損";color="red"}
+  else if(c>=tp2){action="全出";color="green"}
+  else if(c>=tp1){action="減碼";color="yellow"}
+
+  return {action,color,stop,tp1,tp2}
 }
 
-function v3_del(i){
-  v3_positions.splice(i,1);
-  v3_render();
+// ===== 指令 =====
+function updateCommand(){
+
+  if(positions.length==0){
+    document.getElementById("command").innerText="📌 今日指令：等待進場"
+    return
+  }
+
+  let risk=false
+
+  positions.forEach(p=>{
+    if(p.c <= p.b*0.95) risk=true
+  })
+
+  if(risk){
+    document.getElementById("command").innerHTML="🚨 今日指令：風險控管（減碼/停損）"
+  }else{
+    document.getElementById("command").innerHTML="🚀 今日指令：持有 / 觀察續強"
+  }
 }
+
+// ===== 持倉 =====
+function add(){
+  const s=document.getElementById("symbol").value
+  const b=parseFloat(document.getElementById("buy").value)
+  const c=parseFloat(document.getElementById("current").value)
+
+  positions.push({s,b,c})
+  render()
+  updateCommand()
+}
+
+function render(){
+
+  const box=document.getElementById("cards")
+  box.innerHTML=""
+
+  positions.forEach((p,i)=>{
+
+    const r=core(p.b,p.c)
+    const pnl=((p.c-p.b)/p.b*100).toFixed(2)
+
+    box.innerHTML+=`
+    <div class="card">
+      <div class="big ${r.color}">${r.action}</div>
+      <div>${p.s}</div>
+
+      <div class="grid">
+        <div class="stat">報酬<br>${pnl}%</div>
+        <div class="stat">停損<br>${r.stop.toFixed(1)}</div>
+        <div class="stat">停利<br>${r.tp1.toFixed(1)}</div>
+        <div class="stat">現價<br>${p.c}</div>
+      </div>
+
+      <button onclick="del(${i})">刪除</button>
+    </div>`
+  })
+}
+
+function del(i){
+  positions.splice(i,1)
+  render()
+  updateCommand()
+}
+
 </script>
-loadLocal();
-</script>
+
 </body>
 </html>
