@@ -1,266 +1,604 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 指揮官戰情室 V6</title>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 指揮官戰情室 V8</title>
 <style>
+:root{
+  --bg:#050d18; --bg2:#081321; --line:rgba(255,255,255,.08);
+  --text:#eef6ff; --muted:#8ea4c8; --cyan:#67e8f9; --blue:#60a5fa;
+  --green:#34d399; --yellow:#fbbf24; --red:#f87171;
+  --glow:0 0 0 1px rgba(255,255,255,.04),0 20px 60px rgba(0,0,0,.42);
+  --radius:22px;
+}
+*{box-sizing:border-box}
 body{
-  margin:0;
-  font-family:-apple-system;
-  background:radial-gradient(circle at top,#0f172a,#020617);
-  color:#e2e8f0;
+  margin:0; color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(103,232,249,.12), transparent 20%),
+    radial-gradient(circle at 92% 12%, rgba(96,165,250,.16), transparent 24%),
+    linear-gradient(180deg,var(--bg),var(--bg2));
+  min-height:100vh;
 }
-
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:15px;
+.wrap{max-width:1550px;margin:0 auto;padding:18px}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.panel{
+  position:relative; overflow:hidden; padding:18px;
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.018));
+  border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--glow);
 }
-
-.section{
-  background:#111827;
-  padding:15px;
-  border-radius:16px;
-  margin-bottom:15px;
+.panel:before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(125deg, rgba(255,255,255,.04), transparent 24%, transparent 76%, rgba(255,255,255,.025));
 }
-
-.title{font-size:26px;font-weight:bold;margin-bottom:10px}
-
-.big{font-size:22px;font-weight:bold}
-
-.green{color:#4ade80}
-.yellow{color:#facc15}
-.red{color:#f87171}
-
-textarea,input{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  background:#1f2937;
-  color:#fff;
-  margin-top:5px;
+.title{font-size:32px;font-weight:900;display:flex;align-items:center;gap:10px;margin:0 0 8px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(103,232,249,.08);color:var(--cyan);border:1px solid rgba(103,232,249,.18);font-size:12px;margin-bottom:12px}
+.sub,.small{color:var(--muted);line-height:1.65}
+.small{font-size:12px}
+.sectionTitle{font-size:18px;font-weight:900;display:flex;align-items:center;gap:8px;margin:0 0 12px}
+.metricGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.metric{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:18px; padding:14px}
+.metric .k{font-size:12px;color:var(--muted)}
+.metric .v{font-size:24px;font-weight:900;margin-top:6px}
+.command{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.commandMain{font-size:29px;font-weight:900}
+.commandSub{font-size:13px;color:var(--muted);margin-top:5px}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:12px;font-weight:900}
+.ok{color:var(--green)} .warn{color:var(--yellow)} .danger{color:var(--red)} .info{color:var(--blue)}
+.radar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.radarBox,.statusBox{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:18px;padding:12px}
+.bigVal{font-size:22px;font-weight:900;margin-top:6px}
+.bar{height:10px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:8px}
+.bar > div{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--cyan))}
+.statusLights{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.light{flex:1; min-width:150px; padding:12px; border-radius:18px; border:1px solid var(--line); background:rgba(255,255,255,.03)}
+.light .dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:8px;box-shadow:0 0 12px currentColor}
+input,textarea{
+  width:100%; background:#0a1527; color:var(--text); border:1px solid rgba(255,255,255,.1);
+  border-radius:14px; padding:12px 13px; font:inherit; outline:none;
 }
-
+textarea{min-height:120px;resize:vertical}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+input:focus,textarea:focus{border-color:rgba(103,232,249,.45);box-shadow:0 0 0 3px rgba(103,232,249,.12)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap}
 button{
-  margin-top:10px;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  background:#2563eb;
-  color:#fff;
-  width:100%;
+  border:0; border-radius:14px; padding:12px 16px; font:inherit; font-weight:900; cursor:pointer;
+  color:#041120; background:linear-gradient(135deg,var(--blue),var(--cyan)); min-width:120px;
 }
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
+button.secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}
+button.danger{background:rgba(248,113,113,.12);color:#fecaca;border:1px solid rgba(248,113,113,.2)}
+.rangeWrap{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.sliderRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.rangeValue{min-width:76px;text-align:center;font-weight:900;padding:10px 12px;border-radius:14px;background:#091323;border:1px solid var(--line)}
+input[type=range]{padding:0;background:transparent;border:0}
+.bridge{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.node{padding:12px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.node .n{font-size:12px;color:var(--muted)}
+.node .v{font-size:20px;font-weight:900;margin-top:6px}
+.stockCards,.holdCards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.stockCard,.holdCard{
+  position:relative; overflow:hidden; padding:15px; border-radius:20px; border:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015));
 }
-
-.cards{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
+.stockCard:after,.holdCard:after{
+  content:""; position:absolute; right:-40px; top:-40px; width:140px; height:140px; border-radius:50%;
+  background:radial-gradient(circle, rgba(96,165,250,.15), transparent 60%);
 }
-
-.card{
-  background:#020617;
-  border-radius:14px;
-  padding:12px;
-}
-
-.stat{
-  background:#111827;
-  padding:8px;
-  border-radius:8px;
-  text-align:center;
+.stockHead,.holdHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.stockName{font-size:24px;font-weight:900}
+.role{font-size:12px;color:var(--cyan);font-weight:900}
+.tag{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:12px;font-weight:900}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.kpi{background:#091323;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:10px;text-align:center}
+.kpi .k{font-size:11px;color:var(--muted)}
+.kpi .v{font-size:18px;font-weight:900;margin-top:4px}
+.reason{margin-top:12px;padding:11px 12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line);font-size:13px;color:#d7e6ff;line-height:1.65}
+.glow-green{box-shadow:0 0 0 1px rgba(52,211,153,.26),0 0 24px rgba(52,211,153,.16)}
+.glow-yellow{box-shadow:0 0 0 1px rgba(251,191,36,.26),0 0 24px rgba(251,191,36,.16)}
+.glow-red{box-shadow:0 0 0 1px rgba(248,113,113,.26),0 0 24px rgba(248,113,113,.16)}
+.tactical{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;align-items:stretch}
+.actionPanel{border:1px solid var(--line);border-radius:18px;padding:14px;background:rgba(255,255,255,.03)}
+.actionPanel .main{font-size:26px;font-weight:900}
+.listPlain{margin:8px 0 0;padding-left:18px;color:#d7e6ff}
+.tableWrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:980px}
+th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;font-size:13px}
+th{color:var(--muted)}
+.footerNote{font-size:12px;color:var(--muted);text-align:center;padding:10px}
+@media (max-width:1100px){
+  .hero,.cols,.cols3,.metricGrid,.radar,.bridge,.stockCards,.holdCards,.tactical{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
-
 <body>
+<div class="wrap">
+  <div class="hero">
+    <section class="panel">
+      <div class="eyebrow">🛸 指揮艙｜宇宙戰艦模式 V8</div>
+      <h1 class="title">AI 指揮官戰情室 V8</h1>
+      <div class="sub">這版新增了更像飛輪系統的戰力感：戰況燈號、策略計算橋接、戰術指令面板、選股監控卡、持倉壓力顯示。重點是讓你一眼知道現在該做什麼，而不是看一堆冷數字。</div>
+      <div class="metricGrid" style="margin-top:14px">
+        <div class="metric"><div class="k">本地候選</div><div class="v" id="mLocal">—</div></div>
+        <div class="metric"><div class="k">AI 候選</div><div class="v" id="mAi">—</div></div>
+        <div class="metric"><div class="k">最終標的</div><div class="v" id="mFinal">—</div></div>
+        <div class="metric"><div class="k">持倉警報</div><div class="v" id="mAlert">待命</div></div>
+      </div>
+      <div class="statusLights">
+        <div class="light"><span class="dot info"></span><b>掃描狀態</b><div class="small" id="lightScan">尚未分析</div></div>
+        <div class="light"><span class="dot warn"></span><b>AI 情報</b><div class="small" id="lightAi">尚未導入</div></div>
+        <div class="light"><span class="dot info"></span><b>決策模式</b><div class="small" id="lightDecision">待命</div></div>
+        <div class="light"><span class="dot info"></span><b>持倉戰況</b><div class="small" id="lightHold">尚無持倉</div></div>
+      </div>
+    </section>
 
-<div class="container">
+    <section class="panel">
+      <div class="sectionTitle">📌 今日唯一指令</div>
+      <div class="command">
+        <div>
+          <div id="todayCommand" class="commandMain">等待資料</div>
+          <div id="todaySub" class="commandSub">請先分析 CSV，再決策，最後監控持倉。</div>
+        </div>
+        <div id="battleMode" class="badge info">待機模式</div>
+      </div>
+      <div class="radar" style="margin-top:16px">
+        <div class="radarBox"><div class="small">本地 vs AI 一致性</div><div id="consistencyText" class="bigVal">—</div><div class="bar"><div id="consistencyBar" style="width:0%"></div></div></div>
+        <div class="radarBox"><div class="small">當前進攻性</div><div id="aggressiveText" class="bigVal">—</div><div class="bar"><div id="aggressiveBar" style="width:0%"></div></div></div>
+        <div class="radarBox"><div class="small">過熱風險</div><div id="heatText" class="bigVal">—</div><div class="bar"><div id="heatBar" style="width:0%"></div></div></div>
+        <div class="radarBox"><div class="small">持倉壓力</div><div id="pressureText" class="bigVal">—</div><div class="bar"><div id="pressureBar" style="width:0%"></div></div></div>
+      </div>
+    </section>
+  </div>
 
-<div class="title">🚀 AI 指揮官戰情室</div>
+  <div class="cols" style="margin-top:16px">
+    <section class="panel">
+      <div class="sectionTitle">📊 CSV 選股雷達</div>
+      <label for="csvInput">貼上 TradingView CSV</label>
+      <textarea id="csvInput" placeholder="貼上 CSV，系統會自動抓代號 / 名稱 / 價格 / 相對量 / RSI / SMA20 / SMA60。"></textarea>
+      <div class="toolbar" style="margin-top:12px">
+        <button id="analyzeBtn">開始分析</button>
+        <button id="loadDemoBtn" class="secondary">載入範例</button>
+      </div>
+      <div id="localSummary" class="reason" style="margin-top:12px">尚未分析。</div>
+    </section>
 
-<!-- ===== 今日指令 ===== -->
-<div class="section">
-<div class="big" id="command">📌 今日指令：等待資料</div>
-</div>
+    <section class="panel">
+      <div class="sectionTitle">🤖 AI 情報覆蓋區</div>
+      <label for="aiInput">貼上 GPT / Gemini 回覆全文</label>
+      <textarea id="aiInput" placeholder="例如：主攻股：8261 富鼎　副攻股：3236 千如"></textarea>
+      <div class="toolbar" style="margin-top:12px">
+        <button id="parseAiBtn">解析 AI</button>
+        <button id="decideBtn" class="secondary">一鍵最終決策</button>
+      </div>
+      <div id="aiSummary" class="reason" style="margin-top:12px">尚未解析 AI 結果。</div>
+    </section>
+  </div>
 
-<!-- ===== 選股 ===== -->
-<div class="section">
-<h3>📊 CSV選股</h3>
-<textarea id="csv" rows="4"></textarea>
-<button onclick="analyze()">分析</button>
-<div id="local"></div>
-</div>
+  <section class="panel" style="margin-top:16px">
+    <div class="sectionTitle">🛰️ 戰艦操控參數</div>
+    <div class="sub">用滑桿操控你的交易宇宙船。你一調整，系統就會即時重算停損、停利、移動停利與主副攻資金配置。</div>
+    <div class="cols3" style="margin-top:14px">
+      <div class="rangeWrap"><label>固定停損 %</label><div class="sliderRow"><input id="stopSlider" type="range" min="3" max="12" step="0.5" value="7"><div id="stopVal" class="rangeValue">7%</div></div></div>
+      <div class="rangeWrap"><label>第一停利 %</label><div class="sliderRow"><input id="tp1Slider" type="range" min="5" max="20" step="0.5" value="10"><div id="tp1Val" class="rangeValue">10%</div></div></div>
+      <div class="rangeWrap"><label>第二停利 %</label><div class="sliderRow"><input id="tp2Slider" type="range" min="8" max="30" step="0.5" value="15"><div id="tp2Val" class="rangeValue">15%</div></div></div>
+      <div class="rangeWrap"><label>移動停利回撤 %</label><div class="sliderRow"><input id="trailSlider" type="range" min="2" max="10" step="0.5" value="4"><div id="trailVal" class="rangeValue">4%</div></div></div>
+      <div class="rangeWrap"><label>主攻倉位 %</label><div class="sliderRow"><input id="mainAllocSlider" type="range" min="40" max="80" step="5" value="60"><div id="mainAllocVal" class="rangeValue">60%</div></div></div>
+      <div class="rangeWrap"><label>總資金（萬）</label><div class="sliderRow"><input id="capitalSlider" type="range" min="5" max="100" step="5" value="20"><div id="capitalVal" class="rangeValue">20萬</div></div></div>
+    </div>
+    <div class="bridge" style="margin-top:16px">
+      <div class="node"><div class="n">主攻股推算停損價</div><div id="bridgeStopMain" class="v">—</div></div>
+      <div class="node"><div class="n">主攻股推算停利一價</div><div id="bridgeTp1Main" class="v">—</div></div>
+      <div class="node"><div class="n">主攻股推算移動停利價</div><div id="bridgeTrailMain" class="v">—</div></div>
+      <div class="node"><div class="n">主攻股建議股數</div><div id="bridgeSharesMain" class="v">—</div></div>
+    </div>
+  </section>
 
-<!-- ===== AI ===== -->
-<div class="section">
-<h3>🤖 AI覆蓋</h3>
-<textarea id="ai" rows="4"></textarea>
-<button onclick="parseAI()">解析</button>
-<div id="aiRes"></div>
-</div>
+  <section class="panel" style="margin-top:16px">
+    <div class="sectionTitle">🎯 最終出擊標的監控</div>
+    <div class="stockCards" id="finalCards">
+      <div class="stockCard"><div class="small">尚未產生最終標的。</div></div>
+    </div>
+  </section>
 
-<!-- ===== 決策 ===== -->
-<div class="section">
-<h3>🧠 決策核心</h3>
-<button onclick="decide()">一鍵決策</button>
-<div id="decision"></div>
-<div id="radar"></div>
-</div>
+  <section class="panel" style="margin-top:16px">
+    <div class="sectionTitle">🧠 戰術指令面板</div>
+    <div class="tactical">
+      <div class="actionPanel">
+        <div id="tacticalMain" class="main">等待分析</div>
+        <div id="tacticalSub" class="small" style="margin-top:8px">這裡會根據本地、AI、持倉自動給你今天的主要作戰步驟。</div>
+      </div>
+      <div class="actionPanel">
+        <div class="small">今日清單</div>
+        <ul id="tacticalList" class="listPlain">
+          <li>先貼 CSV</li>
+          <li>再導入 AI 結果</li>
+          <li>最後觀察最終標的與持倉</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
-<!-- ===== 持倉 ===== -->
-<div class="section">
-<h3>📈 持倉監控</h3>
+  <div class="cols" style="margin-top:16px">
+    <section class="panel">
+      <div class="sectionTitle">📈 持倉加入區</div>
+      <div class="cols3">
+        <div><label>股票代號</label><input id="holdSymbol" placeholder="例如 8261"></div>
+        <div><label>買入價</label><input id="holdBuy" type="number" placeholder="例如 116"></div>
+        <div><label>現價</label><input id="holdCurrent" type="number" placeholder="例如 123"></div>
+      </div>
+      <div class="toolbar" style="margin-top:12px">
+        <button id="addHoldBtn">加入持倉</button>
+        <button id="loadMainBtn" class="secondary">帶入主攻股</button>
+      </div>
+      <div id="holdGuide" class="reason" style="margin-top:12px">你只要輸入：股票、買入價、現價。其他停損、停利、移動停利都由系統依上方戰艦參數自動計算。</div>
+    </section>
 
-<div class="grid">
-<input id="symbol" placeholder="股票">
-<input id="buy" type="number" placeholder="買入價">
-<input id="current" type="number" placeholder="現價">
-</div>
+    <section class="panel">
+      <div class="sectionTitle">🧭 系統總覽</div>
+      <div class="tableWrap">
+        <table>
+          <thead><tr><th>指標</th><th>數值</th><th>說明</th></tr></thead>
+          <tbody id="systemTable">
+            <tr><td>決策來源</td><td>—</td><td>尚未決策</td></tr>
+            <tr><td>主攻股</td><td>—</td><td>尚未產生</td></tr>
+            <tr><td>副攻股</td><td>—</td><td>尚未產生</td></tr>
+            <tr><td>總持倉數</td><td>0</td><td>目前無持倉</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 
-<button onclick="add()">加入</button>
+  <section class="panel" style="margin-top:16px">
+    <div class="sectionTitle">🛡️ 持倉戰況面板</div>
+    <div class="holdCards" id="holdCards">
+      <div class="holdCard"><div class="small">尚未加入持倉。</div></div>
+    </div>
+  </section>
 
-<div id="cards" class="cards"></div>
-</div>
-
+  <div class="footerNote">V8 戰情室：把選股、AI、停損停利、移動停利與今日指令，全部壓成你一眼就能執行的面板。</div>
 </div>
 
 <script>
+const $ = id => document.getElementById(id);
+let localPicks = [], aiCodes = [], finalPicks = [], holdings = [], decisionSource = '—';
 
-let localPick=[], aiPick=[], finalPick=[], positions=[]
+function num(v){ const n = Number(String(v).replace(/,/g,'')); return Number.isFinite(n) ? n : null; }
+function fmt(n,d=2){ return n===null || n===undefined || Number.isNaN(n) ? '—' : Number(n).toLocaleString('zh-TW',{maximumFractionDigits:d}); }
+function pct(n,d=1){ return n===null || n===undefined || Number.isNaN(n) ? '—' : Number(n).toFixed(d) + '%'; }
 
-// ===== CSV =====
-function analyze(){
-  const rows=document.getElementById("csv").value.split("\n").slice(1)
-
-  localPick = rows.map(r=>{
-    let c=r.split(",")
-    return {symbol:c[0],vol:parseFloat(c[6])||0}
-  }).sort((a,b)=>b.vol-a.vol).slice(0,2)
-
-  document.getElementById("local").innerText="本地："+localPick.map(x=>x.symbol)
+function getConfig(){
+  return {
+    stopPct: num($('stopSlider').value) ?? 7,
+    tp1Pct: num($('tp1Slider').value) ?? 10,
+    tp2Pct: num($('tp2Slider').value) ?? 15,
+    trailPct: num($('trailSlider').value) ?? 4,
+    mainAlloc: num($('mainAllocSlider').value) ?? 60,
+    capital: (num($('capitalSlider').value) ?? 20) * 10000
+  };
 }
+function refreshSliderLabels(){
+  $('stopVal').textContent = $('stopSlider').value + '%';
+  $('tp1Val').textContent = $('tp1Slider').value + '%';
+  $('tp2Val').textContent = $('tp2Slider').value + '%';
+  $('trailVal').textContent = $('trailSlider').value + '%';
+  $('mainAllocVal').textContent = $('mainAllocSlider').value + '%';
+  $('capitalVal').textContent = $('capitalSlider').value + '萬';
+  updateFinalCards(); updateHoldings();
+}
+['stopSlider','tp1Slider','tp2Slider','trailSlider','mainAllocSlider','capitalSlider'].forEach(id => $(id).addEventListener('input', refreshSliderLabels));
 
-// ===== AI =====
+function parseCSV(text){
+  const rows=[]; let row=[], cur='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i], n=text[i+1];
+    if(c==='\r') continue;
+    if(c==='"'){ if(q && n==='"'){ cur+='"'; i++; } else q=!q; }
+    else if(c===',' && !q){ row.push(cur); cur=''; }
+    else if(c==='\n' && !q){ row.push(cur); rows.push(row); row=[]; cur=''; }
+    else cur += c;
+  }
+  if(cur.length || row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(v => String(v).trim() !== ''));
+}
+function nrm(s=''){ return String(s).trim().toLowerCase().replace(/[\s\-\(\)（）,%％"']/g,''); }
+function findIdx(map, keys, includes=[]){
+  for(const k of keys){ if(map[nrm(k)] !== undefined) return map[nrm(k)]; }
+  const entries = Object.entries(map);
+  for(const key of includes){
+    const needle = nrm(key);
+    const hit = entries.find(([k]) => k.includes(needle));
+    if(hit) return hit[1];
+  }
+  return null;
+}
+function scoreRow(r){
+  let s=0, why=[];
+  if(r.price && r.price>15){ s+=8; why.push('價格合格'); } else { s-=8; why.push('價格偏弱'); }
+  if(r.relVol!==null){
+    if(r.relVol>=3){ s+=22; why.push('相對量爆發'); }
+    else if(r.relVol>=2){ s+=18; why.push('相對量強'); }
+    else if(r.relVol>=1.5){ s+=14; why.push('相對量合格'); }
+  }
+  if(r.change!==null){
+    if(r.change>=8){ s+=18; why.push('今日強表態'); }
+    else if(r.change>=4){ s+=12; why.push('今日轉強'); }
+    else if(r.change>0){ s+=6; why.push('收紅'); }
+  }
+  if(r.price && r.sma20){ if(r.price > r.sma20){ s+=10; why.push('站上 SMA20'); } else { s-=10; why.push('跌破 SMA20'); } }
+  if(r.sma20 && r.sma60){ if(r.sma20 > r.sma60){ s+=10; why.push('均線多頭'); } else { s-=10; why.push('均線轉弱'); } }
+  if(r.rsi!==null){
+    if(r.rsi>=65 && r.rsi<=75){ s+=12; why.push('RSI 主升段'); }
+    else if(r.rsi>75 && r.rsi<=80){ s+=5; why.push('RSI 偏熱'); }
+    else if(r.rsi>80){ s-=8; why.push('RSI 過熱'); }
+  }
+  if(r.dev!==null){
+    if(r.dev>=0 && r.dev<=15){ s+=10; why.push('乖離健康'); }
+    else if(r.dev>15){ s-=14; why.push('乖離過大'); }
+    else if(r.dev<0){ s-=8; why.push('價格在 20MA 下'); }
+  }
+  const score = Math.max(0, Math.min(100, Math.round(s)));
+  const status = score>=75 ? '可進攻' : score>=60 ? '偏強' : score>=45 ? '觀察' : '淘汰';
+  return Object.assign({}, r, {score:score, status:status, why:why});
+}
+function analyzeCSV(){
+  const text = $('csvInput').value.trim();
+  if(!text){ $('localSummary').textContent = '請先貼上 CSV。'; return; }
+  const raw = parseCSV(text);
+  if(raw.length < 2){ $('localSummary').textContent = 'CSV 資料不足。'; return; }
+  const headers = raw[0].map(x => String(x).trim());
+  const map = {}; headers.forEach((h,i)=> map[nrm(h)] = i);
+  const idx = {
+    symbol: findIdx(map,['商品','代號','symbol']),
+    name: findIdx(map,['描述','名稱','name']),
+    price: findIdx(map,['價格']),
+    change: findIdx(map,['價格變化%1天'],['價格變化1天']),
+    relVol: findIdx(map,['相對成交量1天','相對成交量'],['相對成交量1天']),
+    sma20: findIdx(map,['sma20'],['移動平均線20','簡單移動平均線20']),
+    sma60: findIdx(map,['sma60'],['移動平均線60','簡單移動平均線60']),
+    rsi: findIdx(map,['rsi14','rsi'],['相對強弱指標14','相對強弱指數14'])
+  };
+  localPicks = raw.slice(1).map(cols => {
+    const price = idx.price!==null ? num(cols[idx.price]) : null;
+    const sma20 = idx.sma20!==null ? num(cols[idx.sma20]) : null;
+    return scoreRow({
+      symbol: idx.symbol!==null ? String(cols[idx.symbol]||'').trim() : '',
+      name: idx.name!==null ? String(cols[idx.name]||'').trim() : '',
+      price: price,
+      change: idx.change!==null ? num(cols[idx.change]) : null,
+      relVol: idx.relVol!==null ? num(cols[idx.relVol]) : null,
+      sma20: sma20,
+      sma60: idx.sma60!==null ? num(cols[idx.sma60]) : null,
+      rsi: idx.rsi!==null ? num(cols[idx.rsi]) : null,
+      dev: (price!==null && sma20) ? ((price-sma20)/sma20*100) : null
+    });
+  }).filter(r=>r.symbol).sort((a,b)=>b.score-a.score).slice(0,6);
+  $('mLocal').textContent = localPicks.length ? localPicks.slice(0,2).map(x=>x.symbol).join(' / ') : '—';
+  $('localSummary').innerHTML = localPicks.length ? '本地前段班：<b>' + localPicks.slice(0,3).map(x=>x.symbol + ' ' + (x.name||'')).join('、') + '</b><br>第一名原因：' + localPicks[0].why.slice(0,4).join('、') : '沒有抓到資料。';
+  $('lightScan').textContent = localPicks.length ? '掃描完成' : '尚未分析';
+  updateCommandCenter();
+}
 function parseAI(){
-  const txt=document.getElementById("ai").value
-  const m=txt.match(/\d{4}/g)
-  aiPick=m?[...new Set(m)].slice(0,2):[]
-  document.getElementById("aiRes").innerText="AI："+aiPick
+  const txt = $('aiInput').value.trim();
+  const m = txt.match(/\d{4,6}/g);
+  aiCodes = m ? Array.from(new Set(m)).slice(0,2) : [];
+  $('mAi').textContent = aiCodes.length ? aiCodes.join(' / ') : '—';
+  $('aiSummary').innerHTML = aiCodes.length ? 'AI 解析到：<b>' + aiCodes.join('、') + '</b><br>下一步請按 <b>一鍵最終決策</b>。' : '沒有抓到股票代號，請確認 AI 回覆內含 4 位數股票代號。';
+  $('lightAi').textContent = aiCodes.length ? 'AI 已導入' : 'AI 尚未導入';
+  updateCommandCenter();
 }
-
-// ===== 決策 =====
-function decide(){
-
-  const local=localPick.map(x=>x.symbol)
-
-  if(aiPick.length===0){
-    finalPick=local
+function decideFinal(){
+  const local2 = localPicks.slice(0,2);
+  const localCodes = local2.map(x=>x.symbol);
+  const inter = aiCodes.filter(x=>localCodes.includes(x));
+  if(aiCodes.length===0){
+    finalPicks = local2; decisionSource = '本地優先';
+  }else if(inter.length){
+    finalPicks = inter.map(code => localPicks.find(x=>x.symbol===code)).filter(Boolean);
+    const supplements = local2.filter(x => !finalPicks.some(y=>y.symbol===x.symbol));
+    if(finalPicks.length<2 && supplements.length) finalPicks.push(supplements[0]);
+    decisionSource = '交集模式';
   }else{
-    const inter=aiPick.filter(x=>local.includes(x))
-    finalPick=inter.length?inter:aiPick
+    finalPicks = aiCodes.map(code => localPicks.find(x=>x.symbol===code) || {symbol:code,name:'AI 指定',price:null,score:60,status:'AI指定',why:['AI 指定標的']});
+    decisionSource = 'AI優先';
   }
-
-  document.getElementById("decision").innerHTML =
-    "<div class='big'>🔥 最終："+finalPick+"</div>"
-
-  // 雷達
-  document.getElementById("radar").innerHTML =
-    "一致性："+(aiPick.join()==local.join()?"🟢 高":"🟡 分歧")
-
-  updateCommand()
+  $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
+  updateFinalCards(); updateSystemTable(); updateCommandCenter();
 }
-
-// ===== 核心 =====
-function core(b,c){
-
-  const stop=b*0.93
-  const tp1=b*1.1
-  const tp2=b*1.15
-
-  let action="持有",color="green"
-
-  if(c<=stop){action="停損";color="red"}
-  else if(c>=tp2){action="全出";color="green"}
-  else if(c>=tp1){action="減碼";color="yellow"}
-
-  return {action,color,stop,tp1,tp2}
+function buildFinalCard(r, i){
+  const cfg = getConfig();
+  const role = i===0 ? '主攻艦' : '副攻艦';
+  const alloc = i===0 ? cfg.mainAlloc : (100-cfg.mainAlloc);
+  const budget = Math.round(cfg.capital * alloc / 100);
+  const shares = r.price ? Math.floor(budget / r.price) : 0;
+  const stop = r.price ? r.price * (1-cfg.stopPct/100) : null;
+  const tp1 = r.price ? r.price * (1+cfg.tp1Pct/100) : null;
+  const tp2 = r.price ? r.price * (1+cfg.tp2Pct/100) : null;
+  const trail = r.price ? Math.max(r.price, tp1 || r.price) * (1-cfg.trailPct/100) : null;
+  const glowClass = r.status==='可進攻' ? 'glow-green' : r.status==='偏強' ? 'glow-yellow' : '';
+  const orderText = i===0 ? '優先盯盤、只做最強表態。' : '主攻艦穩定後，副攻艦才跟進。';
+  return '<div class="stockCard ' + glowClass + '"><div class="stockHead"><div><div class="role">' + role + '</div><div class="stockName">' + r.symbol + ' ' + (r.name||'') + '</div></div><div class="tag">' + decisionSource + '</div></div><div class="kpis"><div class="kpi"><div class="k">戰力分數</div><div class="v">' + (r.score ?? '—') + '</div></div><div class="kpi"><div class="k">目前價格</div><div class="v">' + fmt(r.price,2) + '</div></div><div class="kpi"><div class="k">配置金額</div><div class="v">' + fmt(budget,0) + '</div></div><div class="kpi"><div class="k">估計股數</div><div class="v">' + (shares || '—') + '</div></div><div class="kpi"><div class="k">停損價</div><div class="v">' + fmt(stop,2) + '</div></div><div class="kpi"><div class="k">停利1</div><div class="v">' + fmt(tp1,2) + '</div></div><div class="kpi"><div class="k">停利2</div><div class="v">' + fmt(tp2,2) + '</div></div><div class="kpi"><div class="k">移動停利價</div><div class="v">' + fmt(trail,2) + '</div></div></div><div class="reason"><b>今日該看什麼：</b>' + (r.why || ['等待更多資料']).slice(0,4).join('、') + '<br><b>作戰指令：</b>' + orderText + '</div></div>';
 }
-
-// ===== 指令 =====
-function updateCommand(){
-
-  if(positions.length==0){
-    document.getElementById("command").innerText="📌 今日指令：等待進場"
-    return
+function updateFinalCards(){
+  const box = $('finalCards');
+  if(!finalPicks.length){
+    box.innerHTML = '<div class="stockCard"><div class="small">尚未產生最終標的。</div></div>';
+    updateBridge(); updateTactical(); return;
   }
-
-  let risk=false
-
-  positions.forEach(p=>{
-    if(p.c <= p.b*0.95) risk=true
-  })
-
-  if(risk){
-    document.getElementById("command").innerHTML="🚨 今日指令：風險控管（減碼/停損）"
-  }else{
-    document.getElementById("command").innerHTML="🚀 今日指令：持有 / 觀察續強"
+  box.innerHTML = finalPicks.slice(0,2).map((r,i)=>buildFinalCard(r,i)).join('');
+  updateBridge(); updateTactical();
+}
+function updateBridge(){
+  const cfg = getConfig();
+  const main = finalPicks[0];
+  if(!main || !main.price){
+    $('bridgeStopMain').textContent = '—'; $('bridgeTp1Main').textContent = '—'; $('bridgeTrailMain').textContent = '—'; $('bridgeSharesMain').textContent = '—'; return;
   }
+  const stop = main.price * (1-cfg.stopPct/100);
+  const tp1 = main.price * (1+cfg.tp1Pct/100);
+  const trail = tp1 * (1-cfg.trailPct/100);
+  const shares = Math.floor((cfg.capital * cfg.mainAlloc / 100) / main.price);
+  $('bridgeStopMain').textContent = fmt(stop,2);
+  $('bridgeTp1Main').textContent = fmt(tp1,2);
+  $('bridgeTrailMain').textContent = fmt(trail,2);
+  $('bridgeSharesMain').textContent = shares || '—';
+}
+function addHolding(){
+  const symbol = $('holdSymbol').value.trim();
+  const buy = num($('holdBuy').value);
+  const current = num($('holdCurrent').value);
+  if(!symbol || buy===null || current===null) return;
+  const exists = holdings.find(h=>h.symbol===symbol);
+  if(exists){ exists.buy = buy; exists.current = current; } else { holdings.push({symbol:symbol,buy:buy,current:current,highest:current}); }
+  $('holdSymbol').value=''; $('holdBuy').value=''; $('holdCurrent').value='';
+  updateHoldings(); updateCommandCenter();
+}
+function loadMainToForm(){
+  const main = finalPicks[0];
+  if(!main) return;
+  $('holdSymbol').value = main.symbol || '';
+  $('holdBuy').value = main.price ?? '';
+  $('holdCurrent').value = main.price ?? '';
+}
+function calcHold(h){
+  const cfg = getConfig();
+  if(h.current > h.highest) h.highest = h.current;
+  const stop = h.buy * (1-cfg.stopPct/100);
+  const tp1 = h.buy * (1+cfg.tp1Pct/100);
+  const tp2 = h.buy * (1+cfg.tp2Pct/100);
+  const trailPrice = h.highest * (1-cfg.trailPct/100);
+  const pnl = ((h.current-h.buy)/h.buy)*100;
+  const pnlAmt = (h.current-h.buy)*1000;
+  let action='持有', cls='ok', glow='glow-green', note='趨勢正常，繼續監控。';
+  if(h.current <= stop){ action='停損出場'; cls='danger'; glow='glow-red'; note='已跌破固定停損線，今天該先處理風險。'; }
+  else if(h.current >= tp2){ action='全數停利'; cls='ok'; glow='glow-green'; note='已達第二停利，可考慮全數了結。'; }
+  else if(h.current < trailPrice && h.current > h.buy){ action='移動停利'; cls='warn'; glow='glow-yellow'; note='從高點回撤達門檻，建議保住獲利。'; }
+  else if(h.current >= tp1){ action='分批停利'; cls='warn'; glow='glow-yellow'; note='已達第一停利，建議先出一半。'; }
+  else if(((tp1-h.current)/h.current*100) < 2){ action='接近停利'; cls='warn'; glow='glow-yellow'; note='距離第一停利很近，今天重點看能否續強。'; }
+  else if(((h.current-stop)/h.current*100) < 2){ action='接近停損'; cls='danger'; glow='glow-red'; note='已逼近停損，今天要優先控管。'; }
+  return Object.assign({}, h, {stop:stop, tp1:tp1, tp2:tp2, trailPrice:trailPrice, pnl:pnl, pnlAmt:pnlAmt, action:action, cls:cls, glow:glow, note:note});
+}
+function updateHoldings(){
+  const box = $('holdCards');
+  if(!holdings.length){
+    box.innerHTML = '<div class="holdCard"><div class="small">尚未加入持倉。</div></div>';
+    $('mAlert').textContent = '待命'; $('lightHold').textContent = '尚無持倉';
+    updateSystemTable(); updateTactical(); return;
+  }
+  holdings = holdings.map(calcHold);
+  box.innerHTML = holdings.map((h,i)=>'<div class="holdCard ' + h.glow + '"><div class="holdHead"><div><div class="role">持倉監控</div><div class="stockName">' + h.symbol + '</div></div><div class="tag ' + h.cls + '">' + h.action + '</div></div><div class="kpis"><div class="kpi"><div class="k">買入價</div><div class="v">' + fmt(h.buy,2) + '</div></div><div class="kpi"><div class="k">現價</div><div class="v">' + fmt(h.current,2) + '</div></div><div class="kpi"><div class="k">報酬率</div><div class="v">' + pct(h.pnl,2) + '</div></div><div class="kpi"><div class="k">損益</div><div class="v">' + fmt(h.pnlAmt,0) + '</div></div><div class="kpi"><div class="k">停損價</div><div class="v">' + fmt(h.stop,2) + '</div></div><div class="kpi"><div class="k">停利1</div><div class="v">' + fmt(h.tp1,2) + '</div></div><div class="kpi"><div class="k">停利2</div><div class="v">' + fmt(h.tp2,2) + '</div></div><div class="kpi"><div class="k">移動停利價</div><div class="v">' + fmt(h.trailPrice,2) + '</div></div></div><div class="reason"><b>今日要做：</b>' + h.action + '<br>' + h.note + '</div><div class="toolbar" style="margin-top:10px"><button class="secondary" onclick="editHolding(' + i + ')">載入修改</button><button class="danger" onclick="removeHolding(' + i + ')">刪除</button></div></div>').join('');
+  const dangerCount = holdings.filter(x=>x.cls==='danger').length;
+  const warnCount = holdings.filter(x=>x.cls==='warn').length;
+  $('mAlert').textContent = dangerCount ? '紅色警報' : warnCount ? '注意' : '安全';
+  $('lightHold').textContent = dangerCount ? '優先風控' : warnCount ? '接近收割' : '巡航中';
+  updateSystemTable(); updateTactical();
+}
+function editHolding(i){
+  const h = holdings[i];
+  $('holdSymbol').value = h.symbol; $('holdBuy').value = h.buy; $('holdCurrent').value = h.current;
+}
+function removeHolding(i){
+  holdings.splice(i,1); updateHoldings(); updateCommandCenter();
+}
+function updateSystemTable(){
+  $('systemTable').innerHTML =
+    '<tr><td>決策來源</td><td>' + decisionSource + '</td><td>' + (decisionSource==='交集模式' ? '本地與 AI 有交集，可信度最高。' : decisionSource==='AI優先' ? '本地與 AI 分歧，採 AI 指令。' : decisionSource==='本地優先' ? '尚未導入 AI 或 AI 無法判定。' : '尚未決策') + '</td></tr>' +
+    '<tr><td>主攻股</td><td>' + (finalPicks[0] ? finalPicks[0].symbol : '—') + '</td><td>' + (finalPicks[0] ? (finalPicks[0].name || '已鎖定') : '尚未產生') + '</td></tr>' +
+    '<tr><td>副攻股</td><td>' + (finalPicks[1] ? finalPicks[1].symbol : '—') + '</td><td>' + (finalPicks[1] ? (finalPicks[1].name || '已鎖定') : '尚未產生') + '</td></tr>' +
+    '<tr><td>總持倉數</td><td>' + holdings.length + '</td><td>' + (holdings.length ? '持倉監控已啟動' : '目前無持倉') + '</td></tr>';
+}
+function updateTactical(){
+  let main = '等待分析';
+  let sub = '這裡會根據本地、AI、持倉自動給你今天的主要作戰步驟。';
+  let list = ['先貼 CSV','再導入 AI 結果','最後觀察最終標的與持倉'];
+  if(localPicks.length && !finalPicks.length){
+    main = '先鎖定最終標的';
+    sub = '本地排序已經完成，下一步是比對 AI 結果，避免分散火力。';
+    list = ['確認 AI 是否選到同一檔','按一鍵最終決策','只保留 1–2 檔重點監控'];
+  }
+  if(finalPicks.length){
+    main = '主攻艦待命，等表態';
+    sub = '已經有最終標的，現在看主攻艦是否強於副攻艦，再決定是否真的出手。';
+    list = ['主攻：' + (finalPicks[0] ? finalPicks[0].symbol : '—'), '副攻：' + (finalPicks[1] ? finalPicks[1].symbol : '—'), '不要同時分散太多火力'];
+  }
+  if(holdings.length){
+    const dangerCount = holdings.filter(x=>x.cls==='danger').length;
+    const warnCount = holdings.filter(x=>x.cls==='warn').length;
+    if(dangerCount){
+      main = '今天先處理紅色警戒';
+      sub = '至少有一檔持倉快觸發或已觸發停損，今天不新增風險，先保命。';
+      list = ['優先處理紅燈持倉','停損 / 減碼先執行','確認剩餘倉位是否還安全'];
+    } else if(warnCount){
+      main = '今天重點盯停利與回撤';
+      sub = '已有持倉接近停利或已進停利區，今天不是亂加碼，是看是否收割。';
+      list = ['優先看是否達第一停利','若從高點回撤，保住獲利','不要讓獲利單翻成沒賺'];
+    } else {
+      main = '巡航模式：持有觀察';
+      sub = '目前持倉結構還穩，今天只要看現價、續強與是否接近關鍵價。';
+      list = ['觀察是否續強','若逼近停利，準備減碼','若逼近停損，提早警戒'];
+    }
+  }
+  $('tacticalMain').textContent = main;
+  $('tacticalSub').textContent = sub;
+  $('tacticalList').innerHTML = list.map(x => '<li>' + x + '</li>').join('');
+}
+function updateCommandCenter(){
+  const local2 = localPicks.slice(0,2).map(x=>x.symbol);
+  const inter = aiCodes.filter(x=>local2.includes(x));
+  const consistency = !aiCodes.length ? 55 : inter.length===2 ? 100 : inter.length===1 ? 65 : 25;
+  $('consistencyText').textContent = consistency>=80 ? '高一致' : consistency>=50 ? '部分一致' : '分歧';
+  $('consistencyBar').style.width = consistency + '%';
+  const aggressive = finalPicks.length ? Math.min(100, Math.round((finalPicks[0] && finalPicks[0].score) || 55)) : 0;
+  $('aggressiveText').textContent = aggressive>=75 ? '可進攻' : aggressive>=55 ? '偏進攻' : '保守';
+  $('aggressiveBar').style.width = aggressive + '%';
+  const heat = finalPicks[0] && finalPicks[0].dev ? Math.max(0, Math.min(100, Math.round(finalPicks[0].dev*4))) : 20;
+  $('heatText').textContent = heat>=70 ? '過熱' : heat>=40 ? '偏熱' : '健康';
+  $('heatBar').style.width = heat + '%';
+  const pressure = holdings.length ? Math.min(100, holdings.reduce((a,h)=> a + (h.cls==='danger' ? 35 : h.cls==='warn' ? 18 : 6), 0)) : 10;
+  $('pressureText').textContent = pressure>=70 ? '高壓' : pressure>=35 ? '中壓' : '低壓';
+  $('pressureBar').style.width = pressure + '%';
+
+  let cmd='等待資料', sub='請先分析 CSV，再決策，最後監控持倉。', mode='待機模式', modeClass='info';
+  if(localPicks.length && !finalPicks.length){ cmd='先做最終決策'; sub='本地排序已完成，下一步該結合 AI 情報。'; mode='預備攻擊'; modeClass='warn'; }
+  if(finalPicks.length){ cmd='鎖定 1–2 檔，等開盤表態'; sub='目前最終標的是 ' + finalPicks.map(x=>x.symbol).join('、') + '。不要分散火力。'; mode=decisionSource; modeClass='ok'; }
+  if(holdings.length){
+    const dangerCount = holdings.filter(x=>x.cls==='danger').length;
+    const warnCount = holdings.filter(x=>x.cls==='warn').length;
+    if(dangerCount){ cmd='優先風險控管'; sub='至少有一檔已進入紅色警戒，今天先處理停損 / 減碼。'; mode='防守模式'; modeClass='danger'; }
+    else if(warnCount){ cmd='重點盯停利區'; sub='持倉接近停利或已達第一停利，今天重點看續強與回撤。'; mode='收割模式'; modeClass='warn'; }
+    else { cmd='持有，觀察續強'; sub='持倉尚未觸發停損或停利，今天只要監控現價與氣勢。'; mode='巡航模式'; modeClass='ok'; }
+  }
+  $('todayCommand').textContent = '📌 今日指令：' + cmd;
+  $('todaySub').textContent = sub;
+  $('battleMode').textContent = mode;
+  $('battleMode').className = 'badge ' + modeClass;
+  $('lightScan').textContent = localPicks.length ? '掃描完成' : '尚未分析';
+  $('lightAi').textContent = aiCodes.length ? 'AI 已導入' : 'AI 尚未導入';
+  $('lightDecision').textContent = finalPicks.length ? decisionSource : '待命';
+  $('lightHold').textContent = holdings.length ? $('mAlert').textContent : '尚無持倉';
+  updateTactical();
+}
+function loadDemo(){
+  $('csvInput').value = '商品,描述,價格,價格 - 貨幣,價格變化 % 1天,成交量 1天,相對成交量 1天,簡單移動平均線 (20) 1天,簡單移動平均線 (60) 1天,相對強弱指標 (14) 1天\n8261,富鼎,116,TWD,6.42,5802825,2.79,106.23,99.25,66.98\n3236,千如,35.8,TWD,3.77,14760222,2.77,31.87,31.48,65.38\n3209,全科,47,TWD,2.17,5661955,1.76,43.47,37.97,70.58\n6271,同欣電,185,TWD,1.09,20196785,2.29,159.27,152.40,69.18\n4979,華星光,586,TWD,9.94,32773935,5.95,421.62,368.12,76.85';
+  $('aiInput').value = '主攻股：8261 富鼎\n副攻股：3236 千如';
 }
 
-// ===== 持倉 =====
-function add(){
-  const s=document.getElementById("symbol").value
-  const b=parseFloat(document.getElementById("buy").value)
-  const c=parseFloat(document.getElementById("current").value)
+$('analyzeBtn').addEventListener('click', analyzeCSV);
+$('parseAiBtn').addEventListener('click', parseAI);
+$('decideBtn').addEventListener('click', decideFinal);
+$('addHoldBtn').addEventListener('click', addHolding);
+$('loadMainBtn').addEventListener('click', loadMainToForm);
+$('loadDemoBtn').addEventListener('click', loadDemo);
 
-  positions.push({s,b,c})
-  render()
-  updateCommand()
-}
-
-function render(){
-
-  const box=document.getElementById("cards")
-  box.innerHTML=""
-
-  positions.forEach((p,i)=>{
-
-    const r=core(p.b,p.c)
-    const pnl=((p.c-p.b)/p.b*100).toFixed(2)
-
-    box.innerHTML+=`
-    <div class="card">
-      <div class="big ${r.color}">${r.action}</div>
-      <div>${p.s}</div>
-
-      <div class="grid">
-        <div class="stat">報酬<br>${pnl}%</div>
-        <div class="stat">停損<br>${r.stop.toFixed(1)}</div>
-        <div class="stat">停利<br>${r.tp1.toFixed(1)}</div>
-        <div class="stat">現價<br>${p.c}</div>
-      </div>
-
-      <button onclick="del(${i})">刪除</button>
-    </div>`
-  })
-}
-
-function del(i){
-  positions.splice(i,1)
-  render()
-  updateCommand()
-}
-
+refreshSliderLabels();
+updateSystemTable();
+updateFinalCards();
+updateHoldings();
+updateCommandCenter();
 </script>
-
 </body>
 </html>
