@@ -3,54 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 戰艦 Pro Max v4.9</title>
+<title>AI 戰艦 Pro Max v4.9 共振版</title>
 
 <style>
-body{
-  margin:0;
-  background:#0b0f1a;
-  color:#fff;
-  font-family:Arial;
-}
-.container{padding:16px;}
-.card{
-  background:#111827;
-  border-radius:12px;
-  padding:12px;
-  margin-bottom:12px;
-  box-shadow:0 0 10px rgba(0,255,255,0.1);
-}
-.title{font-size:18px;margin-bottom:8px;color:#00eaff;}
+body{background:#0b0f1a;color:#fff;font-family:Arial;margin:0}
+.container{padding:16px}
+.card{background:#111827;border-radius:12px;padding:12px;margin-bottom:12px}
+.title{color:#00eaff;margin-bottom:8px}
 
-textarea{width:100%;height:120px;background:#000;color:#0f0;border:none;padding:8px;}
-button{
-  width:100%;
-  padding:10px;
-  margin-top:8px;
-  background:#00eaff;
-  border:none;
-  border-radius:8px;
-  font-weight:bold;
-}
+textarea{width:100%;height:120px;background:#000;color:#0f0}
+button{width:100%;padding:10px;margin-top:8px;background:#00eaff;border:none;border-radius:8px}
 
-.stock{
-  display:flex;
-  justify-content:space-between;
-  padding:6px;
-  border-bottom:1px solid #222;
-}
+.stock{display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid #222}
 
-.badge{
-  padding:2px 6px;
-  border-radius:6px;
-}
+.badge{padding:2px 6px;border-radius:6px}
+.Splus{background:#00ffe1;color:#000}
+.A{background:#4caf50}
+.B{background:#ff9800}
+.D{background:#f44336}
 
-.S{background:#00ffcc;color:#000;}
-.A{background:#4caf50;}
-.B{background:#ff9800;}
-.D{background:#f44336;}
-
-.lock{color:red;font-size:12px;}
+.lock{color:red}
+.warn{color:orange}
 </style>
 </head>
 
@@ -58,152 +31,144 @@ button{
 <div class="container">
 
 <div class="card">
-<div class="title">CSV 輸入</div>
+<div class="title">CSV</div>
 <textarea id="csv"></textarea>
 <button onclick="analyze()">開始分析</button>
 </div>
 
 <div class="card">
-<div class="title">排名結果</div>
+<div class="title">AI輸入（貼AI選股）</div>
+<textarea id="ai"></textarea>
+<button onclick="parseAI()">解析AI</button>
+</div>
+
+<div class="card">
+<div class="title">排名</div>
 <div id="rank"></div>
 </div>
 
 <div class="card">
 <div class="title">最終決策</div>
-<div id="decision"></div>
-<button onclick="finalDecision()">一鍵最終決策</button>
-</div>
-
-<div class="card">
-<div class="title">持倉監控</div>
-<div>
-股價 <input id="price">
-買入 <input id="buy">
-股數 <input id="qty">
-<button onclick="calc()">計算</button>
-</div>
-<div id="pnl"></div>
+<div id="final"></div>
+<button onclick="decision()">一鍵決策</button>
 </div>
 
 </div>
 
 <script>
 
-let data=[];
+let data=[]
+let aiList=[]
 
-// ===== 解析CSV =====
+// ===== CSV =====
 function analyze(){
-  let text=document.getElementById('csv').value;
-  let rows=text.split('\n').slice(1);
+  let rows=csv.value.split('\n').slice(1)
 
   data=rows.map(r=>{
-    let c=r.split(',');
-    let price=parseFloat(c[2]);
-    let vol=parseFloat(c[6]);
-    let sma20=parseFloat(c[17]);
-    let rsi=parseFloat(c[19]);
+    let c=r.split(',')
+    let price=parseFloat(c[2])
+    let vol=parseFloat(c[6])
+    let sma20=parseFloat(c[17])
+    let rsi=parseFloat(c[19])
+    let dev=((price-sma20)/sma20)*100
 
-    let dev=((price-sma20)/sma20)*100;
-
-    return{
-      name:c[1],
-      code:c[0],
-      price,vol,sma20,rsi,dev
-    }
-  });
+    return{code:c[0],name:c[1],price,vol,sma20,rsi,dev}
+  })
 
   data.forEach(r=>{
-    r.grade=getGrade(r);
-    r.lock=r.dev>15;
-    r.score=score(r);
-  });
+    r.lock=r.dev>15
+    r.score=score(r)
+  })
 
-  render();
+  render()
 }
 
-// ===== 分級 =====
-function getGrade(r){
-  if(r.dev<5 && r.rsi<70 && r.vol>2) return "S";
-  if(r.dev<10) return "A";
-  if(r.dev<15) return "B";
-  return "D";
+// ===== AI解析 =====
+function parseAI(){
+  let txt=ai.value
+  let codes=txt.match(/\d{4}/g)||[]
+
+  aiList=codes
 }
 
 // ===== 評分 =====
 function score(r){
-  let s=0;
-  if(r.dev<5)s+=30;
-  else if(r.dev<10)s+=20;
-  else if(r.dev<15)s+=10;
-  else s-=30;
+  let s=0
+  if(r.dev<5)s+=30
+  else if(r.dev<10)s+=20
+  else if(r.dev<15)s+=10
+  else s-=30
 
-  if(r.rsi<70)s+=20;
-  if(r.vol>2)s+=20;
+  if(r.rsi<70)s+=20
+  if(r.vol>2)s+=20
 
-  return s;
+  return s
 }
 
-// ===== 顯示 =====
+// ===== 排名 =====
 function render(){
-  let html="";
-  data.sort((a,b)=>b.score-a.score);
+  data.sort((a,b)=>b.score-a.score)
 
-  data.forEach(r=>{
+  rank.innerHTML=data.map(r=>`
+  <div class="stock">
+    <div>${r.code} ${r.name}</div>
+    <div>
+      ${r.lock?'<span class="lock">🚨</span>':''}
+    </div>
+  </div>`).join('')
+}
+
+// ===== 決策 =====
+function decision(){
+
+  let picks=data.filter(r=>!r.lock)
+
+  picks.forEach(r=>{
+    let inAI=aiList.includes(r.code)
+
+    if(inAI && !r.lock){
+      r.final="S+"
+      r.priority=3
+    }
+    else if(!r.lock){
+      r.final="A"
+      r.priority=2
+    }
+    else if(inAI){
+      r.final="B"
+      r.priority=1
+    }
+    else{
+      r.final="D"
+      r.priority=0
+    }
+  })
+
+  picks.sort((a,b)=>b.priority-a.priority)
+
+  let top=picks.slice(0,2)
+
+  let html=""
+
+  top.forEach(r=>{
+    let warn=""
+    if(aiList.includes(r.code) && r.priority<3){
+      warn="⚠️ AI與量化不一致"
+    }
+
     html+=`
-    <div class="stock">
-      <div>${r.code} ${r.name}</div>
-      <div>
-        <span class="badge ${r.grade}">${r.grade}</span>
-        ${r.lock?'<span class="lock">🚨鎖單</span>':''}
-      </div>
-    </div>`;
-  });
+    <div>
+    ${r.code} ${r.name}
+    <span class="badge ${r.final=='S+'?'Splus':r.final}">
+    ${r.final}
+    </span>
+    ${warn}
+    </div>`
+  })
 
-  document.getElementById('rank').innerHTML=html;
-}
-
-// ===== 市場判斷 =====
-function getMode(){
-  let avg=data.reduce((a,b)=>a+b.dev,0)/data.length;
-  if(avg>10)return "🔥強勢";
-  if(avg>5)return "⚖️標準";
-  return "🛡保守";
-}
-
-// ===== 最終決策 =====
-function finalDecision(){
-  let picks=data.filter(r=>!r.lock).slice(0,2);
-
-  let mode=getMode();
-
-  let html=`市場：${mode}<br>`;
-
-  picks.forEach(p=>{
-    html+=`${p.code} ${p.name}<br>`;
-  });
-
-  document.getElementById('decision').innerHTML=html;
-}
-
-// ===== 持倉 =====
-function calc(){
-  let p=parseFloat(price.value);
-  let b=parseFloat(buy.value);
-  let q=parseFloat(qty.value);
-
-  let pnl=(p-b)*q;
-  let rate=((p-b)/b*100).toFixed(2);
-
-  let status="🟢持有";
-
-  if(rate<-7)status="🔴停損";
-  if(rate>10)status="🟡停利區";
-
-  document.getElementById('pnl').innerHTML=
-  `損益:${pnl}<br>報酬:${rate}%<br>${status}`;
+  final.innerHTML=html
 }
 
 </script>
-
 </body>
 </html>
