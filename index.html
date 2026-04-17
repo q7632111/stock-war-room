@@ -1,870 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>戰艦 Pro Max</title>
+
+<style>
+body{
+  margin:0;
+  background:#0b0f1a;
+  color:#fff;
+  font-family:Arial;
+}
+.container{
+  padding:16px;
+}
+.card{
+  background:#111827;
+  border-radius:12px;
+  padding:16px;
+  margin-bottom:16px;
+}
+input{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:8px;
+  border:none;
+}
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#2563eb;
+  color:#fff;
+  font-weight:bold;
+}
+.kpi{
+  display:flex;
+  justify-content:space-between;
+  margin:6px 0;
+}
+.green{color:#22c55e}
+.red{color:#ef4444}
+.yellow{color:#facc15}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="card">
+<h3>📊 持倉監控</h3>
+
+<input id="buy" placeholder="買入價">
+<input id="current" placeholder="目前價">
+
+<button onclick="calc()">計算</button>
+
+<div id="result"></div>
+</div>
+
+</div>
+
 <script>
-const $ = id => document.getElementById(id);
-const STORE = 'ai_battleship_pro_max_a_v2';
 
-let localPicks = [];
-let aiCodes = [];
-let finalPicks = [];
-let holdings = [];
-let decisionSource = '—';
-let flowState = {
-  csvAnalyzed:false,
-  promptCopied:false,
-  aiParsed:false,
-  decided:false
-};
+function calc(){
+  const buy = Number(document.getElementById("buy").value);
+  const current = Number(document.getElementById("current").value);
 
-function num(v){
-  const n = Number(String(v ?? '').replace(/,/g,''));
-  return Number.isFinite(n) ? n : null;
-}
-function fmt(n,d=2){
-  return n===null || n===undefined || Number.isNaN(n)
-    ? '—'
-    : Number(n).toLocaleString('zh-TW',{maximumFractionDigits:d});
-}
-function pct(n,d=1){
-  return n===null || n===undefined || Number.isNaN(n)
-    ? '—'
-    : `${Number(n).toFixed(d)}%`;
-}
+  if(!buy || !current) return;
 
-function getCfg(){
-  return {
-    stopPct: num($('stopSlider').value) ?? 7,
-    tp1Pct: num($('tp1Slider').value) ?? 10,
-    tp2Pct: num($('tp2Slider').value) ?? 15,
-    trailPct: num($('trailSlider').value) ?? 4,
-    allocMain: num($('allocSlider').value) ?? 60,
-    capital: (num($('capitalSlider').value) ?? 20) * 10000
-  };
-}
+  const stop = buy * 0.93;
+  const tp1 = buy * 1.1;
+  const tp2 = buy * 1.15;
 
-function refreshSliders(){
-  $('stopVal').textContent = $('stopSlider').value + '%';
-  $('tp1Val').textContent = $('tp1Slider').value + '%';
-  $('tp2Val').textContent = $('tp2Slider').value + '%';
-  $('trailVal').textContent = $('trailSlider').value + '%';
-  $('allocVal').textContent = $('allocSlider').value + '%';
-  $('capitalVal').textContent = $('capitalSlider').value + '萬';
-  updateBridge();
-  updateFinalCards();
-  updateHoldings();
-  saveLocal();
-}
+  let highest = Math.max(current, buy);
 
-['stopSlider','tp1Slider','tp2Slider','trailSlider','allocSlider','capitalSlider']
-  .forEach(id=>$(id).addEventListener('input', refreshSliders));
+  let trailActive = highest >= tp1;
 
-function parseCSV(text){
-  const rows=[]; let row=[], cur='', q=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i], n=text[i+1];
-    if(c==='\r') continue;
-    if(c==='"'){
-      if(q && n==='"'){ cur+='"'; i++; }
-      else q=!q;
-    }else if(c===',' && !q){
-      row.push(cur); cur='';
-    }else if(c==='\n' && !q){
-      row.push(cur); rows.push(row); row=[]; cur='';
-    }else{
-      cur += c;
-    }
-  }
-  if(cur.length || row.length){
-    row.push(cur);
-    rows.push(row);
-  }
-  return rows.filter(r=>r.some(v=>String(v).trim() !== ''));
-}
+  let trail = trailActive ? highest * 0.96 : null;
 
-function nrm(s=''){
-  return String(s).trim().toLowerCase().replace(/[\s\-()（）,%％"']/g,'');
-}
-function findIdx(map, exact=[], fuzzy=[]){
-  for(const key of exact){
-    const k=nrm(key);
-    if(map[k]!==undefined) return map[k];
-  }
-  const entries = Object.entries(map);
-  for(const f of fuzzy){
-    const needle = nrm(f);
-    const hit = entries.find(([k])=>k.includes(needle));
-    if(hit) return hit[1];
-  }
-  return null;
-}
+  let action = "持有";
+  let color = "green";
 
-function scoreRow(r){
-  let score=0, why=[];
-  if(r.price && r.price>15){ score += 8; why.push('價格合格'); } else { score -= 8; why.push('價格偏弱'); }
-  if(r.relVol !== null){
-    if(r.relVol>=3){ score += 22; why.push('相對量爆發'); }
-    else if(r.relVol>=2){ score += 18; why.push('相對量很強'); }
-    else if(r.relVol>=1.5){ score += 14; why.push('相對量合格'); }
-    else { score -= 6; why.push('相對量不足'); }
+  if(current <= stop){
+    action = "停損出場";
+    color = "red";
   }
-  if(r.change !== null){
-    if(r.change>=8){ score += 18; why.push('今日強表態'); }
-    else if(r.change>=4){ score += 12; why.push('今日轉強'); }
-    else if(r.change>0){ score += 6; why.push('收紅'); }
-    else { score -= 8; why.push('未表態'); }
+  else if(current >= tp2){
+    action = "全數停利";
   }
-  if(r.price && r.sma20){
-    if(r.price > r.sma20){ score += 10; why.push('站上SMA20'); }
-    else { score -= 10; why.push('跌破SMA20'); }
+  else if(trailActive && current <= trail){
+    action = "移動停利出場";
+    color = "yellow";
   }
-  if(r.sma20 && r.sma60){
-    if(r.sma20 > r.sma60){ score += 10; why.push('均線多頭'); }
-    else { score -= 10; why.push('均線偏弱'); }
-  }
-  if(r.rsi !== null){
-    if(r.rsi>=65 && r.rsi<=75){ score += 12; why.push('RSI主升段'); }
-    else if(r.rsi>75 && r.rsi<=80){ score += 5; why.push('RSI偏熱'); }
-    else if(r.rsi>80){ score -= 8; why.push('RSI過熱'); }
-  }
-  if(r.dev !== null){
-    if(r.dev>=0 && r.dev<=15){ score += 10; why.push('乖離健康'); }
-    else if(r.dev>15){ score -= 14; why.push('乖離過大'); }
-    else { score -= 6; why.push('價格在20MA下'); }
-  }
-  const s = Math.max(0, Math.min(100, Math.round(score)));
-  const status = s>=75 ? '可進攻' : s>=60 ? '偏強' : s>=45 ? '觀察' : '淘汰';
-  return {...r, score:s, status, why};
-}
-
-function analyzeCSV(){
-  const text = $('csvInput').value.trim();
-  if(!text){
-    setFlowMessage('❌ 先貼 CSV 才能開始分析。', true);
-    return false;
-  }
-  const raw = parseCSV(text);
-  if(raw.length < 2){
-    setFlowMessage('❌ CSV 內容不足。', true);
-    return false;
+  else if(current >= tp1){
+    action = "分批停利";
+    color = "yellow";
   }
 
-  const headers = raw[0].map(x=>String(x).trim());
-  const map = {};
-  headers.forEach((h,i)=> map[nrm(h)] = i);
-
-  const idx = {
-    symbol: findIdx(map,['商品','代號','symbol']),
-    name: findIdx(map,['描述','名稱','name']),
-    price: findIdx(map,['價格']),
-    change: findIdx(map,['價格變化%1天','價格變化1天'],['價格變化1天']),
-    relVol: findIdx(map,['相對成交量1天','相對成交量'],['相對成交量1天']),
-    sma20: findIdx(map,['sma20'],['簡單移動平均線20','移動平均線20']),
-    sma60: findIdx(map,['sma60'],['簡單移動平均線60','移動平均線60']),
-    rsi: findIdx(map,['rsi14','rsi'],['相對強弱指標14','相對強弱指數14'])
-  };
-
-  localPicks = raw.slice(1).map(cols=>{
-    const price = idx.price!==null ? num(cols[idx.price]) : null;
-    const sma20 = idx.sma20!==null ? num(cols[idx.sma20]) : null;
-    return scoreRow({
-      symbol: idx.symbol!==null ? String(cols[idx.symbol]||'').trim() : '',
-      name: idx.name!==null ? String(cols[idx.name]||'').trim() : '',
-      price,
-      change: idx.change!==null ? num(cols[idx.change]) : null,
-      relVol: idx.relVol!==null ? num(cols[idx.relVol]) : null,
-      sma20,
-      sma60: idx.sma60!==null ? num(cols[idx.sma60]) : null,
-      rsi: idx.rsi!==null ? num(cols[idx.rsi]) : null,
-      dev: (price!==null && sma20) ? ((price-sma20)/sma20*100) : null
-    });
-  }).filter(x=>x.symbol).sort((a,b)=>b.score-a.score);
-
-  $('rankBody').innerHTML = localPicks.length ? localPicks.map((r,i)=>`
-    <tr>
-      <td>${i+1}</td>
-      <td>${r.symbol} ${r.name||''}</td>
-      <td>${fmt(r.price,2)}</td>
-      <td>${pct(r.change,2)}</td>
-      <td>${fmt(r.relVol,2)}</td>
-      <td>${fmt(r.sma20,2)}</td>
-      <td>${fmt(r.sma60,2)}</td>
-      <td>${fmt(r.rsi,2)}</td>
-      <td>${pct(r.dev,2)}</td>
-      <td>${r.score}</td>
-      <td>${r.status}</td>
-    </tr>
-  `).join('') : `<tr><td colspan="11">沒有可用資料</td></tr>`;
-
-  $('mLocal').textContent = localPicks.length ? localPicks.slice(0,2).map(x=>x.symbol).join(' / ') : '—';
-  $('localSummary').innerHTML = localPicks.length
-    ? `本地前段班：<b>${localPicks.slice(0,3).map(x=>`${x.symbol} ${x.name||''}`).join('、')}</b><br>第一名原因：${localPicks[0].why.slice(0,4).join('、')}`
-    : '沒有抓到資料。';
-
-  flowState.csvAnalyzed = true;
-
-  if(decisionSource === '—'){
-    finalPicks = localPicks.slice(0,2);
-    decisionSource = '本地預設';
-    $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
-  }
-
-  setFlowMessage('✅ CSV 分析完成，現在可以複製 AI 提示詞。');
-  updateLocks();
-  updateSystemTable();
-  updateFinalCards();
-  updateCommandCenter();
-  saveLocal();
-  return true;
-}
-
-function copyPrompt(){
-  if(!flowState.csvAnalyzed){
-    setFlowMessage('❌ 先做 CSV 分析，才能複製 AI 提示詞。', true);
-    return false;
-  }
-  const top = localPicks.slice(0,6).map(r=>`${r.symbol} ${r.name||''}`).join('、');
-  const prompt = `你現在是一位頂尖台股短線交易員，請根據以下候選股做最後的菁英遴選。\n\n【候選股】${top || '尚未有候選股'}\n【目標】1個月內 10%~15% 波段利潤\n\n請針對這些股票：\n1. 查近一週新聞、法人動向與題材熱度。\n2. 精選 1~2 檔最適合短線操作的股票。\n3. 避開乖離過大、已過熱或利多出盡的標的。\n4. 用表格輸出：進場區間、停損點、+10% / +15% 停利規劃。\n5. 最後用一句話提醒未來一週最重要風險。`;
-  navigator.clipboard.writeText(prompt);
-  flowState.promptCopied = true;
-  setFlowMessage('✅ 已複製 AI 提示詞。去問 AI，拿到回覆後貼回來。');
-  updateLocks();
-  saveLocal();
-  return true;
-}
-
-function parseAI(){
-  if(!flowState.csvAnalyzed){
-    setFlowMessage('❌ 先分析 CSV，才能解析 AI。', true);
-    return false;
-  }
-  const txt = $('aiInput').value.trim();
-  if(!txt){
-    setFlowMessage('❌ 請先貼上 AI 回覆全文。', true);
-    return false;
-  }
-
-  const codes = txt.match(/\d{4,6}/g);
-  aiCodes = codes ? [...new Set(codes)].slice(0,2) : [];
-
-  if(!aiCodes.length){
-    setFlowMessage('❌ AI 回覆中抓不到股票代號。請確認內容至少有 4 位數代號。', true);
-    $('aiSummary').innerHTML = '沒有抓到股票代號，請確認 AI 回覆內含 4 位數股票代號。';
-    return false;
-  }
-
-  $('mAi').textContent = aiCodes.join(' / ');
-  $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b><br>現在可以做最終決策。`;
-
-  flowState.aiParsed = true;
-  setFlowMessage('✅ AI 解析完成，現在可以做最終決策。');
-  updateLocks();
-  updateCommandCenter();
-  saveLocal();
-  return true;
-}
-
-function decideFinal(){
-  if(!flowState.csvAnalyzed){
-    setFlowMessage('❌ 先分析 CSV，才能最終決策。', true);
-    return false;
-  }
-  if(!flowState.aiParsed){
-    setFlowMessage('❌ 先解析 AI，才能最終決策。', true);
-    return false;
-  }
-
-  const local2 = localPicks.slice(0,2);
-  const localCodes = local2.map(x=>x.symbol);
-  const inter = aiCodes.filter(code => localCodes.includes(code));
-
-  if(!aiCodes.length){
-    finalPicks = local2;
-    decisionSource = '本地優先';
-  } else if(inter.length){
-    finalPicks = inter.map(code => localPicks.find(x=>x.symbol===code)).filter(Boolean);
-    const backup = local2.filter(x=>!finalPicks.some(y=>y.symbol===x.symbol));
-    if(finalPicks.length < 2 && backup.length) finalPicks.push(backup[0]);
-    decisionSource = '交集模式';
-  } else {
-    finalPicks = aiCodes.map(code => localPicks.find(x=>x.symbol===code) || {
-      symbol:code,name:'AI 指定',price:null,score:60,status:'AI指定',why:['AI 指定標的'],dev:null
-    });
-    decisionSource = 'AI優先';
-  }
-
-  flowState.decided = true;
-  $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
-
-  setFlowMessage('✅ 最終決策完成。現在可以帶入主攻股或直接加入持倉監控。');
-  updateLocks();
-  updateConfidence();
-  updateSystemTable();
-  updateFinalCards();
-  updateCommandCenter();
-  saveLocal();
-  return true;
-}
-
-function runFlow(){
-  if(!flowState.csvAnalyzed){
-    if(!analyzeCSV()) return;
-    return;
-  }
-  if(!flowState.promptCopied){
-    copyPrompt();
-    return;
-  }
-  if(!flowState.aiParsed){
-    if(!$('aiInput').value.trim()){
-      setFlowMessage('⚠️ 提示詞已複製，請先去問 AI，拿回回覆後貼進來。', true);
-      return;
-    }
-    if(!parseAI()) return;
-    return;
-  }
-  if(!flowState.decided){
-    decideFinal();
-    return;
-  }
-  setFlowMessage('✅ 作戰流程已完成。現在重點是監控主攻股與持倉。');
-}
-
-function buildFinalCard(r, i){
-  const cfg = getCfg();
-  const role = i===0 ? '主攻艦' : '副攻艦';
-  const alloc = i===0 ? cfg.allocMain : (100 - cfg.allocMain);
-  const budget = Math.round(cfg.capital * alloc / 100);
-  const shares = r.price ? Math.floor(budget / r.price) : 0;
-  const stop = r.price ? r.price * (1-cfg.stopPct/100) : null;
-  const tp1 = r.price ? r.price * (1+cfg.tp1Pct/100) : null;
-  const tp2 = r.price ? r.price * (1+cfg.tp2Pct/100) : null;
-
-  // 預覽區：移動停利只在突破 tp1 後啟動，所以這裡顯示「啟動後保護價」
-  const trailPreview = tp1 ? tp1 * (1-cfg.trailPct/100) : null;
-
-  const glow = r.status==='可進攻' ? 'glow-green' : r.status==='偏強' ? 'glow-yellow' : '';
-
-  return `
-    <div class="stockCard ${glow}">
-      <div class="stockHead">
-        <div>
-          <div class="role">${role}</div>
-          <div class="name">${r.symbol} ${r.name||''}</div>
-        </div>
-        <div class="tag">${decisionSource}</div>
-      </div>
-
-      <div class="kpis">
-        <div class="kpi"><div class="k">戰力分數</div><div class="v">${r.score ?? '—'}</div></div>
-        <div class="kpi"><div class="k">目前價格</div><div class="v">${fmt(r.price,2)}</div></div>
-        <div class="kpi"><div class="k">配置金額</div><div class="v">${fmt(budget,0)}</div></div>
-        <div class="kpi"><div class="k">估計股數</div><div class="v">${shares || '—'}</div></div>
-        <div class="kpi"><div class="k">停損價</div><div class="v">${fmt(stop,2)}</div></div>
-        <div class="kpi"><div class="k">停利1</div><div class="v">${fmt(tp1,2)}</div></div>
-        <div class="kpi"><div class="k">停利2</div><div class="v">${fmt(tp2,2)}</div></div>
-        <div class="kpi"><div class="k">移動停利啟動價</div><div class="v">${fmt(trailPreview,2)}</div></div>
-      </div>
-
-      <div class="reason">
-        <b>今日該看什麼：</b>${(r.why || ['等待更多資料']).slice(0,4).join('、')}<br>
-        <b>作戰指令：</b>${i===0 ? '優先盯盤，只做最強表態。' : '主攻艦沒異常時，副攻艦再跟進。'}<br>
-        <b>說明：</b>移動停利只有在先到 <b>停利1</b> 後才會啟動。
-      </div>
-    </div>
+  document.getElementById("result").innerHTML = `
+    <div class="kpi"><span>停損價</span><span>${stop.toFixed(2)}</span></div>
+    <div class="kpi"><span>停利1</span><span>${tp1.toFixed(2)}</span></div>
+    <div class="kpi"><span>停利2</span><span>${tp2.toFixed(2)}</span></div>
+    <div class="kpi"><span>移動停利</span><span>${trailActive ? trail.toFixed(2) : "未啟動"}</span></div>
+    <div class="kpi"><span>動作</span><span class="${color}">${action}</span></div>
   `;
 }
 
-function updateFinalCards(){
-  const box = $('finalCards');
-  if(!finalPicks.length){
-    box.innerHTML = '<div class="stockCard"><div class="small">尚未產生最終標的。</div></div>';
-    updateBridge();
-    updateConfidence();
-    return;
-  }
-  box.innerHTML = finalPicks.slice(0,2).map(buildFinalCard).join('');
-  updateBridge();
-  updateConfidence();
-}
-
-function updateBridge(){
-  const cfg = getCfg();
-  const main = finalPicks[0];
-  if(!main || !main.price){
-    $('bridgeStop').textContent = '—';
-    $('bridgeTp1').textContent = '—';
-    $('bridgeTp2').textContent = '—';
-    $('bridgeTrail').textContent = '—';
-    return;
-  }
-  const tp1 = main.price * (1+cfg.tp1Pct/100);
-  $('bridgeStop').textContent = fmt(main.price * (1-cfg.stopPct/100),2);
-  $('bridgeTp1').textContent = fmt(tp1,2);
-  $('bridgeTp2').textContent = fmt(main.price * (1+cfg.tp2Pct/100),2);
-  $('bridgeTrail').textContent = fmt(tp1 * (1-cfg.trailPct/100),2);
-}
-
-function updateConfidence(){
-  const local2 = localPicks.slice(0,2).map(x=>x.symbol);
-  const inter = aiCodes.filter(x=>local2.includes(x));
-  let conf = 0;
-  if(decisionSource === '交集模式') conf = inter.length===2 ? 92 : 82;
-  else if(decisionSource === 'AI優先') conf = 66;
-  else if(decisionSource === '本地優先') conf = 72;
-  else if(decisionSource === '本地預設') conf = 60;
-
-  let grade = '—';
-  if(conf >= 90) grade = 'S';
-  else if(conf >= 80) grade = 'A';
-  else if(conf >= 70) grade = 'B';
-  else if(conf > 0) grade = 'C';
-
-  const heat = finalPicks[0]?.dev;
-  $('confidenceValue').textContent = conf ? conf + '%' : '—';
-  $('attackGrade').textContent = grade;
-  $('decisionValue').textContent = decisionSource;
-  $('heatValue').textContent = heat !== null && heat !== undefined ? pct(heat,1) : '—';
-}
-
-function addHolding(){
-  const symbol = $('holdSymbol').value.trim();
-  const buy = num($('holdBuy').value);
-  const current = num($('holdCurrent').value);
-  if(!symbol || buy===null || current===null) return;
-
-  const existing = holdings.find(h=>h.symbol===symbol);
-  if(existing){
-    existing.buy = buy;
-    existing.current = current;
-    if(current > existing.highest) existing.highest = current;
-  } else {
-    holdings.push({
-      symbol,
-      buy,
-      current,
-      highest: current,
-      trailArmed: false
-    });
-  }
-  clearHoldForm();
-  updateHoldings();
-  updateCommandCenter();
-  saveLocal();
-}
-
-function loadMainToForm(){
-  if(!flowState.decided){
-    setFlowMessage('❌ 先完成最終決策，才能帶入主攻股。', true);
-    return;
-  }
-  const main = finalPicks[0];
-  if(!main) return;
-  $('holdSymbol').value = main.symbol || '';
-  $('holdBuy').value = main.price ?? '';
-  $('holdCurrent').value = main.price ?? '';
-}
-function clearHoldForm(){
-  $('holdSymbol').value = '';
-  $('holdBuy').value = '';
-  $('holdCurrent').value = '';
-}
-
-/* ===========================
-   這裡是核心修正
-   =========================== */
-function calcHolding(h){
-  const cfg = getCfg();
-
-  if(h.current > (h.highest ?? h.current)){
-    h.highest = h.current;
-  }
-  if(h.trailArmed === undefined){
-    h.trailArmed = false;
-  }
-
-  const stop = h.buy * (1-cfg.stopPct/100);
-  const tp1 = h.buy * (1+cfg.tp1Pct/100);
-  const tp2 = h.buy * (1+cfg.tp2Pct/100);
-
-  // 只有當價格曾經到過 tp1，移動停利才啟動
-  if((h.highest ?? h.current) >= tp1){
-    h.trailArmed = true;
-  }
-
-  const trailPrice = h.trailArmed
-    ? (h.highest * (1-cfg.trailPct/100))
-    : null;
-
-  const pnl = ((h.current - h.buy) / h.buy) * 100;
-  const pnlAmt = (h.current - h.buy) * 1000;
-
-  let action='持有', cls='ok', glow='glow-green', note='趨勢正常，繼續監控。';
-
-  if(h.current <= stop){
-    action='停損出場';
-    cls='danger';
-    glow='glow-red';
-    note='已跌破固定停損線，今天先處理風險。';
-  }
-  else if(h.current >= tp2){
-    action='全數停利';
-    cls='ok';
-    glow='glow-green';
-    note='已達第二停利，可考慮全數了結。';
-  }
-  else if(h.trailArmed && trailPrice !== null && h.current <= trailPrice){
-    action='移動停利出場';
-    cls='warn';
-    glow='glow-yellow';
-    note='價格已跌破移動停利保護價，表示獲利回撤已達門檻，應出場保護利潤。';
-  }
-  else if(h.current >= tp1){
-    action='分批停利';
-    cls='warn';
-    glow='glow-yellow';
-    note='已達第一停利，建議先出一半，剩餘部位交給移動停利保護。';
-  }
-  else if(h.trailArmed && trailPrice !== null){
-    action='移動停利監控中';
-    cls='warn';
-    glow='glow-yellow';
-    note='已進入移動停利模式，保護價會跟隨最高價上移，但不會下移。';
-  }
-  else if(((tp1-h.current)/h.current*100) < 2 && h.current < tp1){
-    action='接近停利';
-    cls='warn';
-    glow='glow-yellow';
-    note='距離第一停利很近，今天重點看能否續強突破。';
-  }
-  else if(((h.current-stop)/h.current*100) < 2){
-    action='接近停損';
-    cls='danger';
-    glow='glow-red';
-    note='已逼近停損，今天要優先控管。';
-  }
-
-  return {
-    ...h,
-    stop,
-    tp1,
-    tp2,
-    trailPrice,
-    pnl,
-    pnlAmt,
-    action,
-    cls,
-    glow,
-    note
-  };
-}
-
-function updateHoldings(){
-  const box = $('holdCards');
-  if(!holdings.length){
-    box.innerHTML = '<div class="holdCard"><div class="small">尚未加入持倉。</div></div>';
-    $('mAlert').textContent = '待命';
-    updateSystemTable();
-    return;
-  }
-
-  holdings = holdings.map(calcHolding);
-
-  box.innerHTML = holdings.map((h,i)=>`
-    <div class="holdCard ${h.glow}">
-      <div class="holdHead">
-        <div>
-          <div class="role">持倉監控</div>
-          <div class="name">${h.symbol}</div>
-        </div>
-        <div class="tag ${h.cls}">${h.action}</div>
-      </div>
-
-      <div class="kpis">
-        <div class="kpi"><div class="k">買入價</div><div class="v">${fmt(h.buy,2)}</div></div>
-        <div class="kpi"><div class="k">現價</div><div class="v">${fmt(h.current,2)}</div></div>
-        <div class="kpi"><div class="k">報酬率</div><div class="v">${pct(h.pnl,2)}</div></div>
-        <div class="kpi"><div class="k">損益</div><div class="v">${fmt(h.pnlAmt,0)}</div></div>
-        <div class="kpi"><div class="k">停損價</div><div class="v">${fmt(h.stop,2)}</div></div>
-        <div class="kpi"><div class="k">停利1</div><div class="v">${fmt(h.tp1,2)}</div></div>
-        <div class="kpi"><div class="k">停利2</div><div class="v">${fmt(h.tp2,2)}</div></div>
-        <div class="kpi"><div class="k">移動停利價</div><div class="v">${h.trailPrice === null ? '未啟動' : fmt(h.trailPrice,2)}</div></div>
-      </div>
-
-      <div class="reason">
-        <b>今日要做：</b>${h.action}<br>
-        ${h.note}<br>
-        <b>最高價：</b>${fmt(h.highest,2)}｜
-        <b>移動停利：</b>${h.trailPrice === null ? '未啟動（尚未達停利1）' : fmt(h.trailPrice,2)}<br>
-        <b>距離停損：</b>${pct(((h.current-h.stop)/h.current*100),2)}｜
-        <b>距離停利1：</b>${pct(((h.tp1-h.current)/h.current*100),2)}
-      </div>
-
-      <div class="toolbar" style="margin-top:10px">
-        <button class="secondary" onclick="editHolding(${i})">載入修改</button>
-        <button class="danger" onclick="removeHolding(${i})">刪除</button>
-      </div>
-    </div>
-  `).join('');
-
-  const dangerCount = holdings.filter(h=>h.cls==='danger').length;
-  const warnCount = holdings.filter(h=>h.cls==='warn').length;
-  $('mAlert').textContent = dangerCount ? '紅色警報' : warnCount ? '注意' : '安全';
-
-  updateSystemTable();
-}
-
-function editHolding(i){
-  const h = holdings[i];
-  $('holdSymbol').value = h.symbol;
-  $('holdBuy').value = h.buy;
-  $('holdCurrent').value = h.current;
-}
-function removeHolding(i){
-  holdings.splice(i,1);
-  updateHoldings();
-  updateCommandCenter();
-  saveLocal();
-}
-
-function updateSystemTable(){
-  $('systemTable').innerHTML = `
-    <tr><td>決策來源</td><td>${decisionSource}</td><td>${decisionSource==='交集模式' ? '本地與 AI 有交集，可信度最高。' : decisionSource==='AI優先' ? '本地與 AI 分歧，採 AI 指令。' : decisionSource==='本地優先' ? '尚未導入 AI 或 AI 無法判定。' : decisionSource==='本地預設' ? '已先用本地前2名作預設。' : '尚未決策'}</td></tr>
-    <tr><td>主攻股</td><td>${finalPicks[0] ? finalPicks[0].symbol : '—'}</td><td>${finalPicks[0] ? (finalPicks[0].name || '已鎖定') : '尚未產生'}</td></tr>
-    <tr><td>副攻股</td><td>${finalPicks[1] ? finalPicks[1].symbol : '—'}</td><td>${finalPicks[1] ? (finalPicks[1].name || '已鎖定') : '尚未產生'}</td></tr>
-    <tr><td>總持倉數</td><td>${holdings.length}</td><td>${holdings.length ? '持倉監控已啟動' : '目前無持倉'}</td></tr>
-  `;
-}
-
-function updateCommandCenter(){
-  const local2 = localPicks.slice(0,2).map(x=>x.symbol);
-  const inter = aiCodes.filter(x=>local2.includes(x));
-  const consistency = !aiCodes.length ? 55 : inter.length===2 ? 100 : inter.length===1 ? 65 : 25;
-  $('consistencyText').textContent = consistency>=80 ? '高一致' : consistency>=50 ? '部分一致' : '分歧';
-  $('consistencyBar').style.width = consistency + '%';
-
-  const aggressive = finalPicks.length ? Math.min(100, Math.round(finalPicks[0]?.score || 55)) : 0;
-  $('aggressiveText').textContent = aggressive>=75 ? '可進攻' : aggressive>=55 ? '偏進攻' : '保守';
-  $('aggressiveBar').style.width = aggressive + '%';
-
-  const heat = finalPicks[0]?.dev ? Math.max(0, Math.min(100, Math.round(finalPicks[0].dev * 4))) : 18;
-  $('heatText').textContent = heat>=70 ? '過熱' : heat>=40 ? '偏熱' : '健康';
-  $('heatBar').style.width = heat + '%';
-
-  const pressure = holdings.length ? Math.min(100, holdings.reduce((a,h)=> a + (h.cls==='danger' ? 35 : h.cls==='warn' ? 18 : 6), 0)) : 10;
-  $('pressureText').textContent = pressure>=70 ? '高壓' : pressure>=35 ? '中壓' : '低壓';
-  $('pressureBar').style.width = pressure + '%';
-
-  let cmd = '等待資料';
-  let sub = '請先分析 CSV，再導入 AI，最後監控持倉。';
-  let mode = '待機模式';
-  let modeClass = 'info';
-
-  if(flowState.csvAnalyzed && !flowState.aiParsed){
-    cmd = '去問 AI，拿回答案';
-    sub = '本地排序已完成，現在要讓 AI 做題材與新聞補強。';
-    mode = '情報蒐集';
-    modeClass = 'warn';
-  }
-  if(flowState.aiParsed && !flowState.decided){
-    cmd = '可以最終決策';
-    sub = 'AI 已解析完成，現在可以決定主攻股與副攻股。';
-    mode = '決策模式';
-    modeClass = 'info';
-  }
-  if(flowState.decided){
-    cmd = '鎖定 1–2 檔，等開盤表態';
-    sub = `目前最終標的是 ${finalPicks.map(x=>x.symbol).join('、')}。不要分散火力。`;
-    mode = decisionSource;
-    modeClass = 'ok';
-  }
-  if(holdings.length){
-    const dangerCount = holdings.filter(h=>h.cls==='danger').length;
-    const warnCount = holdings.filter(h=>h.cls==='warn').length;
-    if(dangerCount){
-      cmd = '優先風險控管';
-      sub = '至少有一檔已進入紅色警戒，今天先處理停損 / 減碼。';
-      mode = '防守模式';
-      modeClass = 'danger';
-    } else if(warnCount){
-      cmd = '重點盯停利區';
-      sub = '持倉接近停利、移動停利監控中，或已達第一停利。';
-      mode = '收割模式';
-      modeClass = 'warn';
-    } else {
-      cmd = '持有，觀察續強';
-      sub = '持倉尚未觸發停損或停利，今天只要監控現價與氣勢。';
-      mode = '巡航模式';
-      modeClass = 'ok';
-    }
-  }
-
-  $('todayCommand').textContent = cmd;
-  $('todaySub').textContent = sub;
-  $('battleMode').textContent = mode;
-  $('battleMode').className = 'modeBadge ' + modeClass;
-  updateLocks();
-}
-
-function updateLocks(){
-  $('copyPromptBtn').disabled = !flowState.csvAnalyzed;
-  $('parseAiBtn').disabled = !flowState.csvAnalyzed;
-  $('decideBtn').disabled = !flowState.aiParsed;
-
-  $('stepCsv').textContent = flowState.csvAnalyzed ? '完成' : '待命';
-  $('stepCsvSub').textContent = flowState.csvAnalyzed ? 'CSV 已完成分析' : '尚未分析 CSV';
-
-  $('stepPrompt').textContent = flowState.promptCopied ? '完成' : '待命';
-  $('stepPromptSub').textContent = flowState.promptCopied ? '提示詞已複製' : '尚未複製提示詞';
-
-  $('stepAi').textContent = flowState.aiParsed ? '完成' : '待命';
-  $('stepAiSub').textContent = flowState.aiParsed ? 'AI 已完成解析' : '尚未解析 AI';
-
-  $('stepDecision').textContent = flowState.decided ? '完成' : '待命';
-  $('stepDecisionSub').textContent = flowState.decided ? '最終標的已鎖定' : '尚未最終決策';
-
-  $('csvLock').textContent = flowState.csvAnalyzed
-    ? '✅ CSV 已分析，可以進入 AI 流程。'
-    : 'CSV 是第一步，其他流程都依賴它。';
-
-  $('aiLock').textContent = !flowState.csvAnalyzed
-    ? '🔒 尚未分析 CSV，AI 流程鎖定。'
-    : !flowState.aiParsed
-      ? '⚠️ 已開放 AI 流程，先貼 AI 回覆並解析。'
-      : '✅ AI 已解析，可以做最終決策。';
-}
-
-function setFlowMessage(msg, isError=false){
-  $('flowMessage').innerHTML = msg;
-  $('flowMessage').style.borderColor = isError ? 'rgba(248,113,113,.28)' : 'rgba(160,200,255,.12)';
-}
-
-function loadDemo(){
-  $('csvInput').value = `商品,描述,價格,價格 - 貨幣,價格變化 % 1天,成交量 1天,相對成交量 1天,簡單移動平均線 (20) 1天,簡單移動平均線 (60) 1天,相對強弱指標 (14) 1天
-8261,富鼎,116,TWD,6.42,5802825,2.79,106.23,99.25,66.98
-3236,千如,35.8,TWD,3.77,14760222,2.77,31.87,31.48,65.38
-3209,全科,47,TWD,2.17,5661955,1.76,43.47,37.97,70.58
-6271,同欣電,185,TWD,1.09,20196785,2.29,159.27,152.40,69.18
-4979,華星光,586,TWD,9.94,32773935,5.95,421.62,368.12,76.85`;
-  $('aiInput').value = `主攻股：8261 富鼎
-副攻股：3236 千如`;
-  setFlowMessage('已載入範例資料。');
-}
-
-function clearAll(){
-  $('csvInput').value = '';
-  $('aiInput').value = '';
-  $('rankBody').innerHTML = '<tr><td colspan="11" class="small">尚未分析。</td></tr>';
-  $('localSummary').textContent = '尚未分析。';
-  $('aiSummary').textContent = '尚未解析 AI 結果。';
-
-  localPicks = [];
-  aiCodes = [];
-  finalPicks = [];
-  holdings = [];
-  decisionSource = '—';
-  flowState = {csvAnalyzed:false,promptCopied:false,aiParsed:false,decided:false};
-
-  $('mLocal').textContent = '—';
-  $('mAi').textContent = '—';
-  $('mFinal').textContent = '—';
-  $('mAlert').textContent = '待命';
-
-  setFlowMessage('系統已清空，重新開始。');
-  updateFinalCards();
-  updateHoldings();
-  updateSystemTable();
-  updateCommandCenter();
-  updateLocks();
-  updateConfidence();
-  saveLocal();
-}
-
-function saveLocal(){
-  const data = {
-    csvInput:$('csvInput').value,
-    aiInput:$('aiInput').value,
-    sliders:{
-      stop:$('stopSlider').value,
-      tp1:$('tp1Slider').value,
-      tp2:$('tp2Slider').value,
-      trail:$('trailSlider').value,
-      alloc:$('allocSlider').value,
-      capital:$('capitalSlider').value
-    },
-    localPicks, aiCodes, finalPicks, holdings, decisionSource, flowState
-  };
-  localStorage.setItem(STORE, JSON.stringify(data));
-}
-
-function loadLocal(){
-  try{
-    const data = JSON.parse(localStorage.getItem(STORE) || '{}');
-    if(!data || !Object.keys(data).length) return;
-
-    $('csvInput').value = data.csvInput || '';
-    $('aiInput').value = data.aiInput || '';
-
-    if(data.sliders){
-      $('stopSlider').value = data.sliders.stop || 7;
-      $('tp1Slider').value = data.sliders.tp1 || 10;
-      $('tp2Slider').value = data.sliders.tp2 || 15;
-      $('trailSlider').value = data.sliders.trail || 4;
-      $('allocSlider').value = data.sliders.alloc || 60;
-      $('capitalSlider').value = data.sliders.capital || 20;
-    }
-
-    localPicks = Array.isArray(data.localPicks) ? data.localPicks : [];
-    aiCodes = Array.isArray(data.aiCodes) ? data.aiCodes : [];
-    finalPicks = Array.isArray(data.finalPicks) ? data.finalPicks : [];
-    holdings = Array.isArray(data.holdings) ? data.holdings : [];
-    decisionSource = data.decisionSource || '—';
-    flowState = data.flowState || flowState;
-
-    $('mLocal').textContent = localPicks.length ? localPicks.slice(0,2).map(x=>x.symbol).join(' / ') : '—';
-    $('mAi').textContent = aiCodes.length ? aiCodes.join(' / ') : '—';
-    $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
-
-    if(localPicks.length){
-      $('rankBody').innerHTML = localPicks.map((r,i)=>`
-        <tr>
-          <td>${i+1}</td>
-          <td>${r.symbol} ${r.name||''}</td>
-          <td>${fmt(r.price,2)}</td>
-          <td>${pct(r.change,2)}</td>
-          <td>${fmt(r.relVol,2)}</td>
-          <td>${fmt(r.sma20,2)}</td>
-          <td>${fmt(r.sma60,2)}</td>
-          <td>${fmt(r.rsi,2)}</td>
-          <td>${pct(r.dev,2)}</td>
-          <td>${r.score}</td>
-          <td>${r.status}</td>
-        </tr>
-      `).join('');
-      $('localSummary').innerHTML = `本地前段班：<b>${localPicks.slice(0,3).map(x=>`${x.symbol} ${x.name||''}`).join('、')}</b>`;
-    }
-
-    if(aiCodes.length){
-      $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b>`;
-    }
-  }catch(e){}
-}
-
-$('analyzeBtn').addEventListener('click', analyzeCSV);
-$('copyPromptBtn').addEventListener('click', copyPrompt);
-$('parseAiBtn').addEventListener('click', parseAI);
-$('decideBtn').addEventListener('click', decideFinal);
-$('runFlowBtn').addEventListener('click', runFlow);
-$('loadDemoBtn').addEventListener('click', loadDemo);
-$('clearBtn').addEventListener('click', clearAll);
-$('saveBtn').addEventListener('click', saveLocal);
-$('addHoldBtn').addEventListener('click', addHolding);
-$('loadMainBtn').addEventListener('click', loadMainToForm);
-$('clearHoldBtn').addEventListener('click', clearHoldForm);
-
-loadLocal();
-refreshSliders();
-updateSystemTable();
-updateFinalCards();
-updateHoldings();
-updateCommandCenter();
-updateLocks();
-updateConfidence();
 </script>
+
+</body>
+</html>
