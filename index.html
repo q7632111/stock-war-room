@@ -524,6 +524,7 @@ th{color:var(--muted)}
 <script>
 const $ = id => document.getElementById(id);
 const STORE = 'ai_battleship_pro_max_final_namefix_v1';
+const API_BASE = 'https://script.google.com/macros/s/AKfycbxfVr0JFYPDMOmCUz_X1fJ_DZmYujauwhvCXpd8MlvC3udAQNwWc0Cr69oo5IXz6e-d/exec';
 
 let localPicks = [];
 let aiCodes = [];
@@ -540,6 +541,180 @@ let flowState = {
 function num(v){ const n = Number(String(v ?? '').replace(/,/g,'')); return Number.isFinite(n) ? n : null; }
 function fmt(n,d=2){ return n===null || n===undefined || Number.isNaN(n) ? '—' : Number(n).toLocaleString('zh-TW',{maximumFractionDigits:d}); }
 function pct(n,d=1){ return n===null || n===undefined || Number.isNaN(n) ? '—' : `${Number(n).toFixed(d)}%`; }
+
+
+function normalizeBool(v){
+  if (typeof v === 'boolean') return v;
+  const s = String(v ?? '').toLowerCase().trim();
+  return s === 'true' || s === '1';
+}
+
+function normalizeHolding(row){
+  return {
+    symbol: String(row.symbol || '').trim(),
+    name: String(row.name || '').trim(),
+    buy: num(row.buy),
+    current: num(row.current),
+    highest: num(row.highest),
+    trailArmed: normalizeBool(row.trailArmed),
+    updatedAt: row.updatedAt || ''
+  };
+}
+
+function applySettingsToUI(settings){
+  if(!settings || typeof settings !== 'object') return;
+  if(settings.stopPct !== undefined) $('stopSlider').value = settings.stopPct;
+  if(settings.tp1Pct !== undefined) $('tp1Slider').value = settings.tp1Pct;
+  if(settings.tp2Pct !== undefined) $('tp2Slider').value = settings.tp2Pct;
+  if(settings.trailPct !== undefined) $('trailSlider').value = settings.trailPct;
+  if(settings.allocMain !== undefined) $('allocSlider').value = settings.allocMain;
+  if(settings.capital !== undefined) $('capitalSlider').value = Math.round(Number(settings.capital || 0) / 10000) || 20;
+}
+
+function buildCloudSettingsPayload(){
+  const cfg = getCfg();
+  return {
+    stopPct: cfg.stopPct,
+    tp1Pct: cfg.tp1Pct,
+    tp2Pct: cfg.tp2Pct,
+    trailPct: cfg.trailPct,
+    allocMain: cfg.allocMain,
+    capital: cfg.capital
+  };
+}
+
+function buildCloudPickPayload(){
+  return {
+    date: new Date().toISOString().slice(0,10),
+    mainSymbol: finalPicks[0]?.symbol || '',
+    mainName: finalPicks[0]?.name || '',
+    subSymbol: finalPicks[1]?.symbol || '',
+    subName: finalPicks[1]?.name || '',
+    decisionSource,
+    confidence: $('confidenceValue').textContent.replace('%','') || '',
+    note: $('todaySub').textContent || ''
+  };
+}
+
+function buildCloudHoldingsPayload(){
+  return holdings.map(h => ({
+    symbol: h.symbol || '',
+    name: h.name || '',
+    buy: h.buy ?? '',
+    current: h.current ?? '',
+    highest: h.highest ?? '',
+    trailArmed: !!h.trailArmed,
+    updatedAt: h.updatedAt || ''
+  }));
+}
+
+async function apiGet(action){
+  const res = await fetch(`${API_BASE}?action=${encodeURIComponent(action)}`);
+  if(!res.ok) throw new Error(`API GET 失敗：${res.status}`);
+  return await res.json();
+}
+
+async function apiPost(action, data){
+  const res = await fetch(API_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action, data })
+  });
+  if(!res.ok) throw new Error(`API POST 失敗：${res.status}`);
+  return await res.json();
+}
+
+function applyCloudData(payload){
+  if(!payload || typeof payload !== 'object') return;
+
+  if(payload.settings) applySettingsToUI(payload.settings);
+
+  if(payload.picks && (payload.picks.mainSymbol || payload.picks.subSymbol)){
+    finalPicks = [];
+    if(payload.picks.mainSymbol){
+      finalPicks.push({
+        symbol: String(payload.picks.mainSymbol || '').trim(),
+        name: String(payload.picks.mainName || '').trim(),
+        price: null,
+        score: null,
+        status: '雲端同步',
+        why: ['來自雲端同步'],
+        dev: null,
+        level: '—'
+      });
+    }
+    if(payload.picks.subSymbol){
+      finalPicks.push({
+        symbol: String(payload.picks.subSymbol || '').trim(),
+        name: String(payload.picks.subName || '').trim(),
+        price: null,
+        score: null,
+        status: '雲端同步',
+        why: ['來自雲端同步'],
+        dev: null,
+        level: '—'
+      });
+    }
+    decisionSource = payload.picks.decisionSource || decisionSource;
+    flowState.decided = !!finalPicks.length;
+    $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
+  }
+
+  if(Array.isArray(payload.holdings)){
+    holdings = payload.holdings.map(normalizeHolding).filter(x => x.symbol);
+  }
+}
+
+async function loadCloud(){
+  const payload = await apiGet('getAll');
+  applyCloudData(payload);
+  refreshSliders();
+  updateSystemTable();
+  updateFinalCards();
+  updateHoldings();
+  updateCommandCenter();
+  updateLocks();
+  updateConfidence();
+  renderRankTable();
+  setFlowMessage('☁️ 已從雲端載入資料。');
+}
+
+async function saveCloud(){
+  await apiPost('saveSettings', buildCloudSettingsPayload());
+  if(finalPicks.length){
+    await apiPost('savePick', buildCloudPickPayload());
+  }
+  await apiPost('saveHoldings', buildCloudHoldingsPayload());
+}
+
+async function saveAll(){
+  saveLocal();
+  try{
+    await saveCloud();
+    setFlowMessage('☁️ 已同步到雲端資料庫。');
+  }catch(err){
+    console.error(err);
+    setFlowMessage(`⚠️ 本機已儲存，但雲端同步失敗：${err.message || err}`, true);
+  }
+}
+
+async function initApp(){
+  loadLocal();
+  refreshSliders();
+  updateSystemTable();
+  updateFinalCards();
+  updateHoldings();
+  updateCommandCenter();
+  updateLocks();
+  updateConfidence();
+  renderRankTable();
+  try{
+    await loadCloud();
+  }catch(err){
+    console.error(err);
+    setFlowMessage(`⚠️ 雲端載入失敗，先使用本機資料：${err.message || err}`, true);
+  }
+}
 
 function getCfg(){
   return {
@@ -1387,20 +1562,12 @@ $('decideBtn').addEventListener('click', decideFinal);
 $('runFlowBtn').addEventListener('click', runFlow);
 $('loadDemoBtn').addEventListener('click', loadDemo);
 $('clearBtn').addEventListener('click', clearAll);
-$('saveBtn').addEventListener('click', saveLocal);
+$('saveBtn').addEventListener('click', saveAll);
 $('addHoldBtn').addEventListener('click', addHolding);
 $('loadMainBtn').addEventListener('click', loadMainToForm);
 $('clearHoldBtn').addEventListener('click', clearHoldForm);
 
-loadLocal();
-refreshSliders();
-updateSystemTable();
-updateFinalCards();
-updateHoldings();
-updateCommandCenter();
-updateLocks();
-updateConfidence();
-renderRankTable();
+initApp();
 </script>
 </body>
 </html>
