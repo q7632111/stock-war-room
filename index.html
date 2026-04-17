@@ -3,26 +3,30 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#07111f" />
+<meta name="theme-color" content="#060b14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro 版</title>
+<title>AI 戰艦 Pro｜重裝甲版</title>
 <style>
 :root{
-  --bg:#06101d;
-  --bg2:#0a1630;
-  --panel:#0f1b33;
-  --card:#0a1324;
-  --line:rgba(255,255,255,.08);
-  --text:#eef5ff;
-  --muted:#93a8cf;
+  --bg:#050a12;
+  --bg2:#0a1220;
+  --panel:#0d1727;
+  --panel2:#111e33;
+  --card:#0a1322;
+  --line:rgba(160,200,255,.12);
+  --line2:rgba(103,232,249,.16);
+  --text:#eef6ff;
+  --muted:#8ca1c2;
   --blue:#60a5fa;
   --cyan:#67e8f9;
   --green:#34d399;
   --yellow:#fbbf24;
   --red:#f87171;
   --purple:#a78bfa;
-  --shadow:0 18px 60px rgba(0,0,0,.38);
+  --glow-blue:0 0 0 1px rgba(96,165,250,.20), 0 0 24px rgba(96,165,250,.10);
+  --glow-cyan:0 0 0 1px rgba(103,232,249,.20), 0 0 26px rgba(103,232,249,.08);
+  --shadow:0 22px 70px rgba(0,0,0,.48);
   --radius:22px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -32,230 +36,186 @@ body{
   color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
   background:
-    radial-gradient(circle at 8% 6%, rgba(103,232,249,.10), transparent 18%),
-    radial-gradient(circle at 90% 10%, rgba(96,165,250,.12), transparent 22%),
-    radial-gradient(circle at 50% 115%, rgba(167,139,250,.10), transparent 30%),
+    radial-gradient(circle at 12% 10%, rgba(96,165,250,.08), transparent 18%),
+    radial-gradient(circle at 88% 8%, rgba(103,232,249,.08), transparent 18%),
     linear-gradient(180deg,var(--bg),var(--bg2));
 }
-.app{
-  height:100dvh;
-  display:flex;
-  flex-direction:column;
+body:before{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+  background-size:22px 22px, 22px 22px;
+  mask-image:linear-gradient(180deg, rgba(0,0,0,.35), transparent 80%);
+  opacity:.28;
 }
+.app{height:100dvh;display:flex;flex-direction:column}
 .topbar{
   flex:0 0 auto;
-  padding: calc(env(safe-area-inset-top) + 10px) max(14px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left));
-  background:linear-gradient(180deg, rgba(6,16,29,.95), rgba(10,22,48,.84));
+  padding:calc(env(safe-area-inset-top) + 10px) max(14px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left));
+  background:
+    linear-gradient(180deg, rgba(7,12,22,.98), rgba(10,18,32,.88)),
+    linear-gradient(90deg, rgba(103,232,249,.06), transparent 18%, transparent 82%, rgba(96,165,250,.06));
   border-bottom:1px solid var(--line);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow:0 10px 28px rgba(0,0,0,.25);
-  z-index:10;
+  box-shadow:0 12px 40px rgba(0,0,0,.36);
+  position:relative;
+}
+.topbar:after{
+  content:"";
+  position:absolute; left:16px; right:16px; bottom:0; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(103,232,249,.4), transparent);
 }
 .topbarInner{
-  max-width:1500px;
-  margin:0 auto;
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:16px;
+  max-width:1540px;margin:0 auto;display:flex;justify-content:space-between;gap:16px;align-items:flex-start
 }
 .brandTitle{
-  font-size:18px;
-  font-weight:900;
-  letter-spacing:.03em;
   display:flex;align-items:center;gap:10px;
+  font-size:18px;font-weight:900;letter-spacing:.04em;text-transform:uppercase
 }
-.brandSub{
-  margin-top:4px;
-  color:var(--muted);
-  font-size:12px;
-}
+.brandSub{margin-top:4px;color:var(--muted);font-size:12px}
 .quickBadges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .badge{
-  padding:8px 12px;border-radius:999px;
-  background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.08);
-  color:var(--text);font-size:12px;font-weight:800;
+  padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800;
+  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+  border:1px solid var(--line);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
 }
 .main{
   flex:1 1 auto;
   overflow:auto;
   padding:14px max(14px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
 }
-.wrap{
-  max-width:1500px;
-  margin:0 auto;
-}
+.wrap{max-width:1540px;margin:0 auto}
 .grid{display:grid;gap:16px}
 .hero{grid-template-columns:1.15fr .85fr}
 .cols2{grid-template-columns:1fr 1fr}
 .cols3{grid-template-columns:repeat(3,1fr)}
 .panel{
-  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014)),
+    linear-gradient(135deg, rgba(96,165,250,.03), transparent 40%, rgba(103,232,249,.03));
   border:1px solid var(--line);
   border-radius:var(--radius);
-  box-shadow:var(--shadow);
+  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.04);
   padding:18px;
-  position:relative;
-  overflow:hidden;
+  position:relative; overflow:hidden;
 }
 .panel:before{
-  content:"";
-  position:absolute; inset:0;
+  content:""; position:absolute; inset:0; pointer-events:none;
   background:
-    radial-gradient(circle at 10% 20%, rgba(103,232,249,.06), transparent 20%),
-    radial-gradient(circle at 90% 90%, rgba(96,165,250,.05), transparent 18%);
-  pointer-events:none;
+    linear-gradient(120deg, rgba(255,255,255,.03), transparent 24%, transparent 76%, rgba(255,255,255,.02)),
+    radial-gradient(circle at 8% 10%, rgba(103,232,249,.07), transparent 18%),
+    radial-gradient(circle at 94% 94%, rgba(96,165,250,.06), transparent 18%);
 }
-.sectionTitle{
-  margin:0 0 12px;
-  font-size:18px;
-  font-weight:900;
-  display:flex;align-items:center;gap:8px;
+.panel:after{
+  content:""; position:absolute; left:14px; right:14px; top:0; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(103,232,249,.28), transparent);
 }
-.sub{
-  color:var(--muted);
-  line-height:1.7;
-}
+.sectionTitle{margin:0 0 12px;font-size:18px;font-weight:900;display:flex;align-items:center;gap:8px;letter-spacing:.02em}
+.sub{color:var(--muted);line-height:1.7}
 .small{font-size:12px;color:var(--muted)}
-.commandMain{font-size:28px;font-weight:900}
+.commandMain{font-size:30px;font-weight:900;letter-spacing:.02em}
 .commandSub{font-size:13px;color:var(--muted);margin-top:6px}
 .modeBadge{
-  padding:10px 14px;border-radius:999px;
-  background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.08);
-  font-size:12px;font-weight:900;
+  padding:10px 14px;border-radius:999px;font-size:12px;font-weight:900;
+  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+  border:1px solid var(--line);
+  box-shadow:var(--glow-blue);
 }
 .ok{color:var(--green)} .warn{color:var(--yellow)} .danger{color:var(--red)} .info{color:var(--blue)}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.metrics,.signalGrid,.bridgeGrid{display:grid;gap:12px}
+.metrics{grid-template-columns:repeat(4,1fr);margin-top:14px}
+.signalGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
+.bridgeGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
 .metric,.signal,.bridge,.kpi{
-  background:rgba(255,255,255,.03);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.018));
   border:1px solid var(--line);
   border-radius:18px;
   padding:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
 }
-.metric .k,.signal .k,.kpi .k,.bridge .k{font-size:12px;color:var(--muted)}
+.metric .k,.signal .k,.bridge .k,.kpi .k{font-size:12px;color:var(--muted)}
 .metric .v,.signal .v,.bridge .v,.kpi .v{font-size:24px;font-weight:900;margin-top:6px}
-.signalGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
-.bar{height:10px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;margin-top:8px}
-.bar>div{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:999px}
+.bar{height:10px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;margin-top:8px;border:1px solid rgba(255,255,255,.04)}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:999px;box-shadow:0 0 18px rgba(103,232,249,.28)}
 label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-input,textarea,select{
-  width:100%;
-  background:#0a1324;
-  color:var(--text);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:14px;
-  padding:12px 13px;
-  font:inherit;
-  outline:none;
+input,textarea{
+  width:100%;background:#09111f;color:var(--text);border:1px solid rgba(160,200,255,.12);
+  border-radius:14px;padding:12px 13px;font:inherit;outline:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
 }
-input:focus,textarea:focus,select:focus{
-  border-color:rgba(103,232,249,.4);
-  box-shadow:0 0 0 3px rgba(103,232,249,.10);
+input:focus,textarea:focus{
+  border-color:rgba(103,232,249,.42);
+  box-shadow:0 0 0 3px rgba(103,232,249,.10), var(--glow-cyan);
 }
 textarea{min-height:118px;resize:vertical}
 .toolbar{display:flex;gap:10px;flex-wrap:wrap}
 button{
-  border:0;
-  border-radius:14px;
-  padding:12px 16px;
-  font:inherit;
-  font-weight:900;
-  cursor:pointer;
-  background:linear-gradient(135deg,var(--blue),var(--cyan));
-  color:#04111e;
-  min-width:120px;
+  border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:900;cursor:pointer;min-width:120px;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));color:#04111e;
+  box-shadow:0 10px 24px rgba(96,165,250,.18), inset 0 1px 0 rgba(255,255,255,.25);
 }
 button.secondary{
-  background:rgba(255,255,255,.06);
-  color:var(--text);
-  border:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+  color:var(--text);border:1px solid var(--line);box-shadow:none;
 }
 button.danger{
-  background:rgba(248,113,113,.12);
-  color:#fecaca;
-  border:1px solid rgba(248,113,113,.2);
+  background:linear-gradient(180deg, rgba(248,113,113,.16), rgba(248,113,113,.08));
+  color:#fecaca;border:1px solid rgba(248,113,113,.2);box-shadow:none;
 }
 .reason{
-  margin-top:12px;
-  padding:12px 14px;
-  border-radius:16px;
-  background:rgba(255,255,255,.03);
-  border:1px solid var(--line);
-  line-height:1.7;
-  font-size:13px;
+  margin-top:12px;padding:12px 14px;border-radius:16px;
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
+  border:1px solid var(--line);line-height:1.7;font-size:13px
 }
 .rangeWrap{
-  background:rgba(255,255,255,.026);
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:12px;
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
+  border:1px solid var(--line);border-radius:18px;padding:12px
 }
 .sliderRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
 .rangeValue{
-  min-width:78px;
-  text-align:center;
-  padding:10px 12px;
-  border-radius:14px;
-  background:#091323;
-  border:1px solid var(--line);
-  font-weight:900;
+  min-width:78px;text-align:center;padding:10px 12px;border-radius:14px;background:#091323;
+  border:1px solid var(--line);font-weight:900;box-shadow:var(--glow-blue)
 }
-input[type=range]{padding:0;border:0;background:transparent}
-.bridgeGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+input[type=range]{padding:0;border:0;background:transparent;box-shadow:none}
 .stockCards,.holdCards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .stockCard,.holdCard{
-  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014));
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014)),
+    linear-gradient(135deg, rgba(96,165,250,.03), transparent 42%, rgba(103,232,249,.03));
   border:1px solid var(--line);
-  border-radius:20px;
-  padding:15px;
-  position:relative;
-  overflow:hidden;
+  border-radius:20px;padding:15px;position:relative;overflow:hidden;
+  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.stockCard:before,.holdCard:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg, rgba(255,255,255,.03), transparent 26%, transparent 74%, rgba(255,255,255,.02));
 }
 .stockCard:after,.holdCard:after{
-  content:"";
-  position:absolute;
-  right:-45px;top:-45px;
-  width:140px;height:140px;border-radius:50%;
+  content:"";position:absolute;right:-45px;top:-45px;width:140px;height:140px;border-radius:50%;
   background:radial-gradient(circle, rgba(96,165,250,.16), transparent 65%);
 }
-.stockHead,.holdHead{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:10px;
-}
-.role{font-size:12px;color:var(--cyan);font-weight:900}
-.name{font-size:26px;font-weight:900}
+.stockHead,.holdHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.role{font-size:12px;color:var(--cyan);font-weight:900;letter-spacing:.04em}
+.name{font-size:26px;font-weight:900;letter-spacing:.02em}
 .tag{
-  display:inline-flex;align-items:center;
-  padding:6px 10px;border-radius:999px;
-  background:rgba(255,255,255,.05);
-  border:1px solid var(--line);
-  font-size:12px;font-weight:900;
+  display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;
+  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+  border:1px solid var(--line);font-size:12px;font-weight:900
 }
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
 .kpi{padding:10px;text-align:center;background:#091323}
-.actionLine{
-  margin-top:12px;
-  font-size:14px;
-  font-weight:900;
-}
-.glow-green{box-shadow:0 0 0 1px rgba(52,211,153,.22), 0 0 20px rgba(52,211,153,.12)}
-.glow-yellow{box-shadow:0 0 0 1px rgba(251,191,36,.22), 0 0 20px rgba(251,191,36,.12)}
-.glow-red{box-shadow:0 0 0 1px rgba(248,113,113,.22), 0 0 20px rgba(248,113,113,.12)}
+.glow-green{box-shadow:0 0 0 1px rgba(52,211,153,.20), 0 0 22px rgba(52,211,153,.10), var(--shadow)}
+.glow-yellow{box-shadow:0 0 0 1px rgba(251,191,36,.20), 0 0 22px rgba(251,191,36,.10), var(--shadow)}
+.glow-red{box-shadow:0 0 0 1px rgba(248,113,113,.20), 0 0 22px rgba(248,113,113,.10), var(--shadow)}
 .tableWrap{overflow:auto}
 table{width:100%;border-collapse:collapse;min-width:980px}
 th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;text-align:left}
 th{color:var(--muted)}
-.footer{
-  color:var(--muted);
-  font-size:12px;
-  text-align:center;
-  padding:12px 0 6px;
-}
+.footer{color:var(--muted);font-size:12px;text-align:center;padding:12px 0 6px}
 @media (max-width:1200px){
   .hero,.cols2,.cols3,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards{grid-template-columns:1fr}
   .kpis{grid-template-columns:repeat(2,1fr)}
@@ -271,13 +231,13 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛸 AI 戰艦 Pro 指揮艙</div>
-        <div class="brandSub">上方固定、內部滾動。Safari 白條不會再一路擋住你。整頁更像 App，不像普通網頁。</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro｜重裝甲風格</div>
+        <div class="brandSub">更像飛輪系統的厚重、發光、裝甲感。上方固定，內部滾動，手機看起來更像真正的戰情主控台。</div>
       </div>
       <div class="quickBadges">
-        <div class="badge">📌 今日指令優先</div>
-        <div class="badge">🎯 主攻 / 副攻監控</div>
-        <div class="badge">⚙️ 戰艦參數拉桿</div>
+        <div class="badge">📌 今日指令</div>
+        <div class="badge">🎯 主攻 / 副攻</div>
+        <div class="badge">⚙️ 參數拉桿</div>
       </div>
     </div>
   </div>
@@ -288,7 +248,7 @@ th{color:var(--muted)}
       <div class="grid hero">
         <section class="panel">
           <div class="sectionTitle">🚀 戰情總覽</div>
-          <div class="sub">把這頁當成你的短線主控台。流程很簡單：貼 CSV → 貼 AI 回覆 → 一鍵決策 → 加入持倉。重點不是參數很多，而是你一眼知道今天該幹嘛。</div>
+          <div class="sub">這版把介面往飛輪系統那種重裝甲方向拉高：更厚重、更多層次、卡片更像裝甲模組。流程一樣簡單：貼 CSV → 貼 AI → 決策 → 監控。</div>
           <div class="metrics">
             <div class="metric"><div class="k">本地候選</div><div class="v" id="mLocal">—</div></div>
             <div class="metric"><div class="k">AI 候選</div><div class="v" id="mAi">—</div></div>
@@ -360,7 +320,7 @@ th{color:var(--muted)}
 
       <section class="panel" style="margin-top:16px">
         <div class="sectionTitle">⚙️ 戰艦操控參數</div>
-        <div class="sub">這一區不是讓你一直手改，是讓你可以很直覺地看到：停損調 6% 還是 8%，主攻股到底會變成多少價位賣。拉桿一動，所有推算同步更新。</div>
+        <div class="sub">拉桿一動，所有推算同步更新。這一區會直接換算主攻股停損價、停利價、移動停利價，讓你不需要自己算。</div>
 
         <div class="grid cols3" style="margin-top:14px">
           <div class="rangeWrap">
@@ -475,14 +435,14 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">AI 戰艦 Pro：上方固定、內部滾動、資訊豐富、操作輕鬆，真正適合手機看盤。</div>
+      <div class="footer">AI 戰艦 Pro 重裝甲版：更厚重、更像飛輪系統，但操作仍然簡單。</div>
     </div>
   </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-const STORE = 'ai_battleship_pro_v1';
+const STORE = 'ai_battleship_armor_v1';
 
 let localPicks = [];
 let aiCodes = [];
@@ -770,7 +730,7 @@ function addHolding(){
   if(existing){
     existing.buy = buy;
     existing.current = current;
-  }else{
+  } else {
     holdings.push({symbol,buy,current,highest:current});
   }
   clearHoldForm();
@@ -811,9 +771,9 @@ function calcHolding(h){
     action='移動停利'; cls='warn'; glow='glow-yellow'; note='從高點回撤達門檻，建議保住獲利。';
   } else if(h.current >= tp1){
     action='分批停利'; cls='warn'; glow='glow-yellow'; note='已達第一停利，建議先出一半。';
-  } else if(((tp1 - h.current)/h.current*100) < 2 && h.current < tp1){
+  } else if(((tp1-h.current)/h.current*100) < 2 && h.current < tp1){
     action='接近停利'; cls='warn'; glow='glow-yellow'; note='距離第一停利很近，今天重點看能否續強。';
-  } else if(((h.current - stop)/h.current*100) < 2){
+  } else if(((h.current-stop)/h.current*100) < 2){
     action='接近停損'; cls='danger'; glow='glow-red'; note='已逼近停損，今天要優先控管。';
   }
 
@@ -1013,11 +973,11 @@ function saveLocal(){
     },
     localPicks, aiCodes, finalPicks, holdings, decisionSource
   };
-  localStorage.setItem('ai_battleship_pro_v1', JSON.stringify(data));
+  localStorage.setItem(STORE, JSON.stringify(data));
 }
 function loadLocal(){
   try{
-    const data = JSON.parse(localStorage.getItem('ai_battleship_pro_v1') || '{}');
+    const data = JSON.parse(localStorage.getItem(STORE) || '{}');
     if(!data || !Object.keys(data).length) return;
     $('csvInput').value = data.csvInput || '';
     $('aiInput').value = data.aiInput || '';
