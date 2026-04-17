@@ -320,6 +320,7 @@ th{color:var(--muted)}
         <div class="badge">🔥 一鍵作戰流程</div>
         <div class="badge">🔒 真防呆鎖步驟</div>
         <div class="badge">📱 電腦 / 手機共用</div>
+        <div class="badge" id="cloudStatus">☁️ 離線模式</div>
       </div>
     </div>
   </div>
@@ -384,7 +385,8 @@ th{color:var(--muted)}
         </div>
         <div class="toolbar" style="margin-top:14px">
           <button id="runFlowBtn">🔥 一鍵作戰流程</button>
-          <button id="saveBtn" class="secondary">儲存本機</button>
+          <button id="saveBtn" class="secondary">☁️ 本機 + 雲端同步</button>
+          <button id="reloadCloudBtn" class="secondary">☁️ 重新讀取雲端</button>
         </div>
         <div id="flowMessage" class="reason">系統會依順序檢查：CSV → AI 提示詞 → AI 解析 → 最終決策。</div>
       </section>
@@ -608,20 +610,42 @@ function buildCloudHoldingsPayload(){
   }));
 }
 
+function setCloudStatus(text, ok=true){
+  const el = $('cloudStatus');
+  if(!el) return;
+  el.textContent = text;
+  el.style.color = ok ? 'var(--green)' : 'var(--red)';
+}
+
+async function parseApiJson(res){
+  const raw = await res.text();
+  try{
+    return JSON.parse(raw);
+  }catch(err){
+    throw new Error(`後端回傳不是 JSON：${raw.slice(0,180)}`);
+  }
+}
+
 async function apiGet(action){
-  const res = await fetch(`${API_BASE}?action=${encodeURIComponent(action)}`);
+  const res = await fetch(`${API_BASE}?action=${encodeURIComponent(action)}`, {
+    method: 'GET',
+    redirect: 'follow',
+    cache: 'no-store'
+  });
   if(!res.ok) throw new Error(`API GET 失敗：${res.status}`);
-  return await res.json();
+  return await parseApiJson(res);
 }
 
 async function apiPost(action, data){
   const res = await fetch(API_BASE, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action, data })
+    body: JSON.stringify({ action, data }),
+    redirect: 'follow',
+    cache: 'no-store'
   });
   if(!res.ok) throw new Error(`API POST 失敗：${res.status}`);
-  return await res.json();
+  return await parseApiJson(res);
 }
 
 function applyCloudData(payload){
@@ -665,7 +689,8 @@ function applyCloudData(payload){
   }
 }
 
-async function loadCloud(){
+async function loadCloud(showToast=true){
+  setCloudStatus('☁️ 雲端讀取中...', true);
   const payload = await apiGet('getAll');
   applyCloudData(payload);
   refreshSliders();
@@ -676,25 +701,44 @@ async function loadCloud(){
   updateLocks();
   updateConfidence();
   renderRankTable();
-  setFlowMessage('☁️ 已從雲端載入資料。');
+  setCloudStatus('☁️ 雲端已連線', true);
+  if(showToast) setFlowMessage('☁️ 已從雲端載入資料。');
 }
 
 async function saveCloud(){
-  await apiPost('saveSettings', buildCloudSettingsPayload());
+  const r1 = await apiPost('saveSettings', buildCloudSettingsPayload());
+  if(r1.ok === false) throw new Error(r1.error || '儲存 settings 失敗');
   if(finalPicks.length){
-    await apiPost('savePick', buildCloudPickPayload());
+    const r2 = await apiPost('savePick', buildCloudPickPayload());
+    if(r2.ok === false) throw new Error(r2.error || '儲存 picks 失敗');
   }
-  await apiPost('saveHoldings', buildCloudHoldingsPayload());
+  const r3 = await apiPost('saveHoldings', buildCloudHoldingsPayload());
+  if(r3.ok === false) throw new Error(r3.error || '儲存 holdings 失敗');
 }
 
 async function saveAll(){
+  const btn = $('saveBtn');
+  if(btn) {
+    btn.disabled = true;
+    btn.textContent = '☁️ 同步中...';
+  }
   saveLocal();
+  setCloudStatus('☁️ 雲端同步中...', true);
   try{
     await saveCloud();
+    setCloudStatus('☁️ 已同步成功', true);
     setFlowMessage('☁️ 已同步到雲端資料庫。');
+    alert('✅ 雲端同步成功');
   }catch(err){
     console.error(err);
+    setCloudStatus('☁️ 同步失敗', false);
     setFlowMessage(`⚠️ 本機已儲存，但雲端同步失敗：${err.message || err}`, true);
+    alert('❌ 雲端同步失敗：' + (err.message || err));
+  }finally{
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = '☁️ 本機 + 雲端同步';
+    }
   }
 }
 
@@ -709,9 +753,11 @@ async function initApp(){
   updateConfidence();
   renderRankTable();
   try{
-    await loadCloud();
+    await loadCloud(false);
+    setFlowMessage('☁️ 已載入本機資料，並完成雲端同步。');
   }catch(err){
     console.error(err);
+    setCloudStatus('☁️ 雲端離線', false);
     setFlowMessage(`⚠️ 雲端載入失敗，先使用本機資料：${err.message || err}`, true);
   }
 }
@@ -1563,6 +1609,7 @@ $('runFlowBtn').addEventListener('click', runFlow);
 $('loadDemoBtn').addEventListener('click', loadDemo);
 $('clearBtn').addEventListener('click', clearAll);
 $('saveBtn').addEventListener('click', saveAll);
+$('reloadCloudBtn').addEventListener('click', ()=>loadCloud(true).catch(err=>{console.error(err); setCloudStatus('☁️ 雲端離線', false); setFlowMessage(`⚠️ 重新讀取雲端失敗：${err.message || err}`, true); alert('❌ 讀取雲端失敗：' + (err.message || err));}));
 $('addHoldBtn').addEventListener('click', addHolding);
 $('loadMainBtn').addEventListener('click', loadMainToForm);
 $('clearHoldBtn').addEventListener('click', clearHoldForm);
