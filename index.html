@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max｜完整修復版</title>
+<title>AI 戰艦 Pro Max｜最終版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -191,6 +191,26 @@ th{color:var(--muted)}
   font-size:12px;
   color:var(--muted);
 }
+.trailBadge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+}
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  display:inline-block;
+}
+.dot-green{ background: var(--green); box-shadow:0 0 10px rgba(52,211,153,.55); }
+.dot-yellow{ background: var(--yellow); box-shadow:0 0 10px rgba(251,191,36,.55); }
+.dot-red{ background: var(--red); box-shadow:0 0 10px rgba(248,113,113,.55); }
 .footer{color:var(--muted);font-size:12px;text-align:center;padding:12px 0 6px}
 @media (max-width:1200px){
   .hero,.cols2,.cols3,.cols4,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards{grid-template-columns:1fr}
@@ -207,8 +227,8 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max｜完整修復版</div>
-        <div class="brandSub">保留重裝甲戰艦風格、CSV / AI / 防呆流程全部恢復，並修正移動停利邏輯。</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max｜最終版</div>
+        <div class="brandSub">重裝甲戰艦風格保留，移動停利狀態燈與今日指令升級已整合。</div>
       </div>
       <div class="quickBadges">
         <div class="badge">🔥 一鍵作戰流程</div>
@@ -398,14 +418,14 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">完整修復版：恢復 CSV / AI / 防呆按鈕，並正確修好移動停利。</div>
+      <div class="footer">最終版：移動停利狀態燈、今日指令升級、CSV / AI / 防呆流程全部保留。</div>
     </div>
   </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-const STORE = 'ai_battleship_pro_max_fixed_v1';
+const STORE = 'ai_battleship_pro_max_final_v2';
 
 let localPicks = [];
 let aiCodes = [];
@@ -836,24 +856,80 @@ function calcHolding(h){
   const pnl = ((h.current - h.buy) / h.buy) * 100;
   const pnlAmt = (h.current - h.buy) * 1000;
 
-  let action='持有', cls='ok', glow='glow-green', note='趨勢正常，繼續監控。';
-  if(h.current <= stop){
-    action='停損出場'; cls='danger'; glow='glow-red'; note='已跌破固定停損線，今天先處理風險。';
-  } else if(h.current >= tp2){
-    action='全數停利'; cls='ok'; glow='glow-green'; note='已達第二停利，可考慮全數了結。';
-  } else if(h.trailArmed && trailPrice !== null && h.current <= trailPrice){
-    action='移動停利出場'; cls='warn'; glow='glow-yellow'; note='價格已跌破移動停利保護價，表示獲利回撤已達門檻，應出場保護利潤。';
-  } else if(h.current >= tp1){
-    action='分批停利'; cls='warn'; glow='glow-yellow'; note='已達第一停利，建議先出一半，剩餘部位交給移動停利保護。';
-  } else if(h.trailArmed && trailPrice !== null){
-    action='移動停利監控中'; cls='warn'; glow='glow-yellow'; note='已進入移動停利模式，保護價會跟隨最高價上移，但不會下移。';
-  } else if(((tp1-h.current)/h.current*100) < 2 && h.current < tp1){
-    action='接近停利'; cls='warn'; glow='glow-yellow'; note='距離第一停利很近，今天重點看能否續強。';
-  } else if(((h.current-stop)/h.current*100) < 2){
-    action='接近停損'; cls='danger'; glow='glow-red'; note='已逼近停損，今天要優先控管。';
+  const distToStop = ((h.current - stop) / h.current) * 100;
+  const distToTp1 = ((tp1 - h.current) / h.current) * 100;
+
+  let action='持有（安全區）';
+  let cls='ok';
+  let glow='glow-green';
+  let note='趨勢正常，繼續監控。';
+
+  let trailStatus = '未啟動';
+  let trailColor = 'yellow';
+
+  if(h.trailArmed && trailPrice !== null){
+    trailStatus = '監控中';
+    trailColor = 'green';
   }
 
-  return {...h, stop, tp1, tp2, trailPrice, pnl, pnlAmt, action, cls, glow, note};
+  if(h.current <= stop){
+    action='停損出場';
+    cls='danger';
+    glow='glow-red';
+    note='已跌破固定停損線，今天先處理風險。';
+  }
+  else if(h.current >= tp2){
+    action='全數停利';
+    cls='ok';
+    glow='glow-green';
+    note='已達第二停利，可考慮全數了結。';
+  }
+  else if(h.trailArmed && trailPrice !== null && h.current <= trailPrice){
+    action='移動停利已觸發';
+    cls='danger';
+    glow='glow-red';
+    note='價格已跌破移動停利保護價，應出場保護利潤。';
+    trailStatus = '已觸發';
+    trailColor = 'red';
+  }
+  else if(h.current >= tp1){
+    action='移動停利監控中';
+    cls='warn';
+    glow='glow-yellow';
+    note='已達第一停利，建議先出一半，剩餘部位交給移動停利保護。';
+    trailStatus = '監控中';
+    trailColor = 'green';
+  }
+  else if(distToTp1 < 2 && h.current < tp1){
+    action='接近停利1（準備啟動移動停利）';
+    cls='warn';
+    glow='glow-yellow';
+    note='距離第一停利很近，若突破就會啟動移動停利。';
+  }
+  else if(distToStop < 2){
+    action='接近停損（風險警告）';
+    cls='danger';
+    glow='glow-red';
+    note='已逼近停損，今天要優先控管。';
+  }
+
+  return {
+    ...h,
+    stop,
+    tp1,
+    tp2,
+    trailPrice,
+    pnl,
+    pnlAmt,
+    action,
+    cls,
+    glow,
+    note,
+    trailStatus,
+    trailColor,
+    distToStop,
+    distToTp1
+  };
 }
 
 function updateHoldings(){
@@ -866,6 +942,7 @@ function updateHoldings(){
   }
 
   holdings = holdings.map(calcHolding);
+
   box.innerHTML = holdings.map((h,i)=>`
     <div class="holdCard ${h.glow}">
       <div class="holdHead">
@@ -874,6 +951,13 @@ function updateHoldings(){
           <div class="name">${h.symbol}</div>
         </div>
         <div class="tag ${h.cls}">${h.action}</div>
+      </div>
+
+      <div style="margin-top:10px">
+        <div class="trailBadge">
+          <span class="dot dot-${h.trailColor}"></span>
+          <span>移動停利狀態：${h.trailStatus}</span>
+        </div>
       </div>
 
       <div class="kpis">
@@ -888,12 +972,12 @@ function updateHoldings(){
       </div>
 
       <div class="reason">
-        <b>今日要做：</b>${h.action}<br>
+        <b>今日指令：</b>${h.action}<br>
         ${h.note}<br>
         <b>最高價：</b>${fmt(h.highest,2)}｜
         <b>移動停利：</b>${h.trailPrice === null ? '未啟動（尚未達停利1）' : fmt(h.trailPrice,2)}<br>
-        <b>距離停損：</b>${pct(((h.current-h.stop)/h.current*100),2)}｜
-        <b>距離停利1：</b>${pct(((h.tp1-h.current)/h.current*100),2)}
+        <b>距離停損：</b>${pct(h.distToStop,2)}｜
+        <b>距離停利1：</b>${pct(h.distToTp1,2)}
       </div>
 
       <div class="toolbar" style="margin-top:10px">
@@ -906,6 +990,7 @@ function updateHoldings(){
   const dangerCount = holdings.filter(h=>h.cls==='danger').length;
   const warnCount = holdings.filter(h=>h.cls==='warn').length;
   $('mAlert').textContent = dangerCount ? '紅色警報' : warnCount ? '注意' : '安全';
+
   updateSystemTable();
 }
 
