@@ -1,157 +1,209 @@
-<!-- ⭐ v4.9 真・戰艦升級版（保留UI + 強化邏輯） -->
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 戰艦 Pro Max v4.9</title>
+
+<style>
+body{
+  margin:0;
+  background:#0b0f1a;
+  color:#fff;
+  font-family:Arial;
+}
+.container{padding:16px;}
+.card{
+  background:#111827;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:12px;
+  box-shadow:0 0 10px rgba(0,255,255,0.1);
+}
+.title{font-size:18px;margin-bottom:8px;color:#00eaff;}
+
+textarea{width:100%;height:120px;background:#000;color:#0f0;border:none;padding:8px;}
+button{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  background:#00eaff;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+}
+
+.stock{
+  display:flex;
+  justify-content:space-between;
+  padding:6px;
+  border-bottom:1px solid #222;
+}
+
+.badge{
+  padding:2px 6px;
+  border-radius:6px;
+}
+
+.S{background:#00ffcc;color:#000;}
+.A{background:#4caf50;}
+.B{background:#ff9800;}
+.D{background:#f44336;}
+
+.lock{color:red;font-size:12px;}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="card">
+<div class="title">CSV 輸入</div>
+<textarea id="csv"></textarea>
+<button onclick="analyze()">開始分析</button>
+</div>
+
+<div class="card">
+<div class="title">排名結果</div>
+<div id="rank"></div>
+</div>
+
+<div class="card">
+<div class="title">最終決策</div>
+<div id="decision"></div>
+<button onclick="finalDecision()">一鍵最終決策</button>
+</div>
+
+<div class="card">
+<div class="title">持倉監控</div>
+<div>
+股價 <input id="price">
+買入 <input id="buy">
+股數 <input id="qty">
+<button onclick="calc()">計算</button>
+</div>
+<div id="pnl"></div>
+</div>
+
+</div>
 
 <script>
-// ==========================
-// 🔥 v4.9 核心升級模組
-// ==========================
 
-// 🧠 分級系統
-function getGrade(dev, rsi, vol){
-  if(dev < 5 && rsi < 70 && vol > 2) return 'S';
-  if(dev < 10 && rsi < 75) return 'A';
-  if(dev < 15) return 'B';
-  return 'D';
-}
+let data=[];
 
-// 🚨 鎖單機制
-function isLocked(dev){
-  return dev > 15;
-}
+// ===== 解析CSV =====
+function analyze(){
+  let text=document.getElementById('csv').value;
+  let rows=text.split('\n').slice(1);
 
-// 📊 評分系統
-function scoreRow(r){
-  let score = 0;
+  data=rows.map(r=>{
+    let c=r.split(',');
+    let price=parseFloat(c[2]);
+    let vol=parseFloat(c[6]);
+    let sma20=parseFloat(c[17]);
+    let rsi=parseFloat(c[19]);
 
-  if(r.dev < 5) score += 30;
-  else if(r.dev < 10) score += 20;
-  else if(r.dev < 15) score += 10;
-  else score -= 30;
+    let dev=((price-sma20)/sma20)*100;
 
-  if(r.rsi < 70) score += 20;
-  else if(r.rsi > 80) score -= 20;
-
-  if(r.vol > 2) score += 20;
-
-  return score;
-}
-
-// 🌍 市場情緒
-function getMarketMode(list){
-  if(!list || list.length === 0) return '⚖️ 標準';
-
-  const avgDev = list.reduce((a,b)=>a+b.dev,0)/list.length;
-
-  if(avgDev > 10) return '🔥 強勢';
-  if(avgDev > 5) return '⚖️ 標準';
-  return '🛡 保守';
-}
-
-// 💰 TP/SL 建議
-function getTPSL(mode){
-  if(mode === '🔥 強勢'){
-    return { tp: 0.15, sl: -0.08 };
-  }
-  if(mode === '⚖️ 標準'){
-    return { tp: 0.10, sl: -0.07 };
-  }
-  return { tp: 0.08, sl: -0.05 };
-}
-
-// 🎯 今日指令
-function getTodayAction(mode){
-  if(mode === '🔥 強勢') return '🚀 主攻模式（可進場）';
-  if(mode === '⚖️ 標準') return '⚖️ 選擇性進場';
-  return '🛡 防守（減碼/觀察）';
-}
-
-// ==========================
-// 🔧 插入你原本流程
-// ==========================
-
-// 👉 修改 analyzeCSV 內部（加這段）
-function enhanceRows(rows){
-  return rows.map(r=>{
-    r.grade = getGrade(r.dev, r.rsi, r.vol);
-    r.lock = isLocked(r.dev);
-    r.score = scoreRow(r);
-    return r;
+    return{
+      name:c[1],
+      code:c[0],
+      price,vol,sma20,rsi,dev
+    }
   });
+
+  data.forEach(r=>{
+    r.grade=getGrade(r);
+    r.lock=r.dev>15;
+    r.score=score(r);
+  });
+
+  render();
 }
 
-// 👉 修改最終決策
-function enhancedDecision(rows){
-  rows = enhanceRows(rows);
-
-  // 排序（用分數）
-  rows.sort((a,b)=>b.score - a.score);
-
-  const mode = getMarketMode(rows);
-  const tpSl = getTPSL(mode);
-  const action = getTodayAction(mode);
-
-  return {
-    picks: rows.slice(0,2),
-    mode,
-    tp: tpSl.tp,
-    sl: tpSl.sl,
-    action
-  };
+// ===== 分級 =====
+function getGrade(r){
+  if(r.dev<5 && r.rsi<70 && r.vol>2) return "S";
+  if(r.dev<10) return "A";
+  if(r.dev<15) return "B";
+  return "D";
 }
 
-// ==========================
-// 🖥 UI 注入（不改你原畫面）
-// ==========================
+// ===== 評分 =====
+function score(r){
+  let s=0;
+  if(r.dev<5)s+=30;
+  else if(r.dev<10)s+=20;
+  else if(r.dev<15)s+=10;
+  else s-=30;
 
-// 👉 在你 renderRankTable 加
-function renderLockTag(r){
-  if(r.lock){
-    return '🚨 <span style="color:red">乖離過大</span>';
-  }
-  return '';
+  if(r.rsi<70)s+=20;
+  if(r.vol>2)s+=20;
+
+  return s;
 }
 
-// 👉 在主攻卡顯示
-function renderGradeTag(r){
-  let color = '#fff';
+// ===== 顯示 =====
+function render(){
+  let html="";
+  data.sort((a,b)=>b.score-a.score);
 
-  if(r.grade === 'S') color = '#00ffcc';
-  if(r.grade === 'A') color = '#4caf50';
-  if(r.grade === 'B') color = '#ff9800';
-  if(r.grade === 'D') color = '#f44336';
+  data.forEach(r=>{
+    html+=`
+    <div class="stock">
+      <div>${r.code} ${r.name}</div>
+      <div>
+        <span class="badge ${r.grade}">${r.grade}</span>
+        ${r.lock?'<span class="lock">🚨鎖單</span>':''}
+      </div>
+    </div>`;
+  });
 
-  return `<span style="color:${color};font-weight:bold">${r.grade}級</span>`;
+  document.getElementById('rank').innerHTML=html;
 }
 
-// 👉 今日指令顯示
-function updateTodayPanel(mode, action){
-  const el = document.getElementById('todayAction');
-  if(el){
-    el.innerHTML = `
-      <div style="font-size:18px">${mode}</div>
-      <div>${action}</div>
-    `;
-  }
+// ===== 市場判斷 =====
+function getMode(){
+  let avg=data.reduce((a,b)=>a+b.dev,0)/data.length;
+  if(avg>10)return "🔥強勢";
+  if(avg>5)return "⚖️標準";
+  return "🛡保守";
 }
 
-// ==========================
-// 🚀 主流程 Hook（關鍵）
-// ==========================
+// ===== 最終決策 =====
+function finalDecision(){
+  let picks=data.filter(r=>!r.lock).slice(0,2);
 
-function runFinalDecision(){
-  if(!window.localPicks || localPicks.length === 0){
-    alert('請先分析CSV');
-    return;
-  }
+  let mode=getMode();
 
-  const result = enhancedDecision(localPicks);
+  let html=`市場：${mode}<br>`;
 
-  // 更新UI
-  updateTodayPanel(result.mode, result.action);
+  picks.forEach(p=>{
+    html+=`${p.code} ${p.name}<br>`;
+  });
 
-  console.log('🔥 最終決策', result);
+  document.getElementById('decision').innerHTML=html;
 }
 
-// 綁定你的按鈕（如果有）
-window.runFinalDecision = runFinalDecision;
+// ===== 持倉 =====
+function calc(){
+  let p=parseFloat(price.value);
+  let b=parseFloat(buy.value);
+  let q=parseFloat(qty.value);
+
+  let pnl=(p-b)*q;
+  let rate=((p-b)/b*100).toFixed(2);
+
+  let status="🟢持有";
+
+  if(rate<-7)status="🔴停損";
+  if(rate>10)status="🟡停利區";
+
+  document.getElementById('pnl').innerHTML=
+  `損益:${pnl}<br>報酬:${rate}%<br>${status}`;
+}
 
 </script>
+
+</body>
+</html>
