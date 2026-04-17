@@ -6,13 +6,12 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max v3.2｜戰情室強化版</title>
+<title>AI 戰艦 Pro Max v4｜戰場視覺版</title>
 <style>
 :root{
   --bg:#050a12;
   --bg2:#0a1220;
   --panel:#0d1727;
-  --panel2:#0a1322;
   --line:rgba(160,200,255,.12);
   --line2:rgba(160,200,255,.22);
   --text:#eef6ff;
@@ -51,7 +50,6 @@ body:before{
 .app{height:100dvh;display:flex;flex-direction:column}
 .topbar{
   position:sticky; top:0; z-index:40;
-  flex:0 0 auto;
   padding:calc(env(safe-area-inset-top) + 10px) max(14px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left));
   background:linear-gradient(180deg, rgba(7,12,22,.97), rgba(10,18,32,.92));
   border-bottom:1px solid var(--line);
@@ -59,35 +57,18 @@ body:before{
   backdrop-filter: blur(12px);
 }
 .topbarInner{
-  max-width:1560px;
-  margin:0 auto;
-  display:flex;
-  justify-content:space-between;
-  gap:16px;
-  align-items:flex-start;
+  max-width:1560px;margin:0 auto;display:flex;justify-content:space-between;gap:16px;align-items:flex-start;
 }
-.brandTitle{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-size:18px;
-  font-weight:900;
-  letter-spacing:.04em;
-  text-transform:uppercase;
-}
+.brandTitle{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
 .brandSub{margin-top:5px;color:var(--muted);font-size:12px;line-height:1.6}
 .quickBadges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .badge{
-  padding:8px 12px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:800;
+  padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800;
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
   border:1px solid var(--line);
 }
 .main{
-  flex:1 1 auto;
-  overflow:auto;
+  flex:1 1 auto;overflow:auto;
   padding:14px max(14px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
 }
 .wrap{max-width:1560px;margin:0 auto}
@@ -96,6 +77,7 @@ body:before{
 .cols2{grid-template-columns:1fr 1fr}
 .cols3{grid-template-columns:repeat(3,1fr)}
 .cols4{grid-template-columns:repeat(4,1fr)}
+
 .panel{
   background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014));
   border:1px solid var(--line);
@@ -106,69 +88,51 @@ body:before{
   overflow:hidden;
 }
 .panel:before{
-  content:"";
-  position:absolute; inset:0; pointer-events:none;
+  content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(120deg, rgba(255,255,255,.03), transparent 24%, transparent 76%, rgba(255,255,255,.02));
 }
-.sectionTitle{
-  margin:0 0 12px;
-  font-size:18px;
-  font-weight:900;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
+.sectionTitle{margin:0 0 12px;font-size:18px;font-weight:900;display:flex;align-items:center;gap:8px}
 .sub{color:var(--muted);line-height:1.7}
 .small{font-size:12px;color:var(--muted)}
-.ok{color:var(--green)}
-.warn{color:var(--yellow)}
-.danger{color:var(--red)}
-.info{color:var(--blue)}
-.purple{color:var(--purple)}
+.ok{color:var(--green)} .warn{color:var(--yellow)} .danger{color:var(--red)} .info{color:var(--blue)} .purple{color:var(--purple)}
 
 .commandMain{font-size:30px;font-weight:900;letter-spacing:.02em;line-height:1.18}
 .commandSub{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.7}
 .modeBadge{
-  padding:10px 14px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:900;
+  padding:10px 14px;border-radius:999px;font-size:12px;font-weight:900;
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
   border:1px solid var(--line);
 }
-.metrics,.signalGrid,.bridgeGrid,.hudGrid,.tacticGrid{display:grid;gap:12px}
+.metrics,.signalGrid,.bridgeGrid,.hudGrid,.tacticGrid,.riskGrid,.heatGrid{display:grid;gap:12px}
 .metrics{grid-template-columns:repeat(4,1fr);margin-top:14px}
 .signalGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
 .bridgeGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
 .hudGrid{grid-template-columns:repeat(4,1fr)}
 .tacticGrid{grid-template-columns:repeat(4,1fr)}
+.riskGrid{grid-template-columns:1.1fr .9fr}
+.heatGrid{grid-template-columns:repeat(3,1fr)}
 
-.metric,.signal,.bridge,.kpi,.stepCard,.hudCard,.tacticCard{
+.metric,.signal,.bridge,.kpi,.stepCard,.hudCard,.tacticCard,.heatCard{
   background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.018));
   border:1px solid var(--line);
   border-radius:18px;
   padding:14px;
 }
-.metric .k,.signal .k,.bridge .k,.kpi .k,.stepCard .k,.hudCard .k,.tacticCard .k{
+.metric .k,.signal .k,.bridge .k,.kpi .k,.stepCard .k,.hudCard .k,.tacticCard .k,.heatCard .k{
   font-size:12px;color:var(--muted)
 }
-.metric .v,.signal .v,.bridge .v,.kpi .v,.stepCard .v,.hudCard .v,.tacticCard .v{
+.metric .v,.signal .v,.bridge .v,.kpi .v,.stepCard .v,.hudCard .v,.tacticCard .v,.heatCard .v{
   font-size:24px;font-weight:900;margin-top:6px
 }
 .hudCard .v{font-size:26px}
+
 .bar{height:10px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;margin-top:8px}
 .bar>div{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:999px}
 
 label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
 input,textarea{
-  width:100%;
-  background:#09111f;
-  color:var(--text);
-  border:1px solid rgba(160,200,255,.12);
-  border-radius:14px;
-  padding:12px 13px;
-  font:inherit;
-  outline:none;
+  width:100%;background:#09111f;color:var(--text);
+  border:1px solid rgba(160,200,255,.12);border-radius:14px;padding:12px 13px;font:inherit;outline:none;
 }
 input:focus,textarea:focus{
   border-color:rgba(103,232,249,.42);
@@ -177,25 +141,16 @@ input:focus,textarea:focus{
 textarea{min-height:118px;resize:vertical}
 .toolbar{display:flex;gap:10px;flex-wrap:wrap}
 button{
-  border:0;
-  border-radius:14px;
-  padding:12px 16px;
-  font:inherit;
-  font-weight:900;
-  cursor:pointer;
-  min-width:120px;
-  background:linear-gradient(135deg,var(--blue),var(--cyan));
-  color:#04111e;
+  border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:900;cursor:pointer;min-width:120px;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));color:#04111e;
 }
 button.secondary{
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-  color:var(--text);
-  border:1px solid var(--line);
+  color:var(--text);border:1px solid var(--line);
 }
 button.danger{
   background:linear-gradient(180deg, rgba(248,113,113,.16), rgba(248,113,113,.08));
-  color:#fecaca;
-  border:1px solid rgba(248,113,113,.2);
+  color:#fecaca;border:1px solid rgba(248,113,113,.2);
 }
 button.success{
   background:linear-gradient(135deg, var(--green), #8ff7cb);
@@ -204,62 +159,36 @@ button.success{
 button:disabled{opacity:.45;cursor:not-allowed}
 
 .reason{
-  margin-top:12px;
-  padding:12px 14px;
-  border-radius:16px;
+  margin-top:12px;padding:12px 14px;border-radius:16px;
   background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
-  border:1px solid var(--line);
-  line-height:1.7;
-  font-size:13px;
+  border:1px solid var(--line);line-height:1.7;font-size:13px;
 }
 .rangeWrap{
   background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:12px;
+  border:1px solid var(--line);border-radius:18px;padding:12px;
 }
 .sliderRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
 .rangeValue{
-  min-width:78px;
-  text-align:center;
-  padding:10px 12px;
-  border-radius:14px;
-  background:#091323;
-  border:1px solid var(--line);
-  font-weight:900;
+  min-width:78px;text-align:center;padding:10px 12px;border-radius:14px;background:#091323;border:1px solid var(--line);font-weight:900;
 }
 input[type=range]{padding:0;border:0;background:transparent}
 
 .stockCards,.holdCards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .stockCard,.holdCard{
   background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014));
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:15px;
-  position:relative;
-  overflow:hidden;
-  box-shadow:var(--shadow);
+  border:1px solid var(--line);border-radius:20px;padding:15px;position:relative;overflow:hidden;box-shadow:var(--shadow);
 }
 .stockCard:after,.holdCard:after{
-  content:"";
-  position:absolute;
-  right:-45px; top:-45px;
-  width:140px; height:140px;
-  border-radius:50%;
+  content:"";position:absolute;right:-45px;top:-45px;width:140px;height:140px;border-radius:50%;
   background:radial-gradient(circle, rgba(96,165,250,.16), transparent 65%);
 }
 .stockHead,.holdHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .role{font-size:12px;color:var(--cyan);font-weight:900}
 .name{font-size:26px;font-weight:900;line-height:1.2}
 .tag{
-  display:inline-flex;
-  align-items:center;
-  padding:6px 10px;
-  border-radius:999px;
+  display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-  border:1px solid var(--line);
-  font-size:12px;
-  font-weight:900;
+  border:1px solid var(--line);font-size:12px;font-weight:900;
 }
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
 .kpi{padding:10px;text-align:center;background:#091323}
@@ -274,149 +203,119 @@ th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);font-size:1
 th{color:var(--muted)}
 
 .lockLine{
-  margin-top:10px;
-  padding:10px 12px;
-  border-radius:14px;
-  background:rgba(255,255,255,.03);
-  border:1px dashed rgba(255,255,255,.14);
-  font-size:12px;
-  color:var(--muted);
+  margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.03);
+  border:1px dashed rgba(255,255,255,.14);font-size:12px;color:var(--muted);
 }
-
 .footer{color:var(--muted);font-size:12px;text-align:center;padding:12px 0 6px}
-.trailBadge{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 12px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:900;
-  border:1px solid var(--line);
+.trailBadge,.cloudBadge{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+  font-size:12px;font-weight:900;border:1px solid var(--line);
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
 }
-.dot{
-  width:10px;height:10px;border-radius:50%;display:inline-block;
-}
+.cloudBadge{border:1px solid var(--line2);background:linear-gradient(180deg, rgba(103,232,249,.09), rgba(96,165,250,.04))}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
 .dot-green{ background: var(--green); box-shadow:0 0 10px rgba(52,211,153,.55); }
 .dot-yellow{ background: var(--yellow); box-shadow:0 0 10px rgba(251,191,36,.55); }
 .dot-red{ background: var(--red); box-shadow:0 0 10px rgba(248,113,113,.55); }
-
 .levelBadge{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:42px;
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:900;
-  border:1px solid var(--line);
+  display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:6px 10px;border-radius:999px;
+  font-size:12px;font-weight:900;border:1px solid var(--line);
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
 }
-.cloudBadge{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 12px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:900;
-  border:1px solid var(--line2);
-  background:linear-gradient(180deg, rgba(103,232,249,.09), rgba(96,165,250,.04));
-}
-.hudStrip{
-  margin-top:16px;
-  display:grid;
-  gap:16px;
-}
-.centerCommand{
-  display:grid;
-  grid-template-columns:1.4fr .6fr;
-  gap:16px;
-}
+.hudStrip{margin-top:16px;display:grid;gap:16px}
+.centerCommand{display:grid;grid-template-columns:1.4fr .6fr;gap:16px}
 .commandBoard{
-  padding:16px;
-  border-radius:20px;
-  border:1px solid var(--line2);
+  padding:16px;border-radius:20px;border:1px solid var(--line2);
   background:
     radial-gradient(circle at 20% 20%, rgba(103,232,249,.08), transparent 30%),
     linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
   box-shadow:var(--shadow);
 }
-.commandBoard .title{
-  font-size:13px;
-  font-weight:900;
-  color:var(--cyan);
-  letter-spacing:.08em;
-  text-transform:uppercase;
-}
-.commandBoard .headline{
-  margin-top:8px;
-  font-size:32px;
-  font-weight:900;
-  line-height:1.15;
-}
-.commandBoard .desc{
-  margin-top:10px;
-  color:var(--muted);
-  line-height:1.8;
-  font-size:13px;
-}
-.commandList{
-  display:grid;
-  gap:10px;
-}
-.commandItem{
-  padding:12px 14px;
-  border:1px solid var(--line);
-  border-radius:16px;
-  background:rgba(255,255,255,.025);
-}
-.commandItem b{font-size:14px}
+.commandBoard .title{font-size:13px;font-weight:900;color:var(--cyan);letter-spacing:.08em;text-transform:uppercase}
+.commandBoard .headline{margin-top:8px;font-size:32px;font-weight:900;line-height:1.15}
+.commandBoard .desc{margin-top:10px;color:var(--muted);line-height:1.8;font-size:13px}
 
-.tacticCard{
-  padding:14px;
-  position:relative;
-  overflow:hidden;
-}
+.tacticCard{padding:14px;position:relative;overflow:hidden}
 .tacticCard:before{
-  content:"";
-  position:absolute; inset:0; pointer-events:none;
+  content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(120deg, rgba(255,255,255,.03), transparent 25%, transparent 75%, rgba(255,255,255,.02));
 }
-.tacticSymbol{
-  font-size:22px;
-  font-weight:900;
-  line-height:1.2;
+.tacticSymbol{font-size:22px;font-weight:900;line-height:1.2}
+.tacticAction{margin-top:8px;font-size:15px;font-weight:900}
+.tacticNote{margin-top:8px;font-size:12px;line-height:1.7;color:var(--muted)}
+
+.riskBox{
+  display:grid;gap:10px;padding:14px;border-radius:18px;
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014));
+  border:1px solid var(--line);
 }
-.tacticAction{
-  margin-top:8px;
-  font-size:15px;
-  font-weight:900;
+.riskAlert{
+  padding:12px 14px;border-radius:14px;border:1px solid var(--line);
+  background:rgba(255,255,255,.025);font-size:13px;line-height:1.7;
 }
-.tacticNote{
-  margin-top:8px;
-  font-size:12px;
-  line-height:1.7;
-  color:var(--muted);
+.riskAlert.red{border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.08)}
+.riskAlert.yellow{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.08)}
+.riskAlert.green{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.07)}
+.heatCard .v{font-size:20px}
+.heatMini{margin-top:10px}
+.heatRow{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;margin-top:8px}
+.heatBar{
+  height:10px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;
+}
+.heatFill{
+  height:100%;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--cyan));
+}
+.pressurePanel{
+  display:grid;gap:10px;
+}
+.pressureCard{
+  padding:12px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025);
+}
+.pressureHead{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+}
+.pressureName{font-weight:900;font-size:15px}
+.pressureMeta{font-size:12px;color:var(--muted)}
+.battleScale{
+  margin-top:10px;padding:12px;border-radius:16px;border:1px solid var(--line);
+  background:#091323;
+}
+.scaleLabels{
+  display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:8px
+}
+.scaleTrack{
+  position:relative;height:14px;border-radius:999px;overflow:hidden;
+  background:linear-gradient(90deg, rgba(248,113,113,.7), rgba(251,191,36,.7), rgba(52,211,153,.7));
+}
+.scaleMarker{
+  position:absolute;top:-3px;width:20px;height:20px;border-radius:50%;
+  border:2px solid white;background:#06111d;transform:translateX(-50%);
+  box-shadow:0 0 12px rgba(255,255,255,.35);
+}
+.scaleLegend{
+  margin-top:8px;font-size:12px;color:var(--muted);line-height:1.7;
+}
+.statusPill{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;
+  border:1px solid var(--line);font-size:12px;font-weight:900;
+  background:rgba(255,255,255,.04);
 }
 
 @media (max-width:1200px){
-  .hero,.cols2,.cols3,.cols4,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards,.hudGrid,.tacticGrid,.centerCommand{grid-template-columns:1fr}
+  .hero,.cols2,.cols3,.cols4,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards,.hudGrid,.tacticGrid,.centerCommand,.riskGrid,.heatGrid{grid-template-columns:1fr}
   .kpis{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:780px){
-  .topbar{padding-top:calc(env(safe-area-inset-top) + 8px)}
   .topbarInner{flex-direction:column;align-items:flex-start}
   .quickBadges{justify-content:flex-start}
   .main{padding:12px 12px calc(18px + env(safe-area-inset-bottom)) 12px}
   .commandMain{font-size:24px}
   .commandBoard .headline{font-size:25px}
-  .metrics,.signalGrid,.bridgeGrid,.hudGrid,.tacticGrid,.stockCards,.holdCards{grid-template-columns:1fr}
+  .metrics,.signalGrid,.bridgeGrid,.hudGrid,.tacticGrid,.stockCards,.holdCards,.riskGrid,.heatGrid{grid-template-columns:1fr}
   .toolbar button{flex:1 1 calc(50% - 10px); min-width:unset; padding:13px 12px}
   .name{font-size:22px}
   th,td{font-size:12px}
+  .heatRow{grid-template-columns:62px 1fr auto}
 }
 </style>
 </head>
@@ -425,12 +324,12 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v3.2｜戰情室強化版</div>
-        <div class="brandSub">雲端同步、戰術 HUD、今日唯一指令、主副攻卡、持倉監控、手機電腦共用。</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v4｜戰場視覺版</div>
+        <div class="brandSub">加入戰場壓力條、風險警告、倉位熱力圖、戰術 HUD，維持手動現價與雲端同步。</div>
       </div>
       <div class="quickBadges">
-        <div class="badge">🔥 一鍵作戰</div>
-        <div class="badge">🛰️ 戰術 HUD</div>
+        <div class="badge">🔥 戰場壓力條</div>
+        <div class="badge">⚠️ 風險警告</div>
         <div class="badge">☁️ 跨裝置同步</div>
       </div>
     </div>
@@ -484,6 +383,39 @@ th{color:var(--muted)}
 
         <div class="tacticGrid" id="tacticGrid">
           <div class="tacticCard"><div class="small">尚未產生戰術卡。</div></div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top:16px">
+        <div class="sectionTitle">⚠️ 風險警告與倉位熱力</div>
+        <div class="riskGrid">
+          <div class="riskBox">
+            <div class="small">系統會依目前持倉狀態，自動告訴你最需要優先處理的風險。</div>
+            <div id="riskAlerts">
+              <div class="riskAlert green">目前沒有重大風險警告。</div>
+            </div>
+          </div>
+          <div class="panel" style="padding:14px">
+            <div class="sectionTitle" style="font-size:16px;margin-bottom:10px">🔥 倉位熱力圖</div>
+            <div class="heatGrid">
+              <div class="heatCard">
+                <div class="k">最大倉位</div>
+                <div class="v" id="heatBiggest">—</div>
+                <div class="small" id="heatBiggestSub">尚無資料</div>
+              </div>
+              <div class="heatCard">
+                <div class="k">最大獲利</div>
+                <div class="v" id="heatBest">—</div>
+                <div class="small" id="heatBestSub">尚無資料</div>
+              </div>
+              <div class="heatCard">
+                <div class="k">最大風險</div>
+                <div class="v" id="heatWorst">—</div>
+                <div class="small" id="heatWorstSub">尚無資料</div>
+              </div>
+            </div>
+            <div id="heatMiniList" class="heatMini"></div>
+          </div>
         </div>
       </section>
 
@@ -641,6 +573,13 @@ th{color:var(--muted)}
       </div>
 
       <section class="panel" style="margin-top:16px">
+        <div class="sectionTitle">🎚️ 戰場壓力條</div>
+        <div class="pressurePanel" id="pressurePanel">
+          <div class="pressureCard"><div class="small">尚未加入持倉。</div></div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top:16px">
         <div class="sectionTitle">🛡️ 持倉戰況面板</div>
         <div class="holdCards" id="holdCards">
           <div class="holdCard"><div class="small">尚未加入持倉。</div></div>
@@ -673,14 +612,14 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">v3.2 戰情室強化版：HUD、今日唯一戰術、戰術卡、雲端同步、手機優化整合完成。</div>
+      <div class="footer">v4 戰場視覺版：壓力條、風險警告、倉位熱力圖、戰術 HUD、雲端同步整合完成。</div>
     </div>
   </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-const STORE = 'ai_battleship_pro_max_v3_2_cloud';
+const STORE = 'ai_battleship_pro_max_v4_cloud';
 const API_BASE = 'https://script.google.com/macros/s/AKfycbxfVr0JFYPDMOmCUz_X1fJ_DZmYujauwhvCXpd8MlvC3udAQNwWc0Cr69oo5IXz6e-d/exec';
 
 let localPicks = [];
@@ -709,7 +648,6 @@ function setCloudStatus(text, type='idle'){
   const dot = type === 'ok' ? 'green' : type === 'error' ? 'red' : 'yellow';
   badge.innerHTML = `<span class="dot dot-${dot}"></span><span>${text}</span>`;
 }
-
 function setFlowMessage(msg, isError=false){
   $('flowMessage').innerHTML = msg;
   $('flowMessage').style.borderColor = isError ? 'rgba(248,113,113,.28)' : 'rgba(160,200,255,.12)';
@@ -725,7 +663,6 @@ function getCfg(){
     capital: (num($('capitalSlider').value) ?? 20) * 10000
   };
 }
-
 function getLevel(score){
   if(score === null || score === undefined || Number.isNaN(score)) return '—';
   if(score >= 48) return 'S';
@@ -733,28 +670,20 @@ function getLevel(score){
   if(score >= 42) return 'B';
   return 'C';
 }
-
 function getRoleOfSymbol(symbol){
   if(finalPicks[0] && finalPicks[0].symbol === symbol) return 'main';
   if(finalPicks[1] && finalPicks[1].symbol === symbol) return 'sub';
   return '';
 }
-
 function getRoleLabel(symbol){
   const role = getRoleOfSymbol(symbol);
   if(role === 'main') return '⭐ 主攻';
   if(role === 'sub') return '🔥 副攻';
   return '—';
 }
-
 function findStockRefBySymbol(symbol){
-  return (
-    finalPicks.find(x => x.symbol === symbol) ||
-    localPicks.find(x => x.symbol === symbol) ||
-    null
-  );
+  return finalPicks.find(x=>x.symbol===symbol) || localPicks.find(x=>x.symbol===symbol) || null;
 }
-
 function normalizeHolding(row){
   return {
     symbol: String(row.symbol || '').trim(),
@@ -766,7 +695,6 @@ function normalizeHolding(row){
     updatedAt: row.updatedAt || ''
   };
 }
-
 function applySettingsToUI(settings){
   if(!settings || typeof settings !== 'object') return;
   if(settings.stopPct !== undefined) $('stopSlider').value = settings.stopPct;
@@ -774,11 +702,8 @@ function applySettingsToUI(settings){
   if(settings.tp2Pct !== undefined) $('tp2Slider').value = settings.tp2Pct;
   if(settings.trailPct !== undefined) $('trailSlider').value = settings.trailPct;
   if(settings.allocMain !== undefined) $('allocSlider').value = settings.allocMain;
-  if(settings.capital !== undefined){
-    $('capitalSlider').value = Math.round(Number(settings.capital || 0) / 10000) || 20;
-  }
+  if(settings.capital !== undefined) $('capitalSlider').value = Math.round(Number(settings.capital || 0) / 10000) || 20;
 }
-
 function buildCloudSettingsPayload(){
   const cfg = getCfg();
   return {
@@ -790,7 +715,6 @@ function buildCloudSettingsPayload(){
     capital: cfg.capital
   };
 }
-
 function buildCloudPickPayload(){
   return {
     date: new Date().toISOString().slice(0,10),
@@ -803,7 +727,6 @@ function buildCloudPickPayload(){
     note: $('todaySub').textContent || ''
   };
 }
-
 function buildCloudHoldingsPayload(){
   return holdings.map(h => ({
     symbol: h.symbol || '',
@@ -818,23 +741,18 @@ function buildCloudHoldingsPayload(){
 
 async function safeJson(res){
   const text = await res.text();
-  try{
-    return JSON.parse(text);
-  }catch{
-    throw new Error('後端回傳不是 JSON：' + text);
-  }
+  try{ return JSON.parse(text); }
+  catch{ throw new Error('後端回傳不是 JSON：' + text); }
 }
-
 async function apiGet(action){
   const res = await fetch(`${API_BASE}?action=${encodeURIComponent(action)}`, { method:'GET' });
   if(!res.ok) throw new Error(`API GET 失敗：${res.status}`);
   return await safeJson(res);
 }
-
 async function apiPost(action, data){
   const res = await fetch(API_BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    method:'POST',
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
     body: JSON.stringify({ action, data })
   });
   if(!res.ok) throw new Error(`API POST 失敗：${res.status}`);
@@ -843,10 +761,7 @@ async function apiPost(action, data){
 
 function applyCloudData(payload){
   if(!payload || typeof payload !== 'object') return;
-
-  if(payload.settings){
-    applySettingsToUI(payload.settings);
-  }
+  if(payload.settings) applySettingsToUI(payload.settings);
 
   if(payload.picks && (payload.picks.mainSymbol || payload.picks.subSymbol)){
     finalPicks = [];
@@ -854,34 +769,22 @@ function applyCloudData(payload){
       finalPicks.push({
         symbol: String(payload.picks.mainSymbol || '').trim(),
         name: String(payload.picks.mainName || '').trim(),
-        price: null,
-        score: null,
-        status: '雲端同步',
-        why: ['來自雲端同步'],
-        dev: null,
-        level: '—'
+        price: null, score: null, status: '雲端同步', why:['來自雲端同步'], dev:null, level:'—'
       });
     }
     if(payload.picks.subSymbol){
       finalPicks.push({
         symbol: String(payload.picks.subSymbol || '').trim(),
         name: String(payload.picks.subName || '').trim(),
-        price: null,
-        score: null,
-        status: '雲端同步',
-        why: ['來自雲端同步'],
-        dev: null,
-        level: '—'
+        price: null, score: null, status: '雲端同步', why:['來自雲端同步'], dev:null, level:'—'
       });
     }
     decisionSource = payload.picks.decisionSource || decisionSource;
     flowState.decided = !!finalPicks.length;
   }
-
   if(Array.isArray(payload.holdings)){
-    holdings = payload.holdings.map(normalizeHolding).filter(x => x.symbol);
+    holdings = payload.holdings.map(normalizeHolding).filter(x=>x.symbol);
   }
-
   $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
 }
 
@@ -899,18 +802,17 @@ async function loadCloud(){
   renderRankTable();
   updateHud();
   updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
   setCloudStatus('已從雲端載入', 'ok');
   setFlowMessage('☁️ 已從雲端載入資料。');
 }
-
 async function saveCloud(){
   await apiPost('saveSettings', buildCloudSettingsPayload());
-  if(finalPicks.length){
-    await apiPost('savePick', buildCloudPickPayload());
-  }
+  if(finalPicks.length) await apiPost('savePick', buildCloudPickPayload());
   await apiPost('saveHoldings', buildCloudHoldingsPayload());
 }
-
 function saveLocal(){
   const data = {
     csvInput:$('csvInput').value,
@@ -927,7 +829,6 @@ function saveLocal(){
   };
   localStorage.setItem(STORE, JSON.stringify(data));
 }
-
 function loadLocal(){
   try{
     const data = JSON.parse(localStorage.getItem(STORE) || '{}');
@@ -951,17 +852,12 @@ function loadLocal(){
     $('mLocal').textContent = localPicks.length ? localPicks.slice(0,2).map(x=>x.symbol).join(' / ') : '—';
     $('mAi').textContent = aiCodes.length ? aiCodes.join(' / ') : '—';
     $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
-    if(localPicks.length){
-      $('localSummary').innerHTML = `本地前段班：<b>${localPicks.slice(0,3).map(x=>`${x.symbol} ${x.name||''}`).join('、')}</b>`;
-    }
-    if(aiCodes.length){
-      $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b>`;
-    }
+    if(localPicks.length) $('localSummary').innerHTML = `本地前段班：<b>${localPicks.slice(0,3).map(x=>`${x.symbol} ${x.name||''}`).join('、')}</b>`;
+    if(aiCodes.length) $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b>`;
   }catch(err){
     console.warn('loadLocal failed', err);
   }
 }
-
 async function saveAll(){
   saveLocal();
   setCloudStatus('同步中...', 'idle');
@@ -990,6 +886,9 @@ function refreshSliders(shouldSave=true){
   updateHoldings();
   updateHud();
   updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
   if(shouldSave) saveLocal();
 }
 ['stopSlider','tp1Slider','tp2Slider','trailSlider','allocSlider','capitalSlider'].forEach(id=>$(id).addEventListener('input', ()=>refreshSliders(true)));
@@ -1018,7 +917,6 @@ function findIdx(map, exact=[], fuzzy=[]){
   }
   return null;
 }
-
 function scoreRow(r){
   let score=0, why=[];
   if(r.price && r.price>15){ score += 8; why.push('價格合格'); } else { score -= 8; why.push('價格偏弱'); }
@@ -1093,7 +991,6 @@ function analyzeCSV(){
     setFlowMessage('❌ CSV 內容不足。', true);
     return false;
   }
-
   const headers = raw[0].map(x=>String(x).trim());
   const map = {};
   headers.forEach((h,i)=> map[nrm(h)] = i);
@@ -1146,6 +1043,9 @@ function analyzeCSV(){
   updateConfidence();
   updateHud();
   updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
   saveLocal();
   return true;
 }
@@ -1217,9 +1117,7 @@ function decideFinal(){
   } else {
     finalPicks = aiCodes.map(code => {
       const found = localPicks.find(x=>x.symbol===code);
-      return found || {
-        symbol:code,name:'AI 指定',price:null,score:60,status:'AI指定',why:['AI 指定標的'],dev:null,level:getLevel(60)
-      };
+      return found || {symbol:code,name:'AI 指定',price:null,score:60,status:'AI指定',why:['AI 指定標的'],dev:null,level:getLevel(60)};
     });
     decisionSource = 'AI優先';
   }
@@ -1235,6 +1133,9 @@ function decideFinal(){
   renderRankTable();
   updateHud();
   updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
   saveLocal();
   return true;
 }
@@ -1295,7 +1196,6 @@ function buildFinalCard(r, i){
     </div>
   `;
 }
-
 function updateFinalCards(){
   const box = $('finalCards');
   if(!finalPicks.length){
@@ -1308,7 +1208,6 @@ function updateFinalCards(){
   updateBridge();
   updateConfidence();
 }
-
 function updateBridge(){
   const cfg = getCfg();
   const main = finalPicks[0];
@@ -1325,7 +1224,6 @@ function updateBridge(){
   $('bridgeTp2').textContent = fmt(main.price * (1+cfg.tp2Pct/100),2);
   $('bridgeTrail').textContent = fmt(tp1 * (1-cfg.trailPct/100),2);
 }
-
 function updateConfidence(){
   const local2 = localPicks.slice(0,2).map(x=>x.symbol);
   const inter = aiCodes.filter(x=>local2.includes(x));
@@ -1366,12 +1264,7 @@ function addHolding(){
     if(!existing.name && stockName) existing.name = stockName;
   } else {
     holdings.push({
-      symbol,
-      name: stockName,
-      buy,
-      current,
-      highest: current,
-      trailArmed: false
+      symbol, name: stockName, buy, current, highest: current, trailArmed: false
     });
   }
 
@@ -1380,9 +1273,11 @@ function addHolding(){
   updateCommandCenter();
   updateHud();
   updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
   saveLocal();
 }
-
 function loadMainToForm(){
   if(!flowState.decided){
     setFlowMessage('❌ 先完成最終決策，才能帶入主攻股。', true);
@@ -1394,7 +1289,6 @@ function loadMainToForm(){
   $('holdBuy').value = main.price ?? '';
   $('holdCurrent').value = main.price ?? '';
 }
-
 function clearHoldForm(){
   $('holdSymbol').value = '';
   $('holdBuy').value = '';
@@ -1478,10 +1372,59 @@ function calcHolding(h){
   }
 
   return {
-    ...h,
-    stop, tp1, tp2, trailPrice, pnl, pnlAmt,
+    ...h, stop, tp1, tp2, trailPrice, pnl, pnlAmt,
     action, cls, glow, note, trailStatus, trailColor, distToStop, distToTp1
   };
+}
+
+function battlePositionPercent(h){
+  const low = h.stop;
+  const high = h.tp2;
+  if(!Number.isFinite(low) || !Number.isFinite(high) || high <= low) return 50;
+  const raw = ((h.current - low) / (high - low)) * 100;
+  return Math.max(0, Math.min(100, raw));
+}
+function battlePositionText(pos){
+  if(pos < 18) return '極度靠近停損';
+  if(pos < 38) return '偏弱區';
+  if(pos < 65) return '中性區';
+  if(pos < 85) return '偏強區';
+  return '接近停利區';
+}
+
+function updatePressurePanel(){
+  const box = $('pressurePanel');
+  if(!holdings.length){
+    box.innerHTML = '<div class="pressureCard"><div class="small">尚未加入持倉。</div></div>';
+    return;
+  }
+  box.innerHTML = holdings.map(h=>{
+    const pos = battlePositionPercent(h);
+    const text = battlePositionText(pos);
+    const pillClass = h.cls === 'danger' ? 'danger' : h.cls === 'warn' ? 'warn' : 'ok';
+    return `
+      <div class="pressureCard">
+        <div class="pressureHead">
+          <div>
+            <div class="pressureName">${h.symbol} ${h.name || ''}</div>
+            <div class="pressureMeta">買入 ${fmt(h.buy,2)} ｜ 現價 ${fmt(h.current,2)} ｜ 停損 ${fmt(h.stop,2)} ｜ 停利2 ${fmt(h.tp2,2)}</div>
+          </div>
+          <div class="statusPill ${pillClass}">${h.action}</div>
+        </div>
+        <div class="battleScale">
+          <div class="scaleLabels">
+            <span>停損</span>
+            <span>目前價位置</span>
+            <span>停利2</span>
+          </div>
+          <div class="scaleTrack">
+            <div class="scaleMarker" style="left:${pos}%"></div>
+          </div>
+          <div class="scaleLegend">${text} ｜ 目前位於整體戰場的 ${pct(pos,0)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function updateHoldings(){
@@ -1492,6 +1435,9 @@ function updateHoldings(){
     updateSystemTable();
     updateHud();
     updateTacticGrid();
+    updateRiskAlerts();
+    updateHeatMap();
+    updatePressurePanel();
     return;
   }
 
@@ -1554,6 +1500,9 @@ function updateHoldings(){
   updateSystemTable();
   updateHud();
   updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
 }
 
 function editHolding(i){
@@ -1562,13 +1511,15 @@ function editHolding(i){
   $('holdBuy').value = h.buy;
   $('holdCurrent').value = h.current;
 }
-
 function removeHolding(i){
   holdings.splice(i,1);
   updateHoldings();
   updateCommandCenter();
   updateHud();
   updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
   saveLocal();
 }
 
@@ -1666,7 +1617,6 @@ function updateCommandCenter(){
   $('todayCommandDesc').textContent = headlineDesc;
   updateLocks();
 }
-
 function updateLocks(){
   $('copyPromptBtn').disabled = !flowState.csvAnalyzed;
   $('parseAiBtn').disabled = !flowState.csvAnalyzed;
@@ -1674,26 +1624,19 @@ function updateLocks(){
 
   $('stepCsv').textContent = flowState.csvAnalyzed ? '完成' : '待命';
   $('stepCsvSub').textContent = flowState.csvAnalyzed ? 'CSV 已完成分析' : '尚未分析 CSV';
-
   $('stepPrompt').textContent = flowState.promptCopied ? '完成' : '待命';
   $('stepPromptSub').textContent = flowState.promptCopied ? '提示詞已複製' : '尚未複製提示詞';
-
   $('stepAi').textContent = flowState.aiParsed ? '完成' : '待命';
   $('stepAiSub').textContent = flowState.aiParsed ? 'AI 已完成解析' : '尚未解析 AI';
-
   $('stepDecision').textContent = flowState.decided ? '完成' : '待命';
   $('stepDecisionSub').textContent = flowState.decided ? '最終標的已鎖定' : '尚未最終決策';
 
-  $('csvLock').textContent = flowState.csvAnalyzed
-    ? '✅ CSV 已分析，可以進入 AI 流程。'
-    : 'CSV 是第一步，其他流程都依賴它。';
-
+  $('csvLock').textContent = flowState.csvAnalyzed ? '✅ CSV 已分析，可以進入 AI 流程。' : 'CSV 是第一步，其他流程都依賴它。';
   $('aiLock').textContent = !flowState.csvAnalyzed
     ? '🔒 尚未分析 CSV，AI 流程鎖定。'
     : !flowState.aiParsed
       ? '⚠️ 已開放 AI 流程，先貼 AI 回覆並解析。'
       : '✅ AI 已解析，可以做最終決策。';
-
   $('globalLockLine').textContent = flowState.decided
     ? '✅ 主副攻已鎖定。現在重點是同步資料、監控持倉、執行停損停利。'
     : '會依序執行：CSV 分析 → 複製 AI 提示詞 → 解析 AI → 最終決策。';
@@ -1731,32 +1674,25 @@ function getTacticEntries(){
     else if(h.action.includes('持有')) priority = 40;
 
     entries.push({
-      symbol: h.symbol,
-      name: h.name || '',
-      action: h.action,
-      note: h.note,
-      cls: h.cls,
-      priority,
-      source: 'holding'
+      symbol:h.symbol, name:h.name||'', action:h.action, note:h.note, cls:h.cls, priority, source:'holding'
     });
   });
 
   finalPicks.forEach((p, idx)=>{
     if(entries.some(x => x.symbol === p.symbol)) return;
     entries.push({
-      symbol: p.symbol,
-      name: p.name || '',
+      symbol:p.symbol,
+      name:p.name||'',
       action: idx===0 ? '主攻監視中' : '副攻待命中',
       note: idx===0 ? '主攻艦要看是否維持最強表態。' : '副攻艦只在主攻沒有異常時跟進。',
       cls: idx===0 ? 'ok' : 'warn',
       priority: idx===0 ? 50 : 35,
-      source: 'pick'
+      source:'pick'
     });
   });
 
   return entries.sort((a,b)=>b.priority-a.priority).slice(0,4);
 }
-
 function updateTacticGrid(){
   const box = $('tacticGrid');
   const entries = getTacticEntries();
@@ -1764,7 +1700,6 @@ function updateTacticGrid(){
     box.innerHTML = '<div class="tacticCard"><div class="small">尚未產生戰術卡。</div></div>';
     return;
   }
-
   box.innerHTML = entries.map(e=>{
     const glow = e.cls === 'danger' ? 'glow-red' : e.cls === 'warn' ? 'glow-yellow' : 'glow-green';
     const roleLabel = getRoleLabel(e.symbol);
@@ -1774,6 +1709,87 @@ function updateTacticGrid(){
         <div class="tacticSymbol">${e.symbol} ${e.name || ''}</div>
         <div class="tacticAction ${e.cls}">${e.action}</div>
         <div class="tacticNote">${e.note}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateRiskAlerts(){
+  const box = $('riskAlerts');
+  const alerts = [];
+  const dangerList = holdings.filter(h => h.cls === 'danger');
+  const warnList = holdings.filter(h => h.cls === 'warn');
+  const totalPnlAmt = holdings.reduce((a,h)=>a + (Number(h.pnlAmt)||0), 0);
+  const avgPnl = holdings.length ? holdings.reduce((a,h)=>a + (Number(h.pnl)||0), 0) / holdings.length : 0;
+
+  if(dangerList.length){
+    alerts.push({
+      type:'red',
+      text:`🔴 高風險：目前有 ${dangerList.length} 檔進入紅色警戒，優先處理 ${dangerList.map(x=>x.symbol).join('、')}。`
+    });
+  }
+  if(warnList.length){
+    alerts.push({
+      type:'yellow',
+      text:`🟡 注意：有 ${warnList.length} 檔接近停利或停損，今天要特別盯 ${warnList.map(x=>x.symbol).join('、')}。`
+    });
+  }
+  if(totalPnlAmt < 0 && Math.abs(totalPnlAmt) >= 3000){
+    alerts.push({
+      type:'red',
+      text:`🔻 總損益壓力：目前整體損益 ${fmt(totalPnlAmt,0)}，今天要優先防守，不要亂加碼。`
+    });
+  }
+  if(holdings.length && avgPnl > 4 && dangerList.length===0){
+    alerts.push({
+      type:'green',
+      text:`🟢 戰況穩定：目前平均報酬 ${pct(avgPnl,2)}，可以持有續強，但仍要守紀律。`
+    });
+  }
+  if(!alerts.length){
+    alerts.push({type:'green', text:'🟢 目前沒有重大風險警告，今天以巡航監控為主。'});
+  }
+  box.innerHTML = alerts.map(a=>`<div class="riskAlert ${a.type}">${a.text}</div>`).join('');
+}
+
+function updateHeatMap(){
+  const biggestEl = $('heatBiggest');
+  const biggestSub = $('heatBiggestSub');
+  const bestEl = $('heatBest');
+  const bestSub = $('heatBestSub');
+  const worstEl = $('heatWorst');
+  const worstSub = $('heatWorstSub');
+  const mini = $('heatMiniList');
+
+  if(!holdings.length){
+    biggestEl.textContent = '—'; biggestSub.textContent = '尚無資料';
+    bestEl.textContent = '—'; bestSub.textContent = '尚無資料';
+    worstEl.textContent = '—'; worstSub.textContent = '尚無資料';
+    mini.innerHTML = '';
+    return;
+  }
+
+  const sortedByCost = [...holdings].sort((a,b)=>((b.buy||0)*1000)-((a.buy||0)*1000));
+  const sortedByPnl = [...holdings].sort((a,b)=>(b.pnl||0)-(a.pnl||0));
+  const biggest = sortedByCost[0];
+  const best = sortedByPnl[0];
+  const worst = sortedByPnl[sortedByPnl.length-1];
+
+  biggestEl.textContent = biggest.symbol;
+  biggestSub.textContent = `${biggest.name || ''}｜成本權重最高`;
+  bestEl.textContent = best.symbol;
+  bestSub.textContent = `${best.name || ''}｜${pct(best.pnl,2)}`;
+  worstEl.textContent = worst.symbol;
+  worstSub.textContent = `${worst.name || ''}｜${pct(worst.pnl,2)}`;
+
+  const maxAbs = Math.max(...holdings.map(h => Math.abs(h.pnl || 0)), 1);
+  mini.innerHTML = holdings.map(h=>{
+    const width = Math.max(8, Math.round((Math.abs(h.pnl || 0) / maxAbs) * 100));
+    return `
+      <div class="heatRow">
+        <div class="small">${h.symbol}</div>
+        <div class="heatBar"><div class="heatFill" style="width:${width}%"></div></div>
+        <div class="${(h.pnl||0)>=0 ? 'ok':'danger'}">${pct(h.pnl,2)}</div>
       </div>
     `;
   }).join('');
@@ -1789,7 +1805,6 @@ function loadDemo(){
 副攻股：6415 矽力*-KY`;
   setFlowMessage('已載入範例資料。');
 }
-
 function clearAll(){
   $('csvInput').value = '';
   $('aiInput').value = '';
@@ -1816,6 +1831,9 @@ function clearAll(){
   updateConfidence();
   updateHud();
   updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
   saveLocal();
 }
 
@@ -1831,6 +1849,9 @@ async function initApp(){
   renderRankTable();
   updateHud();
   updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
   try{
     await loadCloud();
   }catch(err){
