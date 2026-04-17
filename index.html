@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max｜升級最終版</title>
+<title>AI 戰艦 Pro Max｜最終版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -232,7 +232,7 @@ input[type=range]{padding:0;border:0;background:transparent}
 }
 .stockHead,.holdHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .role{font-size:12px;color:var(--cyan);font-weight:900}
-.name{font-size:26px;font-weight:900}
+.name{font-size:26px;font-weight:900;line-height:1.2}
 .tag{
   display:inline-flex;
   align-items:center;
@@ -298,15 +298,6 @@ th{color:var(--muted)}
   border:1px solid var(--line);
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
 }
-.roleMark{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  margin-left:8px;
-  font-size:12px;
-  font-weight:900;
-  color:var(--cyan);
-}
 @media (max-width:1200px){
   .hero,.cols2,.cols3,.cols4,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards{grid-template-columns:1fr}
   .kpis{grid-template-columns:repeat(2,1fr)}
@@ -322,13 +313,13 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max｜升級最終版</div>
-        <div class="brandSub">副攻股等級、排名角色標記、移動停利狀態燈、今日指令升級全部整合。</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max｜最終版</div>
+        <div class="brandSub">持倉顯示股票名稱、主副攻等級、角色標記、移動停利狀態燈整合完成。</div>
       </div>
       <div class="quickBadges">
         <div class="badge">🔥 一鍵作戰流程</div>
         <div class="badge">🔒 真防呆鎖步驟</div>
-        <div class="badge">⭐ 主攻 / 🔥 副攻 標記</div>
+        <div class="badge">📱 電腦 / 手機共用</div>
       </div>
     </div>
   </div>
@@ -339,7 +330,7 @@ th{color:var(--muted)}
       <div class="grid hero">
         <section class="panel">
           <div class="sectionTitle">🚀 戰情總覽</div>
-          <div class="sub">系統會依序檢查：CSV → 提示詞 → AI解析 → 最終決策。現在也會清楚區分「數據排名」與「主攻 / 副攻角色」。</div>
+          <div class="sub">系統依序檢查：CSV → 提示詞 → AI解析 → 最終決策。排名表反映純數據強弱，主攻 / 副攻反映你的最終戰略角色。</div>
           <div class="metrics">
             <div class="metric"><div class="k">本地候選</div><div class="v" id="mLocal">—</div></div>
             <div class="metric"><div class="k">AI 候選</div><div class="v" id="mAi">—</div></div>
@@ -473,7 +464,7 @@ th{color:var(--muted)}
             <button id="loadMainBtn" class="secondary">帶入主攻股</button>
             <button id="clearHoldBtn" class="secondary">清空輸入</button>
           </div>
-          <div id="holdGuide" class="reason">移動停利只有先達停利1後才會啟動，未啟動前會明確顯示。</div>
+          <div id="holdGuide" class="reason">加入持倉時會優先帶入股票名稱。移動停利只有先達停利1後才會啟動。</div>
         </section>
 
         <section class="panel">
@@ -525,14 +516,14 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">升級最終版：副攻等級、角色標記、移動停利狀態燈、今日指令整合完成。</div>
+      <div class="footer">最終版：持倉名稱顯示、移動停利狀態燈、主副攻等級、排名角色標記全部整合完成。</div>
     </div>
   </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-const STORE = 'ai_battleship_pro_max_final_v2';
+const STORE = 'ai_battleship_pro_max_final_namefix_v1';
 
 let localPicks = [];
 let aiCodes = [];
@@ -579,6 +570,14 @@ function getRoleLabel(symbol){
   if(role === 'main') return '⭐ 主攻';
   if(role === 'sub') return '🔥 副攻';
   return '—';
+}
+
+function findStockRefBySymbol(symbol){
+  return (
+    finalPicks.find(x => x.symbol === symbol) ||
+    localPicks.find(x => x.symbol === symbol) ||
+    null
+  );
 }
 
 function refreshSliders(){
@@ -826,7 +825,7 @@ function decideFinal(){
         symbol:code,name:'AI 指定',price:null,score:60,status:'AI指定',why:['AI 指定標的'],dev:null,level:getLevel(60)
       };
     });
-    decisionSource = 'AI優先';
+  decisionSource = 'AI優先';
   }
 
   flowState.decided = true;
@@ -959,15 +958,27 @@ function addHolding(){
   const current = num($('holdCurrent').value);
   if(!symbol || buy===null || current===null) return;
 
+  const ref = findStockRefBySymbol(symbol);
+  const stockName = ref?.name || '';
+
   const existing = holdings.find(h=>h.symbol===symbol);
   if(existing){
     existing.buy = buy;
     existing.current = current;
     existing.highest = Math.max(existing.highest || current, current);
     if(existing.trailArmed === undefined) existing.trailArmed = false;
+    if(!existing.name && stockName) existing.name = stockName;
   } else {
-    holdings.push({symbol,buy,current,highest:current,trailArmed:false});
+    holdings.push({
+      symbol,
+      name: stockName,
+      buy,
+      current,
+      highest: current,
+      trailArmed: false
+    });
   }
+
   clearHoldForm();
   updateHoldings();
   updateCommandCenter();
@@ -985,6 +996,7 @@ function loadMainToForm(){
   $('holdBuy').value = main.price ?? '';
   $('holdCurrent').value = main.price ?? '';
 }
+
 function clearHoldForm(){
   $('holdSymbol').value = '';
   $('holdBuy').value = '';
@@ -996,6 +1008,7 @@ function calcHolding(h){
 
   if(h.current > (h.highest ?? h.current)) h.highest = h.current;
   if(h.trailArmed === undefined) h.trailArmed = false;
+  if(h.name === undefined) h.name = '';
 
   const stop = h.buy * (1-cfg.stopPct/100);
   const tp1 = h.buy * (1+cfg.tp1Pct/100);
@@ -1094,14 +1107,20 @@ function updateHoldings(){
     return;
   }
 
-  holdings = holdings.map(calcHolding);
+  holdings = holdings.map(h => {
+    if(!h.name){
+      const ref = findStockRefBySymbol(h.symbol);
+      if(ref?.name) h.name = ref.name;
+    }
+    return calcHolding(h);
+  });
 
   box.innerHTML = holdings.map((h,i)=>`
     <div class="holdCard ${h.glow}">
       <div class="holdHead">
         <div>
           <div class="role">持倉監控</div>
-          <div class="name">${h.symbol}</div>
+          <div class="name">${h.symbol} ${h.name || ''}</div>
         </div>
         <div class="tag ${h.cls}">${h.action}</div>
       </div>
