@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max｜最終版</title>
+<title>AI 戰艦 Pro Max v3｜雲端同步旗艦版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -298,6 +298,27 @@ th{color:var(--muted)}
   border:1px solid var(--line);
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
 }
+
+.hudGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.hudMini,.directiveItem,.battleBrief{
+  background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.018));
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+}
+.hudMini .k,.directiveItem .k{font-size:12px;color:var(--muted)}
+.hudMini .v{font-size:26px;font-weight:900;margin-top:6px}
+.directiveBoard{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;margin-top:14px}
+.directiveList{display:grid;gap:10px}
+.directiveHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.statusPill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:900;background:rgba(255,255,255,.04)}
+.statusPill.ok{color:var(--green)}
+.statusPill.warn{color:var(--yellow)}
+.statusPill.danger{color:var(--red)}
+.battleBriefMain{font-size:28px;font-weight:900;line-height:1.2}
+.battleBriefSub{margin-top:8px;color:var(--muted);line-height:1.7}
+@media (max-width:1200px){.hudGrid,.directiveBoard{grid-template-columns:1fr}}
+
 @media (max-width:1200px){
   .hero,.cols2,.cols3,.cols4,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards{grid-template-columns:1fr}
   .kpis{grid-template-columns:repeat(2,1fr)}
@@ -313,8 +334,8 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max｜最終版</div>
-        <div class="brandSub">持倉顯示股票名稱、主副攻等級、角色標記、移動停利狀態燈整合完成。</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v3｜雲端同步旗艦版</div>
+        <div class="brandSub">雲端同步、戰術判斷、移動停利自動鎖利、HUD 戰情面板整合完成。</div>
       </div>
       <div class="quickBadges">
         <div class="badge">🔥 一鍵作戰流程</div>
@@ -374,6 +395,27 @@ th{color:var(--muted)}
           </div>
         </section>
       </div>
+
+      <section class="panel" style="margin-top:16px">
+        <div class="sectionTitle">🛰️ 戰艦 HUD</div>
+        <div class="sub">把持倉監控變成一眼就能執行的戰術畫面。這裡會自動彙總目前戰況、勝率、平均報酬，並給出今日應做的事。</div>
+        <div class="hudGrid">
+          <div class="hudMini"><div class="k">總損益</div><div class="v" id="hudTotalPnl">—</div></div>
+          <div class="hudMini"><div class="k">持倉勝率</div><div class="v" id="hudWinRate">—</div></div>
+          <div class="hudMini"><div class="k">平均報酬率</div><div class="v" id="hudAvgPnl">—</div></div>
+          <div class="hudMini"><div class="k">已啟動移動停利</div><div class="v" id="hudTrailCount">—</div></div>
+        </div>
+        <div class="directiveBoard">
+          <div class="battleBrief">
+            <div class="k">今日唯一戰術</div>
+            <div class="battleBriefMain" id="battleBriefMain">等待資料</div>
+            <div class="battleBriefSub" id="battleBriefSub">先分析 CSV 或載入雲端持倉，系統才知道今天該做什麼。</div>
+          </div>
+          <div class="directiveList" id="directiveList">
+            <div class="directiveItem"><div class="k">戰術卡</div><div style="margin-top:6px">目前沒有可執行指令。</div></div>
+          </div>
+        </div>
+      </section>
 
       <section class="panel" style="margin-top:16px">
         <div class="sectionTitle">🧭 作戰流程控制台</div>
@@ -518,7 +560,7 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">最終版：持倉名稱顯示、移動停利狀態燈、主副攻等級、排名角色標記全部整合完成。</div>
+      <div class="footer">Pro Max v3：雲端同步、HUD 戰情面板、今日唯一戰術、自動收割節奏整合完成。</div>
     </div>
   </div>
 </div>
@@ -811,6 +853,7 @@ function refreshSliders(){
   updateBridge();
   updateFinalCards();
   updateHoldings();
+  updateBattleHud();
   saveLocal();
 }
 ['stopSlider','tp1Slider','tp2Slider','trailSlider','allocSlider','capitalSlider'].forEach(id=>$(id).addEventListener('input', refreshSliders));
@@ -1173,6 +1216,83 @@ function updateConfidence(){
   $('heatValue').textContent = heat !== null && heat !== undefined ? pct(heat,1) : '—';
 }
 
+function updateBattleHud(){
+  const total = holdings.length;
+  const safeHoldings = Array.isArray(holdings) ? holdings : [];
+  const totalPnlAmt = safeHoldings.reduce((sum,h)=> sum + (Number(h.pnlAmt)||0), 0);
+  const positiveCount = safeHoldings.filter(h => (Number(h.pnl)||0) > 0).length;
+  const winRate = total ? Math.round((positiveCount / total) * 100) : 0;
+  const avgPnl = total ? safeHoldings.reduce((sum,h)=> sum + (Number(h.pnl)||0), 0) / total : 0;
+  const trailCount = safeHoldings.filter(h => h.trailArmed).length;
+
+  $('hudTotalPnl').textContent = total ? fmt(totalPnlAmt,0) : '—';
+  $('hudWinRate').textContent = total ? `${winRate}%` : '—';
+  $('hudAvgPnl').textContent = total ? pct(avgPnl,2) : '—';
+  $('hudTrailCount').textContent = total ? String(trailCount) : '—';
+
+  let briefMain = '等待資料';
+  let briefSub = '先分析 CSV 或載入雲端持倉，系統才知道今天該做什麼。';
+  let directives = [];
+
+  if(!safeHoldings.length && finalPicks.length){
+    briefMain = `鎖定 ${finalPicks.map(x=>x.symbol).join(' / ')}，等待表態`;
+    briefSub = '目前沒有持倉，今天重點是看主攻股是否續強，接近停利與停損的價格已在上方戰艦卡整理好。';
+    directives = finalPicks.slice(0,2).map((p,idx)=>({
+      title: `${idx===0?'主攻':'副攻'} ${p.symbol} ${p.name||''}`.trim(),
+      cls: idx===0 ? 'ok' : 'warn',
+      label: idx===0 ? '優先觀察' : '支援觀察',
+      desc: idx===0 ? '若今天最強，優先處理這檔。' : '只有主攻沒異常時才考慮跟進。'
+    }));
+  }
+
+  if(safeHoldings.length){
+    const danger = safeHoldings.filter(h=>h.cls==='danger');
+    const warn = safeHoldings.filter(h=>h.cls==='warn');
+    const armed = safeHoldings.filter(h=>h.trailArmed && h.trailPrice !== null);
+
+    if(danger.length){
+      briefMain = '先防守，再談進攻';
+      briefSub = `目前有 ${danger.length} 檔進入紅色警戒，優先處理停損或移動停利出場，不要再新增部位。`;
+    } else if(warn.length){
+      briefMain = '進入收割節奏';
+      briefSub = `目前有 ${warn.length} 檔接近停利或已進入移動停利監控。今天的任務不是亂動，而是照系統規則收割。`;
+    } else if(armed.length){
+      briefMain = '鎖利巡航';
+      briefSub = `已有 ${armed.length} 檔啟動移動停利，讓保護價跟著最高價上移即可。`;
+    } else {
+      briefMain = '持有，觀察續強';
+      briefSub = '目前持倉都在安全區。今天重點是監控強弱變化，不需要亂調參數。';
+    }
+
+    directives = safeHoldings.slice().sort((a,b)=>{
+      const rank = {danger:0,warn:1,ok:2};
+      return (rank[a.cls] ?? 9) - (rank[b.cls] ?? 9);
+    }).slice(0,4).map(h=>({
+      title: `${h.symbol} ${h.name||''}`.trim(),
+      cls: h.cls || 'ok',
+      label: h.action || '持有',
+      desc: h.cls==='danger'
+        ? `現價 ${fmt(h.current,2)}，先按風控處理。`
+        : h.cls==='warn'
+          ? `距離停利1 ${pct(h.distToTp1,2)}，留意是否進入收割。`
+          : `現價 ${fmt(h.current,2)}，仍在安全區。`
+    }));
+  }
+
+  $('battleBriefMain').textContent = briefMain;
+  $('battleBriefSub').textContent = briefSub;
+  const list = $('directiveList');
+  list.innerHTML = directives.length ? directives.map(d=>`
+    <div class="directiveItem">
+      <div class="directiveHead">
+        <div class="k">${d.title}</div>
+        <div class="statusPill ${d.cls}">${d.label}</div>
+      </div>
+      <div>${d.desc}</div>
+    </div>
+  `).join('') : '<div class="directiveItem"><div class="k">戰術卡</div><div style="margin-top:6px">目前沒有可執行指令。</div></div>';
+}
+
 function addHolding(){
   const symbol = $('holdSymbol').value.trim();
   const buy = num($('holdBuy').value);
@@ -1203,6 +1323,7 @@ function addHolding(){
   clearHoldForm();
   updateHoldings();
   updateCommandCenter();
+  updateBattleHud();
   saveLocal();
 }
 
@@ -1385,6 +1506,7 @@ function updateHoldings(){
   $('mAlert').textContent = dangerCount ? '紅色警報' : warnCount ? '注意' : '安全';
 
   updateSystemTable();
+  updateBattleHud();
 }
 
 function editHolding(i){
@@ -1397,6 +1519,7 @@ function removeHolding(i){
   holdings.splice(i,1);
   updateHoldings();
   updateCommandCenter();
+  updateBattleHud();
   saveLocal();
 }
 
@@ -1477,6 +1600,7 @@ function updateCommandCenter(){
   $('battleMode').textContent = mode;
   $('battleMode').className = 'modeBadge ' + modeClass;
   updateLocks();
+  updateBattleHud();
 }
 
 function updateLocks(){
@@ -1615,6 +1739,7 @@ $('loadMainBtn').addEventListener('click', loadMainToForm);
 $('clearHoldBtn').addEventListener('click', clearHoldForm);
 
 initApp();
+updateBattleHud();
 </script>
 </body>
 </html>
