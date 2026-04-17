@@ -178,6 +178,17 @@ th{color:var(--muted)}
     </section>
   </div>
 
+
+  <section class="panel" style="margin-top:16px">
+    <div class="sectionTitle">🧠 AI 提示詞引擎</div>
+    <div class="sub">這裡會自動把你本地篩選出的候選股，整理成適合貼給 GPT / Gemini 的「短線奪冠王提示詞」。我已經把你的原始提示詞優化成更穩定的版本，會強制 AI 用固定格式回答，方便你直接貼回上面的 AI 情報覆蓋區。</div>
+    <div class="toolbar" style="margin-top:12px">
+      <button id="genPromptBtn">生成 AI 提示詞</button>
+      <button id="copyPromptBtn" class="secondary">一鍵複製提示詞</button>
+    </div>
+    <textarea id="promptOutput" style="margin-top:12px;min-height:230px" placeholder="按『生成 AI 提示詞』後，這裡會自動產生完整版提示詞。"></textarea>
+  </section>
+
   <section class="panel" style="margin-top:16px">
     <div class="sectionTitle">🛰️ 戰艦操控參數</div>
     <div class="sub">用滑桿操控你的交易宇宙船。你一調整，系統就會即時重算停損、停利、移動停利與主副攻資金配置。</div>
@@ -582,6 +593,104 @@ function updateCommandCenter(){
   $('lightHold').textContent = holdings.length ? $('mAlert').textContent : '尚無持倉';
   updateTactical();
 }
+
+function buildCandidateText(){
+  if(!localPicks.length) return '尚未分析到候選股。';
+  return localPicks.slice(0,6).map((r, idx) => {
+    const parts = [
+      `${idx+1}. ${r.symbol} ${r.name || ''}`,
+      `價格 ${r.price!==null && r.price!==undefined ? fmt(r.price,2) : '—'}`,
+      `日漲跌 ${r.change!==null && r.change!==undefined ? pct(r.change,2) : '—'}`,
+      `相對量 ${r.relVol!==null && r.relVol!==undefined ? fmt(r.relVol,2) : '—'}`,
+      `SMA20 ${r.sma20!==null && r.sma20!==undefined ? fmt(r.sma20,2) : '—'}`,
+      `SMA60 ${r.sma60!==null && r.sma60!==undefined ? fmt(r.sma60,2) : '—'}`,
+      `RSI ${r.rsi!==null && r.rsi!==undefined ? fmt(r.rsi,2) : '—'}`,
+      `20MA乖離 ${r.dev!==null && r.dev!==undefined ? pct(r.dev,2) : '—'}`,
+      `本地分數 ${r.score ?? '—'}`,
+      `本地理由 ${Array.isArray(r.why) ? r.why.slice(0,4).join('、') : '—'}`
+    ];
+    return parts.join('｜');
+  }).join('\n');
+}
+
+function generateAdvancedPrompt(){
+  if(!localPicks.length){
+    $('promptOutput').value = '請先貼上 CSV 並完成本地分析，再生成 AI 提示詞。';
+    return;
+  }
+  const cfg = getConfig();
+  const candidates = buildCandidateText();
+  const prompt = `🚀 專屬 AI 短線奪冠王篩選提示詞（戰情室優化版）
+
+你現在是一位頂尖的台股機構短線交易員（Short-term Momentum Trader），專精於捕捉資金流向、市場熱點題材、法人籌碼與短線爆發力。
+
+我已經透過 TradingView 嚴格量化條件，先篩出一批「長中短期趨勢向上、且今日異常放量突破」的短線動能股；以下是我本地系統排出的候選名單與關鍵數據。請你在 1 個月持倉週期的目標下，幫我做最後的菁英遴選。
+
+【操作條件】
+- 總資金：新台幣 ${fmt(cfg.capital,0)} 元
+- 持有週期：1 個月
+- 停損設定：-${cfg.stopPct}%
+- 第一停利：+${cfg.tp1Pct}%
+- 第二停利：+${cfg.tp2Pct}%
+- 移動停利回撤：${cfg.trailPct}%
+- 偏好：只做 1–2 檔，不分散火力，主攻股優先
+
+【初選名單（含本地量化數據）】
+${candidates}
+
+請依照以下流程執行：
+
+一、資金與熱點掃描（請聯網搜尋確認）
+請針對名單中每一檔股票，搜尋近 1 週最新資訊，並簡述：
+1. 法人動向：外資與投信近 3 日是否同步買超？
+2. 熱門題材：是否具備當下主流題材（例如 AI 下游、CPO / 光通訊、重電、生技政策、強勢營收、伺服器電源、車用等）？
+3. 情緒面：近期新聞情緒是否偏樂觀？是否有爆量紅K或明顯強表態支撐？
+4. 風險面：是否有漲幅透支、題材鈍化、利多出盡、或短線過熱的警訊？
+
+二、菁英奪冠王挑選（精選 1–2 檔）
+請從名單中精選最推薦的 1–2 檔作為本月操作標的。
+注意：
+- 請避開雖然量化達標，但與 20MA（月線）乖離過大、短線漲幅已經透支的股票
+- 若本地分數高，但新聞 / 題材 / 籌碼明顯不支持，請直接淘汰
+- 若本地與新聞面一致，請優先列入主攻股
+
+三、制定鐵血交易計畫（請用 Markdown 表格輸出）
+請只針對你最終精選出的 1–2 檔，輸出表格，欄位包含：
+- 標的
+- 入選理由
+- 建議進場價位區間（建議接近今日收盤價或明日早盤）
+- 嚴格停損點（可用跌破今日爆量紅K低點，或固定 -${cfg.stopPct}%）
+- 第一停利區間（+${cfg.tp1Pct}%）
+- 第二停利區間（+${cfg.tp2Pct}%）
+- 風險提醒
+
+四、分析師最後叮嚀
+請用一句話總結：這套組合在未來一個月內最重要的觀察重點與風險提示。
+
+【輸出格式要求】
+請嚴格照以下順序輸出：
+1. 候選股逐檔掃描摘要
+2. 最終推薦名單
+3. Markdown 交易計畫表格
+4. 最後叮嚀
+5. 最後再單獨補一段固定格式，方便我貼回系統：
+主攻股：XXXX
+副攻股：XXXX
+
+請不要省略固定格式。`;
+  $('promptOutput').value = prompt;
+}
+
+async function copyAdvancedPrompt(){
+  const txt = $('promptOutput').value || '';
+  if(!txt.trim()) return;
+  await navigator.clipboard.writeText(txt);
+  const btn = $('copyPromptBtn');
+  const old = btn.textContent;
+  btn.textContent = '已複製';
+  setTimeout(()=>btn.textContent = old, 1200);
+}
+
 function loadDemo(){
   $('csvInput').value = '商品,描述,價格,價格 - 貨幣,價格變化 % 1天,成交量 1天,相對成交量 1天,簡單移動平均線 (20) 1天,簡單移動平均線 (60) 1天,相對強弱指標 (14) 1天\n8261,富鼎,116,TWD,6.42,5802825,2.79,106.23,99.25,66.98\n3236,千如,35.8,TWD,3.77,14760222,2.77,31.87,31.48,65.38\n3209,全科,47,TWD,2.17,5661955,1.76,43.47,37.97,70.58\n6271,同欣電,185,TWD,1.09,20196785,2.29,159.27,152.40,69.18\n4979,華星光,586,TWD,9.94,32773935,5.95,421.62,368.12,76.85';
   $('aiInput').value = '主攻股：8261 富鼎\n副攻股：3236 千如';
@@ -593,6 +702,8 @@ $('decideBtn').addEventListener('click', decideFinal);
 $('addHoldBtn').addEventListener('click', addHolding);
 $('loadMainBtn').addEventListener('click', loadMainToForm);
 $('loadDemoBtn').addEventListener('click', loadDemo);
+$('genPromptBtn').addEventListener('click', generateAdvancedPrompt);
+$('copyPromptBtn').addEventListener('click', copyAdvancedPrompt);
 
 refreshSliderLabels();
 updateSystemTable();
