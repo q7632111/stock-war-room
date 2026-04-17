@@ -3,19 +3,17 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#060b14" />
+<meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro｜重裝甲版</title>
+<title>AI 戰艦 Pro Max｜A版</title>
 <style>
 :root{
   --bg:#050a12;
   --bg2:#0a1220;
   --panel:#0d1727;
-  --panel2:#111e33;
   --card:#0a1322;
   --line:rgba(160,200,255,.12);
-  --line2:rgba(103,232,249,.16);
   --text:#eef6ff;
   --muted:#8ca1c2;
   --blue:#60a5fa;
@@ -23,9 +21,6 @@
   --green:#34d399;
   --yellow:#fbbf24;
   --red:#f87171;
-  --purple:#a78bfa;
-  --glow-blue:0 0 0 1px rgba(96,165,250,.20), 0 0 24px rgba(96,165,250,.10);
-  --glow-cyan:0 0 0 1px rgba(103,232,249,.20), 0 0 26px rgba(103,232,249,.08);
   --shadow:0 22px 70px rgba(0,0,0,.48);
   --radius:22px;
 }
@@ -42,30 +37,21 @@ body{
 }
 body:before{
   content:"";
-  position:fixed; inset:0;
-  pointer-events:none;
+  position:fixed; inset:0; pointer-events:none;
   background:
     linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
-  background-size:22px 22px, 22px 22px;
+  background-size:22px 22px;
   mask-image:linear-gradient(180deg, rgba(0,0,0,.35), transparent 80%);
-  opacity:.28;
+  opacity:.22;
 }
 .app{height:100dvh;display:flex;flex-direction:column}
 .topbar{
   flex:0 0 auto;
   padding:calc(env(safe-area-inset-top) + 10px) max(14px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left));
-  background:
-    linear-gradient(180deg, rgba(7,12,22,.98), rgba(10,18,32,.88)),
-    linear-gradient(90deg, rgba(103,232,249,.06), transparent 18%, transparent 82%, rgba(96,165,250,.06));
+  background:linear-gradient(180deg, rgba(7,12,22,.98), rgba(10,18,32,.88));
   border-bottom:1px solid var(--line);
   box-shadow:0 12px 40px rgba(0,0,0,.36);
-  position:relative;
-}
-.topbar:after{
-  content:"";
-  position:absolute; left:16px; right:16px; bottom:0; height:1px;
-  background:linear-gradient(90deg, transparent, rgba(103,232,249,.4), transparent);
 }
 .topbarInner{
   max-width:1540px;margin:0 auto;display:flex;justify-content:space-between;gap:16px;align-items:flex-start
@@ -80,7 +66,6 @@ body:before{
   padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800;
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
   border:1px solid var(--line);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
 }
 .main{
   flex:1 1 auto;
@@ -92,28 +77,21 @@ body:before{
 .hero{grid-template-columns:1.15fr .85fr}
 .cols2{grid-template-columns:1fr 1fr}
 .cols3{grid-template-columns:repeat(3,1fr)}
+.cols4{grid-template-columns:repeat(4,1fr)}
 .panel{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014)),
-    linear-gradient(135deg, rgba(96,165,250,.03), transparent 40%, rgba(103,232,249,.03));
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014));
   border:1px solid var(--line);
   border-radius:var(--radius);
   box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.04);
   padding:18px;
-  position:relative; overflow:hidden;
+  position:relative;
+  overflow:hidden;
 }
 .panel:before{
-  content:""; position:absolute; inset:0; pointer-events:none;
-  background:
-    linear-gradient(120deg, rgba(255,255,255,.03), transparent 24%, transparent 76%, rgba(255,255,255,.02)),
-    radial-gradient(circle at 8% 10%, rgba(103,232,249,.07), transparent 18%),
-    radial-gradient(circle at 94% 94%, rgba(96,165,250,.06), transparent 18%);
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg, rgba(255,255,255,.03), transparent 26%, transparent 74%, rgba(255,255,255,.02));
 }
-.panel:after{
-  content:""; position:absolute; left:14px; right:14px; top:0; height:1px;
-  background:linear-gradient(90deg, transparent, rgba(103,232,249,.28), transparent);
-}
-.sectionTitle{margin:0 0 12px;font-size:18px;font-weight:900;display:flex;align-items:center;gap:8px;letter-spacing:.02em}
+.sectionTitle{margin:0 0 12px;font-size:18px;font-weight:900;display:flex;align-items:center;gap:8px}
 .sub{color:var(--muted);line-height:1.7}
 .small{font-size:12px;color:var(--muted)}
 .commandMain{font-size:30px;font-weight:900;letter-spacing:.02em}
@@ -122,49 +100,49 @@ body:before{
   padding:10px 14px;border-radius:999px;font-size:12px;font-weight:900;
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
   border:1px solid var(--line);
-  box-shadow:var(--glow-blue);
 }
 .ok{color:var(--green)} .warn{color:var(--yellow)} .danger{color:var(--red)} .info{color:var(--blue)}
 .metrics,.signalGrid,.bridgeGrid{display:grid;gap:12px}
 .metrics{grid-template-columns:repeat(4,1fr);margin-top:14px}
 .signalGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
 .bridgeGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
-.metric,.signal,.bridge,.kpi{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.018));
+.metric,.signal,.bridge,.kpi,.stepCard{
+  background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.018));
   border:1px solid var(--line);
   border-radius:18px;
   padding:14px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
 }
-.metric .k,.signal .k,.bridge .k,.kpi .k{font-size:12px;color:var(--muted)}
-.metric .v,.signal .v,.bridge .v,.kpi .v{font-size:24px;font-weight:900;margin-top:6px}
-.bar{height:10px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;margin-top:8px;border:1px solid rgba(255,255,255,.04)}
-.bar>div{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:999px;box-shadow:0 0 18px rgba(103,232,249,.28)}
+.metric .k,.signal .k,.bridge .k,.kpi .k,.stepCard .k{font-size:12px;color:var(--muted)}
+.metric .v,.signal .v,.bridge .v,.kpi .v,.stepCard .v{font-size:24px;font-weight:900;margin-top:6px}
+.bar{height:10px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;margin-top:8px}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:999px}
 label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
 input,textarea{
   width:100%;background:#09111f;color:var(--text);border:1px solid rgba(160,200,255,.12);
   border-radius:14px;padding:12px 13px;font:inherit;outline:none;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
 }
 input:focus,textarea:focus{
   border-color:rgba(103,232,249,.42);
-  box-shadow:0 0 0 3px rgba(103,232,249,.10), var(--glow-cyan);
+  box-shadow:0 0 0 3px rgba(103,232,249,.10);
 }
 textarea{min-height:118px;resize:vertical}
 .toolbar{display:flex;gap:10px;flex-wrap:wrap}
 button{
   border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:900;cursor:pointer;min-width:120px;
   background:linear-gradient(135deg,var(--blue),var(--cyan));color:#04111e;
-  box-shadow:0 10px 24px rgba(96,165,250,.18), inset 0 1px 0 rgba(255,255,255,.25);
 }
 button.secondary{
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-  color:var(--text);border:1px solid var(--line);box-shadow:none;
+  color:var(--text);border:1px solid var(--line)
 }
 button.danger{
   background:linear-gradient(180deg, rgba(248,113,113,.16), rgba(248,113,113,.08));
-  color:#fecaca;border:1px solid rgba(248,113,113,.2);box-shadow:none;
+  color:#fecaca;border:1px solid rgba(248,113,113,.2)
+}
+button:disabled{
+  opacity:.42;
+  cursor:not-allowed;
+  filter:grayscale(.2);
 }
 .reason{
   margin-top:12px;padding:12px 14px;border-radius:16px;
@@ -178,29 +156,23 @@ button.danger{
 .sliderRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
 .rangeValue{
   min-width:78px;text-align:center;padding:10px 12px;border-radius:14px;background:#091323;
-  border:1px solid var(--line);font-weight:900;box-shadow:var(--glow-blue)
+  border:1px solid var(--line);font-weight:900
 }
-input[type=range]{padding:0;border:0;background:transparent;box-shadow:none}
+input[type=range]{padding:0;border:0;background:transparent}
 .stockCards,.holdCards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .stockCard,.holdCard{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014)),
-    linear-gradient(135deg, rgba(96,165,250,.03), transparent 42%, rgba(103,232,249,.03));
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014));
   border:1px solid var(--line);
   border-radius:20px;padding:15px;position:relative;overflow:hidden;
-  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.04);
-}
-.stockCard:before,.holdCard:before{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(120deg, rgba(255,255,255,.03), transparent 26%, transparent 74%, rgba(255,255,255,.02));
+  box-shadow:var(--shadow)
 }
 .stockCard:after,.holdCard:after{
   content:"";position:absolute;right:-45px;top:-45px;width:140px;height:140px;border-radius:50%;
   background:radial-gradient(circle, rgba(96,165,250,.16), transparent 65%);
 }
 .stockHead,.holdHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.role{font-size:12px;color:var(--cyan);font-weight:900;letter-spacing:.04em}
-.name{font-size:26px;font-weight:900;letter-spacing:.02em}
+.role{font-size:12px;color:var(--cyan);font-weight:900}
+.name{font-size:26px;font-weight:900}
 .tag{
   display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
@@ -215,9 +187,18 @@ input[type=range]{padding:0;border:0;background:transparent;box-shadow:none}
 table{width:100%;border-collapse:collapse;min-width:980px}
 th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;text-align:left}
 th{color:var(--muted)}
+.lockLine{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  border:1px dashed rgba(255,255,255,.14);
+  font-size:12px;
+  color:var(--muted);
+}
 .footer{color:var(--muted);font-size:12px;text-align:center;padding:12px 0 6px}
 @media (max-width:1200px){
-  .hero,.cols2,.cols3,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards{grid-template-columns:1fr}
+  .hero,.cols2,.cols3,.cols4,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards{grid-template-columns:1fr}
   .kpis{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:780px){
@@ -231,13 +212,13 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro｜重裝甲風格</div>
-        <div class="brandSub">更像飛輪系統的厚重、發光、裝甲感。上方固定，內部滾動，手機看起來更像真正的戰情主控台。</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max｜A版</div>
+        <div class="brandSub">半自動最終流程：你負責貼資料，系統負責防呆、判斷、鎖步驟。不是簡化版，是完整戰情室。</div>
       </div>
       <div class="quickBadges">
-        <div class="badge">📌 今日指令</div>
-        <div class="badge">🎯 主攻 / 副攻</div>
-        <div class="badge">⚙️ 參數拉桿</div>
+        <div class="badge">🔥 一鍵作戰流程</div>
+        <div class="badge">🔒 真防呆鎖步驟</div>
+        <div class="badge">📡 信心值</div>
       </div>
     </div>
   </div>
@@ -248,7 +229,7 @@ th{color:var(--muted)}
       <div class="grid hero">
         <section class="panel">
           <div class="sectionTitle">🚀 戰情總覽</div>
-          <div class="sub">這版把介面往飛輪系統那種重裝甲方向拉高：更厚重、更多層次、卡片更像裝甲模組。流程一樣簡單：貼 CSV → 貼 AI → 決策 → 監控。</div>
+          <div class="sub">這版會幫你鎖流程。沒分析 CSV，就不能往下；沒解析 AI，就不能做最終決策。你可以逐步操作，也可以直接按「一鍵作戰流程」。</div>
           <div class="metrics">
             <div class="metric"><div class="k">本地候選</div><div class="v" id="mLocal">—</div></div>
             <div class="metric"><div class="k">AI 候選</div><div class="v" id="mAi">—</div></div>
@@ -292,6 +273,37 @@ th{color:var(--muted)}
         </section>
       </div>
 
+      <section class="panel" style="margin-top:16px">
+        <div class="sectionTitle">🧭 作戰流程控制台</div>
+        <div class="grid cols4">
+          <div class="stepCard">
+            <div class="k">STEP 1</div>
+            <div class="v" id="stepCsv">待命</div>
+            <div class="small" id="stepCsvSub">尚未分析 CSV</div>
+          </div>
+          <div class="stepCard">
+            <div class="k">STEP 2</div>
+            <div class="v" id="stepPrompt">待命</div>
+            <div class="small" id="stepPromptSub">尚未複製提示詞</div>
+          </div>
+          <div class="stepCard">
+            <div class="k">STEP 3</div>
+            <div class="v" id="stepAi">待命</div>
+            <div class="small" id="stepAiSub">尚未解析 AI</div>
+          </div>
+          <div class="stepCard">
+            <div class="k">STEP 4</div>
+            <div class="v" id="stepDecision">待命</div>
+            <div class="small" id="stepDecisionSub">尚未最終決策</div>
+          </div>
+        </div>
+        <div class="toolbar" style="margin-top:14px">
+          <button id="runFlowBtn">🔥 一鍵作戰流程</button>
+          <button id="saveBtn" class="secondary">儲存本機</button>
+        </div>
+        <div id="flowMessage" class="reason">系統會依順序檢查：CSV → AI 提示詞 → AI 解析 → 最終決策。缺步驟就直接擋下。</div>
+      </section>
+
       <div class="grid cols2" style="margin-top:16px">
         <section class="panel">
           <div class="sectionTitle">📊 CSV 選股雷達</div>
@@ -302,6 +314,7 @@ th{color:var(--muted)}
             <button id="loadDemoBtn" class="secondary">載入範例</button>
             <button id="clearBtn" class="danger">清空</button>
           </div>
+          <div class="lockLine" id="csvLock">CSV 是第一步，其他流程都依賴它。</div>
           <div id="localSummary" class="reason">尚未分析。</div>
         </section>
 
@@ -310,10 +323,11 @@ th{color:var(--muted)}
           <label for="aiInput">貼上 GPT / Gemini 回覆全文</label>
           <textarea id="aiInput" placeholder="例如：主攻股：8261 富鼎　副攻股：3236 千如"></textarea>
           <div class="toolbar" style="margin-top:12px">
+            <button id="copyPromptBtn" class="secondary">複製 AI 提示詞</button>
             <button id="parseAiBtn">解析 AI</button>
             <button id="decideBtn" class="secondary">一鍵最終決策</button>
-            <button id="copyPromptBtn" class="secondary">複製 AI 提示詞</button>
           </div>
+          <div class="lockLine" id="aiLock">沒有先分析 CSV，就不會開放 AI 流程。沒有解析 AI，就不能做最終決策。</div>
           <div id="aiSummary" class="reason">尚未解析 AI 結果。</div>
         </section>
       </div>
@@ -377,6 +391,12 @@ th{color:var(--muted)}
 
       <section class="panel" style="margin-top:16px">
         <div class="sectionTitle">🎯 最終出擊標的監控</div>
+        <div class="metrics" style="margin-top:0;margin-bottom:14px">
+          <div class="metric"><div class="k">決策信心值</div><div class="v" id="confidenceValue">—</div></div>
+          <div class="metric"><div class="k">可進攻等級</div><div class="v" id="attackGrade">—</div></div>
+          <div class="metric"><div class="k">決策來源</div><div class="v" id="decisionValue">—</div></div>
+          <div class="metric"><div class="k">主攻熱度</div><div class="v" id="heatValue">—</div></div>
+        </div>
         <div class="stockCards" id="finalCards">
           <div class="stockCard"><div class="small">尚未產生最終標的。</div></div>
         </div>
@@ -395,7 +415,7 @@ th{color:var(--muted)}
             <button id="loadMainBtn" class="secondary">帶入主攻股</button>
             <button id="clearHoldBtn" class="secondary">清空輸入</button>
           </div>
-          <div id="holdGuide" class="reason">你只要輸入股票、買入價、現價。停損、停利、移動停利都會依上方拉桿自動換算，不用再自己手填一堆價位。</div>
+          <div id="holdGuide" class="reason">你只要輸入股票、買入價、現價。停損、停利、移動停利都會依上方拉桿自動換算。</div>
         </section>
 
         <section class="panel">
@@ -435,20 +455,26 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">AI 戰艦 Pro 重裝甲版：更厚重、更像飛輪系統，但操作仍然簡單。</div>
+      <div class="footer">A版 Pro Max：完整樣式、完整流程、真防呆，不是簡化版。</div>
     </div>
   </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-const STORE = 'ai_battleship_armor_v1';
+const STORE = 'ai_battleship_pro_max_a_v1';
 
 let localPicks = [];
 let aiCodes = [];
 let finalPicks = [];
 let holdings = [];
 let decisionSource = '—';
+let flowState = {
+  csvAnalyzed:false,
+  promptCopied:false,
+  aiParsed:false,
+  decided:false
+};
 
 function num(v){ const n = Number(String(v ?? '').replace(/,/g,'')); return Number.isFinite(n) ? n : null; }
 function fmt(n,d=2){ return n===null || n===undefined || Number.isNaN(n) ? '—' : Number(n).toLocaleString('zh-TW',{maximumFractionDigits:d}); }
@@ -477,6 +503,7 @@ function refreshSliders(){
   updateHoldings();
   saveLocal();
 }
+
 ['stopSlider','tp1Slider','tp2Slider','trailSlider','allocSlider','capitalSlider'].forEach(id=>$(id).addEventListener('input', refreshSliders));
 
 function parseCSV(text){
@@ -544,13 +571,13 @@ function scoreRow(r){
 function analyzeCSV(){
   const text = $('csvInput').value.trim();
   if(!text){
-    $('localSummary').textContent = '請先貼上 CSV。';
-    return;
+    setFlowMessage('❌ 先貼 CSV 才能開始分析。', true);
+    return false;
   }
   const raw = parseCSV(text);
   if(raw.length < 2){
-    $('localSummary').textContent = 'CSV 內容不足。';
-    return;
+    setFlowMessage('❌ CSV 內容不足。', true);
+    return false;
   }
   const headers = raw[0].map(x=>String(x).trim());
   const map = {};
@@ -603,31 +630,74 @@ function analyzeCSV(){
     ? `本地前段班：<b>${localPicks.slice(0,3).map(x=>`${x.symbol} ${x.name||''}`).join('、')}</b><br>第一名原因：${localPicks[0].why.slice(0,4).join('、')}`
     : '沒有抓到資料。';
 
+  flowState.csvAnalyzed = true;
   if(decisionSource === '—'){
     finalPicks = localPicks.slice(0,2);
     decisionSource = '本地預設';
     $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
   }
 
+  setFlowMessage('✅ CSV 分析完成，現在可以複製 AI 提示詞。');
+  updateLocks();
   updateSystemTable();
   updateFinalCards();
   updateCommandCenter();
   saveLocal();
+  return true;
+}
+
+function copyPrompt(){
+  if(!flowState.csvAnalyzed){
+    setFlowMessage('❌ 先做 CSV 分析，才能複製 AI 提示詞。', true);
+    return false;
+  }
+  const top = localPicks.slice(0,6).map(r=>`${r.symbol} ${r.name||''}`).join('、');
+  const prompt = `你現在是一位頂尖台股短線交易員，請根據以下候選股做最後的菁英遴選。\n\n【候選股】${top || '尚未有候選股'}\n【目標】1個月內 10%~15% 波段利潤\n\n請針對這些股票：\n1. 查近一週新聞、法人動向與題材熱度。\n2. 精選 1~2 檔最適合短線操作的股票。\n3. 避開乖離過大、已過熱或利多出盡的標的。\n4. 用表格輸出：進場區間、停損點、+10% / +15% 停利規劃。\n5. 最後用一句話提醒未來一週最重要風險。`;
+  navigator.clipboard.writeText(prompt);
+  flowState.promptCopied = true;
+  setFlowMessage('✅ 已複製 AI 提示詞。去問 AI，拿到回覆後貼回來。');
+  updateLocks();
+  saveLocal();
+  return true;
 }
 
 function parseAI(){
+  if(!flowState.csvAnalyzed){
+    setFlowMessage('❌ 先分析 CSV，才能解析 AI。', true);
+    return false;
+  }
   const txt = $('aiInput').value.trim();
+  if(!txt){
+    setFlowMessage('❌ 請先貼上 AI 回覆全文。', true);
+    return false;
+  }
   const codes = txt.match(/\d{4,6}/g);
   aiCodes = codes ? [...new Set(codes)].slice(0,2) : [];
-  $('mAi').textContent = aiCodes.length ? aiCodes.join(' / ') : '—';
-  $('aiSummary').innerHTML = aiCodes.length
-    ? `AI 解析到：<b>${aiCodes.join('、')}</b><br>下一步請按 <b>一鍵最終決策</b>。`
-    : '沒有抓到股票代號，請確認 AI 回覆內含 4 位數股票代號。';
+  if(!aiCodes.length){
+    setFlowMessage('❌ AI 回覆中抓不到股票代號。請確認內容至少有 4 位數代號。', true);
+    $('aiSummary').innerHTML = '沒有抓到股票代號，請確認 AI 回覆內含 4 位數股票代號。';
+    return false;
+  }
+  $('mAi').textContent = aiCodes.join(' / ');
+  $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b><br>現在可以做最終決策。`;
+  flowState.aiParsed = true;
+  setFlowMessage('✅ AI 解析完成，現在可以做最終決策。');
+  updateLocks();
   updateCommandCenter();
   saveLocal();
+  return true;
 }
 
 function decideFinal(){
+  if(!flowState.csvAnalyzed){
+    setFlowMessage('❌ 先分析 CSV，才能最終決策。', true);
+    return false;
+  }
+  if(!flowState.aiParsed){
+    setFlowMessage('❌ 先解析 AI，才能最終決策。', true);
+    return false;
+  }
+
   const local2 = localPicks.slice(0,2);
   const localCodes = local2.map(x=>x.symbol);
   const inter = aiCodes.filter(code => localCodes.includes(code));
@@ -645,11 +715,40 @@ function decideFinal(){
     decisionSource = 'AI優先';
   }
 
+  flowState.decided = true;
   $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
+  setFlowMessage('✅ 最終決策完成。現在可以帶入主攻股或直接加入持倉監控。');
+  updateLocks();
+  updateConfidence();
   updateSystemTable();
   updateFinalCards();
   updateCommandCenter();
   saveLocal();
+  return true;
+}
+
+function runFlow(){
+  if(!flowState.csvAnalyzed){
+    if(!analyzeCSV()) return;
+    return;
+  }
+  if(!flowState.promptCopied){
+    copyPrompt();
+    return;
+  }
+  if(!flowState.aiParsed){
+    if(!$('aiInput').value.trim()){
+      setFlowMessage('⚠️ 提示詞已複製，請先去問 AI，拿回回覆後貼進來。', true);
+      return;
+    }
+    if(!parseAI()) return;
+    return;
+  }
+  if(!flowState.decided){
+    decideFinal();
+    return;
+  }
+  setFlowMessage('✅ 作戰流程已完成。現在重點是監控主攻股與持倉。');
 }
 
 function buildFinalCard(r, i){
@@ -698,10 +797,12 @@ function updateFinalCards(){
   if(!finalPicks.length){
     box.innerHTML = '<div class="stockCard"><div class="small">尚未產生最終標的。</div></div>';
     updateBridge();
+    updateConfidence();
     return;
   }
   box.innerHTML = finalPicks.slice(0,2).map(buildFinalCard).join('');
   updateBridge();
+  updateConfidence();
 }
 
 function updateBridge(){
@@ -718,6 +819,28 @@ function updateBridge(){
   $('bridgeTp1').textContent = fmt(main.price * (1+cfg.tp1Pct/100),2);
   $('bridgeTp2').textContent = fmt(main.price * (1+cfg.tp2Pct/100),2);
   $('bridgeTrail').textContent = fmt((main.price * (1+cfg.tp1Pct/100)) * (1-cfg.trailPct/100),2);
+}
+
+function updateConfidence(){
+  const local2 = localPicks.slice(0,2).map(x=>x.symbol);
+  const inter = aiCodes.filter(x=>local2.includes(x));
+  let conf = 0;
+  if(decisionSource === '交集模式') conf = inter.length===2 ? 92 : 82;
+  else if(decisionSource === 'AI優先') conf = 66;
+  else if(decisionSource === '本地優先') conf = 72;
+  else if(decisionSource === '本地預設') conf = 60;
+
+  let grade = '—';
+  if(conf >= 90) grade = 'S';
+  else if(conf >= 80) grade = 'A';
+  else if(conf >= 70) grade = 'B';
+  else if(conf > 0) grade = 'C';
+
+  const heat = finalPicks[0]?.dev;
+  $('confidenceValue').textContent = conf ? conf + '%' : '—';
+  $('attackGrade').textContent = grade;
+  $('decisionValue').textContent = decisionSource;
+  $('heatValue').textContent = heat !== null && heat !== undefined ? pct(heat,1) : '—';
 }
 
 function addHolding(){
@@ -740,6 +863,10 @@ function addHolding(){
 }
 
 function loadMainToForm(){
+  if(!flowState.decided){
+    setFlowMessage('❌ 先完成最終決策，才能帶入主攻股。', true);
+    return;
+  }
   const main = finalPicks[0];
   if(!main) return;
   $('holdSymbol').value = main.symbol || '';
@@ -877,13 +1004,19 @@ function updateCommandCenter(){
   let mode = '待機模式';
   let modeClass = 'info';
 
-  if(localPicks.length && !finalPicks.length){
-    cmd = '先做最終決策';
-    sub = '本地排序已完成，下一步該結合 AI 情報。';
-    mode = '預備攻擊';
+  if(flowState.csvAnalyzed && !flowState.aiParsed){
+    cmd = '去問 AI，拿回答案';
+    sub = '本地排序已完成，現在要讓 AI 做題材與新聞補強。';
+    mode = '情報蒐集';
     modeClass = 'warn';
   }
-  if(finalPicks.length){
+  if(flowState.aiParsed && !flowState.decided){
+    cmd = '可以最終決策';
+    sub = 'AI 已解析完成，現在可以決定主攻股與副攻股。';
+    mode = '決策模式';
+    modeClass = 'info';
+  }
+  if(flowState.decided){
     cmd = '鎖定 1–2 檔，等開盤表態';
     sub = `目前最終標的是 ${finalPicks.map(x=>x.symbol).join('、')}。不要分散火力。`;
     mode = decisionSource;
@@ -914,13 +1047,40 @@ function updateCommandCenter(){
   $('todaySub').textContent = sub;
   $('battleMode').textContent = mode;
   $('battleMode').className = 'modeBadge ' + modeClass;
+  updateLocks();
 }
 
-function copyPrompt(){
-  const top = localPicks.slice(0,6).map(r=>`${r.symbol} ${r.name||''}`).join('、');
-  const prompt = `你現在是一位頂尖台股短線交易員，請根據以下候選股做最後的菁英遴選。\n\n【候選股】${top || '尚未有候選股'}\n【目標】1個月內 10%~15% 波段利潤\n\n請針對這些股票：\n1. 查近一週新聞、法人動向與題材熱度。\n2. 精選 1~2 檔最適合短線操作的股票。\n3. 避開乖離過大、已過熱或利多出盡的標的。\n4. 用表格輸出：進場區間、停損點、+10% / +15% 停利規劃。\n5. 最後用一句話提醒未來一週最重要風險。`;
-  navigator.clipboard.writeText(prompt);
-  $('aiSummary').innerHTML = '已複製 AI 提示詞，直接貼去 GPT / Gemini。';
+function updateLocks(){
+  $('copyPromptBtn').disabled = !flowState.csvAnalyzed;
+  $('parseAiBtn').disabled = !flowState.csvAnalyzed;
+  $('decideBtn').disabled = !flowState.aiParsed;
+
+  $('stepCsv').textContent = flowState.csvAnalyzed ? '完成' : '待命';
+  $('stepCsvSub').textContent = flowState.csvAnalyzed ? 'CSV 已完成分析' : '尚未分析 CSV';
+
+  $('stepPrompt').textContent = flowState.promptCopied ? '完成' : '待命';
+  $('stepPromptSub').textContent = flowState.promptCopied ? '提示詞已複製' : '尚未複製提示詞';
+
+  $('stepAi').textContent = flowState.aiParsed ? '完成' : '待命';
+  $('stepAiSub').textContent = flowState.aiParsed ? 'AI 已完成解析' : '尚未解析 AI';
+
+  $('stepDecision').textContent = flowState.decided ? '完成' : '待命';
+  $('stepDecisionSub').textContent = flowState.decided ? '最終標的已鎖定' : '尚未最終決策';
+
+  $('csvLock').textContent = flowState.csvAnalyzed
+    ? '✅ CSV 已分析，可以進入 AI 流程。'
+    : 'CSV 是第一步，其他流程都依賴它。';
+
+  $('aiLock').textContent = !flowState.csvAnalyzed
+    ? '🔒 尚未分析 CSV，AI 流程鎖定。'
+    : !flowState.aiParsed
+      ? '⚠️ 已開放 AI 流程，先貼 AI 回覆並解析。'
+      : '✅ AI 已解析，可以做最終決策。';
+}
+
+function setFlowMessage(msg, isError=false){
+  $('flowMessage').innerHTML = msg;
+  $('flowMessage').style.borderColor = isError ? 'rgba(248,113,113,.28)' : 'rgba(160,200,255,.12)';
 }
 
 function loadDemo(){
@@ -932,9 +1092,7 @@ function loadDemo(){
 4979,華星光,586,TWD,9.94,32773935,5.95,421.62,368.12,76.85`;
   $('aiInput').value = `主攻股：8261 富鼎
 副攻股：3236 千如`;
-  analyzeCSV();
-  parseAI();
-  decideFinal();
+  setFlowMessage('已載入範例資料。');
 }
 
 function clearAll(){
@@ -948,14 +1106,18 @@ function clearAll(){
   finalPicks = [];
   holdings = [];
   decisionSource = '—';
+  flowState = {csvAnalyzed:false,promptCopied:false,aiParsed:false,decided:false};
   $('mLocal').textContent = '—';
   $('mAi').textContent = '—';
   $('mFinal').textContent = '—';
   $('mAlert').textContent = '待命';
+  setFlowMessage('系統已清空，重新開始。');
   updateFinalCards();
   updateHoldings();
   updateSystemTable();
   updateCommandCenter();
+  updateLocks();
+  updateConfidence();
   saveLocal();
 }
 
@@ -971,7 +1133,7 @@ function saveLocal(){
       alloc:$('allocSlider').value,
       capital:$('capitalSlider').value
     },
-    localPicks, aiCodes, finalPicks, holdings, decisionSource
+    localPicks, aiCodes, finalPicks, holdings, decisionSource, flowState
   };
   localStorage.setItem(STORE, JSON.stringify(data));
 }
@@ -994,6 +1156,7 @@ function loadLocal(){
     finalPicks = Array.isArray(data.finalPicks) ? data.finalPicks : [];
     holdings = Array.isArray(data.holdings) ? data.holdings : [];
     decisionSource = data.decisionSource || '—';
+    flowState = data.flowState || flowState;
 
     $('mLocal').textContent = localPicks.length ? localPicks.slice(0,2).map(x=>x.symbol).join(' / ') : '—';
     $('mAi').textContent = aiCodes.length ? aiCodes.join(' / ') : '—';
@@ -1023,11 +1186,13 @@ function loadLocal(){
 }
 
 $('analyzeBtn').addEventListener('click', analyzeCSV);
+$('copyPromptBtn').addEventListener('click', copyPrompt);
 $('parseAiBtn').addEventListener('click', parseAI);
 $('decideBtn').addEventListener('click', decideFinal);
-$('copyPromptBtn').addEventListener('click', copyPrompt);
+$('runFlowBtn').addEventListener('click', runFlow);
 $('loadDemoBtn').addEventListener('click', loadDemo);
 $('clearBtn').addEventListener('click', clearAll);
+$('saveBtn').addEventListener('click', saveLocal);
 $('addHoldBtn').addEventListener('click', addHolding);
 $('loadMainBtn').addEventListener('click', loadMainToForm);
 $('clearHoldBtn').addEventListener('click', clearHoldForm);
@@ -1038,6 +1203,8 @@ updateSystemTable();
 updateFinalCards();
 updateHoldings();
 updateCommandCenter();
+updateLocks();
+updateConfidence();
 </script>
 </body>
 </html>
