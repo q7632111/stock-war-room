@@ -1,468 +1,6 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#050a12" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max｜A版</title>
-<style>
-:root{
-  --bg:#050a12;
-  --bg2:#0a1220;
-  --panel:#0d1727;
-  --card:#0a1322;
-  --line:rgba(160,200,255,.12);
-  --text:#eef6ff;
-  --muted:#8ca1c2;
-  --blue:#60a5fa;
-  --cyan:#67e8f9;
-  --green:#34d399;
-  --yellow:#fbbf24;
-  --red:#f87171;
-  --shadow:0 22px 70px rgba(0,0,0,.48);
-  --radius:22px;
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;height:100%}
-body{
-  overflow:hidden;
-  color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
-  background:
-    radial-gradient(circle at 12% 10%, rgba(96,165,250,.08), transparent 18%),
-    radial-gradient(circle at 88% 8%, rgba(103,232,249,.08), transparent 18%),
-    linear-gradient(180deg,var(--bg),var(--bg2));
-}
-body:before{
-  content:"";
-  position:fixed; inset:0; pointer-events:none;
-  background:
-    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
-  background-size:22px 22px;
-  mask-image:linear-gradient(180deg, rgba(0,0,0,.35), transparent 80%);
-  opacity:.22;
-}
-.app{height:100dvh;display:flex;flex-direction:column}
-.topbar{
-  flex:0 0 auto;
-  padding:calc(env(safe-area-inset-top) + 10px) max(14px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left));
-  background:linear-gradient(180deg, rgba(7,12,22,.98), rgba(10,18,32,.88));
-  border-bottom:1px solid var(--line);
-  box-shadow:0 12px 40px rgba(0,0,0,.36);
-}
-.topbarInner{
-  max-width:1540px;margin:0 auto;display:flex;justify-content:space-between;gap:16px;align-items:flex-start
-}
-.brandTitle{
-  display:flex;align-items:center;gap:10px;
-  font-size:18px;font-weight:900;letter-spacing:.04em;text-transform:uppercase
-}
-.brandSub{margin-top:4px;color:var(--muted);font-size:12px}
-.quickBadges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.badge{
-  padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800;
-  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-  border:1px solid var(--line);
-}
-.main{
-  flex:1 1 auto;
-  overflow:auto;
-  padding:14px max(14px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
-}
-.wrap{max-width:1540px;margin:0 auto}
-.grid{display:grid;gap:16px}
-.hero{grid-template-columns:1.15fr .85fr}
-.cols2{grid-template-columns:1fr 1fr}
-.cols3{grid-template-columns:repeat(3,1fr)}
-.cols4{grid-template-columns:repeat(4,1fr)}
-.panel{
-  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014));
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.04);
-  padding:18px;
-  position:relative;
-  overflow:hidden;
-}
-.panel:before{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(120deg, rgba(255,255,255,.03), transparent 26%, transparent 74%, rgba(255,255,255,.02));
-}
-.sectionTitle{margin:0 0 12px;font-size:18px;font-weight:900;display:flex;align-items:center;gap:8px}
-.sub{color:var(--muted);line-height:1.7}
-.small{font-size:12px;color:var(--muted)}
-.commandMain{font-size:30px;font-weight:900;letter-spacing:.02em}
-.commandSub{font-size:13px;color:var(--muted);margin-top:6px}
-.modeBadge{
-  padding:10px 14px;border-radius:999px;font-size:12px;font-weight:900;
-  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-  border:1px solid var(--line);
-}
-.ok{color:var(--green)} .warn{color:var(--yellow)} .danger{color:var(--red)} .info{color:var(--blue)}
-.metrics,.signalGrid,.bridgeGrid{display:grid;gap:12px}
-.metrics{grid-template-columns:repeat(4,1fr);margin-top:14px}
-.signalGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
-.bridgeGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
-.metric,.signal,.bridge,.kpi,.stepCard{
-  background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.018));
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:14px;
-}
-.metric .k,.signal .k,.bridge .k,.kpi .k,.stepCard .k{font-size:12px;color:var(--muted)}
-.metric .v,.signal .v,.bridge .v,.kpi .v,.stepCard .v{font-size:24px;font-weight:900;margin-top:6px}
-.bar{height:10px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;margin-top:8px}
-.bar>div{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:999px}
-label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-input,textarea{
-  width:100%;background:#09111f;color:var(--text);border:1px solid rgba(160,200,255,.12);
-  border-radius:14px;padding:12px 13px;font:inherit;outline:none;
-}
-input:focus,textarea:focus{
-  border-color:rgba(103,232,249,.42);
-  box-shadow:0 0 0 3px rgba(103,232,249,.10);
-}
-textarea{min-height:118px;resize:vertical}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap}
-button{
-  border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:900;cursor:pointer;min-width:120px;
-  background:linear-gradient(135deg,var(--blue),var(--cyan));color:#04111e;
-}
-button.secondary{
-  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-  color:var(--text);border:1px solid var(--line)
-}
-button.danger{
-  background:linear-gradient(180deg, rgba(248,113,113,.16), rgba(248,113,113,.08));
-  color:#fecaca;border:1px solid rgba(248,113,113,.2)
-}
-button:disabled{
-  opacity:.42;
-  cursor:not-allowed;
-  filter:grayscale(.2);
-}
-.reason{
-  margin-top:12px;padding:12px 14px;border-radius:16px;
-  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
-  border:1px solid var(--line);line-height:1.7;font-size:13px
-}
-.rangeWrap{
-  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
-  border:1px solid var(--line);border-radius:18px;padding:12px
-}
-.sliderRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
-.rangeValue{
-  min-width:78px;text-align:center;padding:10px 12px;border-radius:14px;background:#091323;
-  border:1px solid var(--line);font-weight:900
-}
-input[type=range]{padding:0;border:0;background:transparent}
-.stockCards,.holdCards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.stockCard,.holdCard{
-  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014));
-  border:1px solid var(--line);
-  border-radius:20px;padding:15px;position:relative;overflow:hidden;
-  box-shadow:var(--shadow)
-}
-.stockCard:after,.holdCard:after{
-  content:"";position:absolute;right:-45px;top:-45px;width:140px;height:140px;border-radius:50%;
-  background:radial-gradient(circle, rgba(96,165,250,.16), transparent 65%);
-}
-.stockHead,.holdHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.role{font-size:12px;color:var(--cyan);font-weight:900}
-.name{font-size:26px;font-weight:900}
-.tag{
-  display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;
-  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-  border:1px solid var(--line);font-size:12px;font-weight:900
-}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
-.kpi{padding:10px;text-align:center;background:#091323}
-.glow-green{box-shadow:0 0 0 1px rgba(52,211,153,.20), 0 0 22px rgba(52,211,153,.10), var(--shadow)}
-.glow-yellow{box-shadow:0 0 0 1px rgba(251,191,36,.20), 0 0 22px rgba(251,191,36,.10), var(--shadow)}
-.glow-red{box-shadow:0 0 0 1px rgba(248,113,113,.20), 0 0 22px rgba(248,113,113,.10), var(--shadow)}
-.tableWrap{overflow:auto}
-table{width:100%;border-collapse:collapse;min-width:980px}
-th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;text-align:left}
-th{color:var(--muted)}
-.lockLine{
-  margin-top:10px;
-  padding:10px 12px;
-  border-radius:14px;
-  background:rgba(255,255,255,.03);
-  border:1px dashed rgba(255,255,255,.14);
-  font-size:12px;
-  color:var(--muted);
-}
-.footer{color:var(--muted);font-size:12px;text-align:center;padding:12px 0 6px}
-@media (max-width:1200px){
-  .hero,.cols2,.cols3,.cols4,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards{grid-template-columns:1fr}
-  .kpis{grid-template-columns:repeat(2,1fr)}
-}
-@media (max-width:780px){
-  .topbarInner{flex-direction:column;align-items:flex-start}
-  .quickBadges{justify-content:flex-start}
-}
-</style>
-</head>
-<body>
-<div class="app">
-  <div class="topbar">
-    <div class="topbarInner">
-      <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max｜A版</div>
-        <div class="brandSub">半自動最終流程：你負責貼資料，系統負責防呆、判斷、鎖步驟。不是簡化版，是完整戰情室。</div>
-      </div>
-      <div class="quickBadges">
-        <div class="badge">🔥 一鍵作戰流程</div>
-        <div class="badge">🔒 真防呆鎖步驟</div>
-        <div class="badge">📡 信心值</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="main">
-    <div class="wrap">
-
-      <div class="grid hero">
-        <section class="panel">
-          <div class="sectionTitle">🚀 戰情總覽</div>
-          <div class="sub">這版會幫你鎖流程。沒分析 CSV，就不能往下；沒解析 AI，就不能做最終決策。你可以逐步操作，也可以直接按「一鍵作戰流程」。</div>
-          <div class="metrics">
-            <div class="metric"><div class="k">本地候選</div><div class="v" id="mLocal">—</div></div>
-            <div class="metric"><div class="k">AI 候選</div><div class="v" id="mAi">—</div></div>
-            <div class="metric"><div class="k">最終標的</div><div class="v" id="mFinal">—</div></div>
-            <div class="metric"><div class="k">持倉警報</div><div class="v" id="mAlert">待命</div></div>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="sectionTitle">📌 今日唯一指令</div>
-          <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap">
-            <div>
-              <div id="todayCommand" class="commandMain">等待資料</div>
-              <div id="todaySub" class="commandSub">請先分析 CSV，再導入 AI，最後監控持倉。</div>
-            </div>
-            <div id="battleMode" class="modeBadge info">待機模式</div>
-          </div>
-
-          <div class="signalGrid">
-            <div class="signal">
-              <div class="k">本地 vs AI 一致性</div>
-              <div id="consistencyText" class="v">—</div>
-              <div class="bar"><div id="consistencyBar" style="width:0%"></div></div>
-            </div>
-            <div class="signal">
-              <div class="k">進攻性</div>
-              <div id="aggressiveText" class="v">—</div>
-              <div class="bar"><div id="aggressiveBar" style="width:0%"></div></div>
-            </div>
-            <div class="signal">
-              <div class="k">過熱風險</div>
-              <div id="heatText" class="v">—</div>
-              <div class="bar"><div id="heatBar" style="width:0%"></div></div>
-            </div>
-            <div class="signal">
-              <div class="k">持倉壓力</div>
-              <div id="pressureText" class="v">—</div>
-              <div class="bar"><div id="pressureBar" style="width:0%"></div></div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <section class="panel" style="margin-top:16px">
-        <div class="sectionTitle">🧭 作戰流程控制台</div>
-        <div class="grid cols4">
-          <div class="stepCard">
-            <div class="k">STEP 1</div>
-            <div class="v" id="stepCsv">待命</div>
-            <div class="small" id="stepCsvSub">尚未分析 CSV</div>
-          </div>
-          <div class="stepCard">
-            <div class="k">STEP 2</div>
-            <div class="v" id="stepPrompt">待命</div>
-            <div class="small" id="stepPromptSub">尚未複製提示詞</div>
-          </div>
-          <div class="stepCard">
-            <div class="k">STEP 3</div>
-            <div class="v" id="stepAi">待命</div>
-            <div class="small" id="stepAiSub">尚未解析 AI</div>
-          </div>
-          <div class="stepCard">
-            <div class="k">STEP 4</div>
-            <div class="v" id="stepDecision">待命</div>
-            <div class="small" id="stepDecisionSub">尚未最終決策</div>
-          </div>
-        </div>
-        <div class="toolbar" style="margin-top:14px">
-          <button id="runFlowBtn">🔥 一鍵作戰流程</button>
-          <button id="saveBtn" class="secondary">儲存本機</button>
-        </div>
-        <div id="flowMessage" class="reason">系統會依順序檢查：CSV → AI 提示詞 → AI 解析 → 最終決策。缺步驟就直接擋下。</div>
-      </section>
-
-      <div class="grid cols2" style="margin-top:16px">
-        <section class="panel">
-          <div class="sectionTitle">📊 CSV 選股雷達</div>
-          <label for="csvInput">貼上 TradingView CSV</label>
-          <textarea id="csvInput" placeholder="建議欄位：商品、描述、價格、價格變化 % 1天、相對成交量 1天、SMA20、SMA60、RSI14"></textarea>
-          <div class="toolbar" style="margin-top:12px">
-            <button id="analyzeBtn">開始分析</button>
-            <button id="loadDemoBtn" class="secondary">載入範例</button>
-            <button id="clearBtn" class="danger">清空</button>
-          </div>
-          <div class="lockLine" id="csvLock">CSV 是第一步，其他流程都依賴它。</div>
-          <div id="localSummary" class="reason">尚未分析。</div>
-        </section>
-
-        <section class="panel">
-          <div class="sectionTitle">🤖 AI 情報覆蓋區</div>
-          <label for="aiInput">貼上 GPT / Gemini 回覆全文</label>
-          <textarea id="aiInput" placeholder="例如：主攻股：8261 富鼎　副攻股：3236 千如"></textarea>
-          <div class="toolbar" style="margin-top:12px">
-            <button id="copyPromptBtn" class="secondary">複製 AI 提示詞</button>
-            <button id="parseAiBtn">解析 AI</button>
-            <button id="decideBtn" class="secondary">一鍵最終決策</button>
-          </div>
-          <div class="lockLine" id="aiLock">沒有先分析 CSV，就不會開放 AI 流程。沒有解析 AI，就不能做最終決策。</div>
-          <div id="aiSummary" class="reason">尚未解析 AI 結果。</div>
-        </section>
-      </div>
-
-      <section class="panel" style="margin-top:16px">
-        <div class="sectionTitle">⚙️ 戰艦操控參數</div>
-        <div class="sub">拉桿一動，所有推算同步更新。這一區會直接換算主攻股停損價、停利價、移動停利價，讓你不需要自己算。</div>
-
-        <div class="grid cols3" style="margin-top:14px">
-          <div class="rangeWrap">
-            <label>固定停損 %</label>
-            <div class="sliderRow">
-              <input id="stopSlider" type="range" min="3" max="12" step="0.5" value="7">
-              <div id="stopVal" class="rangeValue">7%</div>
-            </div>
-          </div>
-          <div class="rangeWrap">
-            <label>第一停利 %</label>
-            <div class="sliderRow">
-              <input id="tp1Slider" type="range" min="5" max="20" step="0.5" value="10">
-              <div id="tp1Val" class="rangeValue">10%</div>
-            </div>
-          </div>
-          <div class="rangeWrap">
-            <label>第二停利 %</label>
-            <div class="sliderRow">
-              <input id="tp2Slider" type="range" min="8" max="30" step="0.5" value="15">
-              <div id="tp2Val" class="rangeValue">15%</div>
-            </div>
-          </div>
-          <div class="rangeWrap">
-            <label>移動停利回撤 %</label>
-            <div class="sliderRow">
-              <input id="trailSlider" type="range" min="2" max="10" step="0.5" value="4">
-              <div id="trailVal" class="rangeValue">4%</div>
-            </div>
-          </div>
-          <div class="rangeWrap">
-            <label>主攻倉位 %</label>
-            <div class="sliderRow">
-              <input id="allocSlider" type="range" min="40" max="80" step="5" value="60">
-              <div id="allocVal" class="rangeValue">60%</div>
-            </div>
-          </div>
-          <div class="rangeWrap">
-            <label>總資金（萬）</label>
-            <div class="sliderRow">
-              <input id="capitalSlider" type="range" min="5" max="100" step="5" value="20">
-              <div id="capitalVal" class="rangeValue">20萬</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="bridgeGrid">
-          <div class="bridge"><div class="k">主攻股推算停損價</div><div id="bridgeStop" class="v">—</div></div>
-          <div class="bridge"><div class="k">主攻股推算停利一價</div><div id="bridgeTp1" class="v">—</div></div>
-          <div class="bridge"><div class="k">主攻股推算停利二價</div><div id="bridgeTp2" class="v">—</div></div>
-          <div class="bridge"><div class="k">主攻股移動停利價</div><div id="bridgeTrail" class="v">—</div></div>
-        </div>
-      </section>
-
-      <section class="panel" style="margin-top:16px">
-        <div class="sectionTitle">🎯 最終出擊標的監控</div>
-        <div class="metrics" style="margin-top:0;margin-bottom:14px">
-          <div class="metric"><div class="k">決策信心值</div><div class="v" id="confidenceValue">—</div></div>
-          <div class="metric"><div class="k">可進攻等級</div><div class="v" id="attackGrade">—</div></div>
-          <div class="metric"><div class="k">決策來源</div><div class="v" id="decisionValue">—</div></div>
-          <div class="metric"><div class="k">主攻熱度</div><div class="v" id="heatValue">—</div></div>
-        </div>
-        <div class="stockCards" id="finalCards">
-          <div class="stockCard"><div class="small">尚未產生最終標的。</div></div>
-        </div>
-      </section>
-
-      <div class="grid cols2" style="margin-top:16px">
-        <section class="panel">
-          <div class="sectionTitle">📈 持倉加入區</div>
-          <div class="grid cols3">
-            <div><label>股票代號</label><input id="holdSymbol" placeholder="例如 8261"></div>
-            <div><label>買入價</label><input id="holdBuy" type="number" placeholder="例如 116"></div>
-            <div><label>現價</label><input id="holdCurrent" type="number" placeholder="例如 123"></div>
-          </div>
-          <div class="toolbar" style="margin-top:12px">
-            <button id="addHoldBtn">加入持倉</button>
-            <button id="loadMainBtn" class="secondary">帶入主攻股</button>
-            <button id="clearHoldBtn" class="secondary">清空輸入</button>
-          </div>
-          <div id="holdGuide" class="reason">你只要輸入股票、買入價、現價。停損、停利、移動停利都會依上方拉桿自動換算。</div>
-        </section>
-
-        <section class="panel">
-          <div class="sectionTitle">🧭 系統總覽</div>
-          <div class="tableWrap">
-            <table>
-              <thead><tr><th>指標</th><th>數值</th><th>說明</th></tr></thead>
-              <tbody id="systemTable">
-                <tr><td>決策來源</td><td>—</td><td>尚未決策</td></tr>
-                <tr><td>主攻股</td><td>—</td><td>尚未產生</td></tr>
-                <tr><td>副攻股</td><td>—</td><td>尚未產生</td></tr>
-                <tr><td>總持倉數</td><td>0</td><td>目前無持倉</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-
-      <section class="panel" style="margin-top:16px">
-        <div class="sectionTitle">🛡️ 持倉戰況面板</div>
-        <div class="holdCards" id="holdCards">
-          <div class="holdCard"><div class="small">尚未加入持倉。</div></div>
-        </div>
-      </section>
-
-      <section class="panel" style="margin-top:16px">
-        <div class="sectionTitle">🧪 解析排名表</div>
-        <div class="tableWrap">
-          <table>
-            <thead>
-              <tr>
-                <th>排名</th><th>股票</th><th>價格</th><th>漲跌%</th><th>相對量</th><th>SMA20</th><th>SMA60</th><th>RSI</th><th>20MA乖離</th><th>分數</th><th>狀態</th>
-              </tr>
-            </thead>
-            <tbody id="rankBody"><tr><td colspan="11" class="small">尚未分析。</td></tr></tbody>
-          </table>
-        </div>
-      </section>
-
-      <div class="footer">A版 Pro Max：完整樣式、完整流程、真防呆，不是簡化版。</div>
-    </div>
-  </div>
-</div>
-
 <script>
 const $ = id => document.getElementById(id);
-const STORE = 'ai_battleship_pro_max_a_v1';
+const STORE = 'ai_battleship_pro_max_a_v2';
 
 let localPicks = [];
 let aiCodes = [];
@@ -476,9 +14,20 @@ let flowState = {
   decided:false
 };
 
-function num(v){ const n = Number(String(v ?? '').replace(/,/g,'')); return Number.isFinite(n) ? n : null; }
-function fmt(n,d=2){ return n===null || n===undefined || Number.isNaN(n) ? '—' : Number(n).toLocaleString('zh-TW',{maximumFractionDigits:d}); }
-function pct(n,d=1){ return n===null || n===undefined || Number.isNaN(n) ? '—' : `${Number(n).toFixed(d)}%`; }
+function num(v){
+  const n = Number(String(v ?? '').replace(/,/g,''));
+  return Number.isFinite(n) ? n : null;
+}
+function fmt(n,d=2){
+  return n===null || n===undefined || Number.isNaN(n)
+    ? '—'
+    : Number(n).toLocaleString('zh-TW',{maximumFractionDigits:d});
+}
+function pct(n,d=1){
+  return n===null || n===undefined || Number.isNaN(n)
+    ? '—'
+    : `${Number(n).toFixed(d)}%`;
+}
 
 function getCfg(){
   return {
@@ -504,24 +53,40 @@ function refreshSliders(){
   saveLocal();
 }
 
-['stopSlider','tp1Slider','tp2Slider','trailSlider','allocSlider','capitalSlider'].forEach(id=>$(id).addEventListener('input', refreshSliders));
+['stopSlider','tp1Slider','tp2Slider','trailSlider','allocSlider','capitalSlider']
+  .forEach(id=>$(id).addEventListener('input', refreshSliders));
 
 function parseCSV(text){
   const rows=[]; let row=[], cur='', q=false;
   for(let i=0;i<text.length;i++){
     const c=text[i], n=text[i+1];
     if(c==='\r') continue;
-    if(c==='"'){ if(q && n==='"'){cur+='"';i++;} else q=!q; }
-    else if(c===',' && !q){ row.push(cur); cur=''; }
-    else if(c==='\n' && !q){ row.push(cur); rows.push(row); row=[]; cur=''; }
-    else cur += c;
+    if(c==='"'){
+      if(q && n==='"'){ cur+='"'; i++; }
+      else q=!q;
+    }else if(c===',' && !q){
+      row.push(cur); cur='';
+    }else if(c==='\n' && !q){
+      row.push(cur); rows.push(row); row=[]; cur='';
+    }else{
+      cur += c;
+    }
   }
-  if(cur.length || row.length){ row.push(cur); rows.push(row); }
+  if(cur.length || row.length){
+    row.push(cur);
+    rows.push(row);
+  }
   return rows.filter(r=>r.some(v=>String(v).trim() !== ''));
 }
-function nrm(s=''){ return String(s).trim().toLowerCase().replace(/[\s\-()（）,%％"']/g,''); }
+
+function nrm(s=''){
+  return String(s).trim().toLowerCase().replace(/[\s\-()（）,%％"']/g,'');
+}
 function findIdx(map, exact=[], fuzzy=[]){
-  for(const key of exact){ const k=nrm(key); if(map[k]!==undefined) return map[k]; }
+  for(const key of exact){
+    const k=nrm(key);
+    if(map[k]!==undefined) return map[k];
+  }
   const entries = Object.entries(map);
   for(const f of fuzzy){
     const needle = nrm(f);
@@ -530,6 +95,7 @@ function findIdx(map, exact=[], fuzzy=[]){
   }
   return null;
 }
+
 function scoreRow(r){
   let score=0, why=[];
   if(r.price && r.price>15){ score += 8; why.push('價格合格'); } else { score -= 8; why.push('價格偏弱'); }
@@ -579,6 +145,7 @@ function analyzeCSV(){
     setFlowMessage('❌ CSV 內容不足。', true);
     return false;
   }
+
   const headers = raw[0].map(x=>String(x).trim());
   const map = {};
   headers.forEach((h,i)=> map[nrm(h)] = i);
@@ -623,7 +190,8 @@ function analyzeCSV(){
       <td>${pct(r.dev,2)}</td>
       <td>${r.score}</td>
       <td>${r.status}</td>
-    </tr>`).join('') : `<tr><td colspan="11">沒有可用資料</td></tr>`;
+    </tr>
+  `).join('') : `<tr><td colspan="11">沒有可用資料</td></tr>`;
 
   $('mLocal').textContent = localPicks.length ? localPicks.slice(0,2).map(x=>x.symbol).join(' / ') : '—';
   $('localSummary').innerHTML = localPicks.length
@@ -631,6 +199,7 @@ function analyzeCSV(){
     : '沒有抓到資料。';
 
   flowState.csvAnalyzed = true;
+
   if(decisionSource === '—'){
     finalPicks = localPicks.slice(0,2);
     decisionSource = '本地預設';
@@ -671,15 +240,19 @@ function parseAI(){
     setFlowMessage('❌ 請先貼上 AI 回覆全文。', true);
     return false;
   }
+
   const codes = txt.match(/\d{4,6}/g);
   aiCodes = codes ? [...new Set(codes)].slice(0,2) : [];
+
   if(!aiCodes.length){
     setFlowMessage('❌ AI 回覆中抓不到股票代號。請確認內容至少有 4 位數代號。', true);
     $('aiSummary').innerHTML = '沒有抓到股票代號，請確認 AI 回覆內含 4 位數股票代號。';
     return false;
   }
+
   $('mAi').textContent = aiCodes.join(' / ');
   $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b><br>現在可以做最終決策。`;
+
   flowState.aiParsed = true;
   setFlowMessage('✅ AI 解析完成，現在可以做最終決策。');
   updateLocks();
@@ -711,12 +284,15 @@ function decideFinal(){
     if(finalPicks.length < 2 && backup.length) finalPicks.push(backup[0]);
     decisionSource = '交集模式';
   } else {
-    finalPicks = aiCodes.map(code => localPicks.find(x=>x.symbol===code) || {symbol:code,name:'AI 指定',price:null,score:60,status:'AI指定',why:['AI 指定標的'],dev:null});
+    finalPicks = aiCodes.map(code => localPicks.find(x=>x.symbol===code) || {
+      symbol:code,name:'AI 指定',price:null,score:60,status:'AI指定',why:['AI 指定標的'],dev:null
+    });
     decisionSource = 'AI優先';
   }
 
   flowState.decided = true;
   $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
+
   setFlowMessage('✅ 最終決策完成。現在可以帶入主攻股或直接加入持倉監控。');
   updateLocks();
   updateConfidence();
@@ -760,7 +336,10 @@ function buildFinalCard(r, i){
   const stop = r.price ? r.price * (1-cfg.stopPct/100) : null;
   const tp1 = r.price ? r.price * (1+cfg.tp1Pct/100) : null;
   const tp2 = r.price ? r.price * (1+cfg.tp2Pct/100) : null;
-  const trail = r.price ? Math.max(r.price, tp1||r.price) * (1-cfg.trailPct/100) : null;
+
+  // 預覽區：移動停利只在突破 tp1 後啟動，所以這裡顯示「啟動後保護價」
+  const trailPreview = tp1 ? tp1 * (1-cfg.trailPct/100) : null;
+
   const glow = r.status==='可進攻' ? 'glow-green' : r.status==='偏強' ? 'glow-yellow' : '';
 
   return `
@@ -781,12 +360,13 @@ function buildFinalCard(r, i){
         <div class="kpi"><div class="k">停損價</div><div class="v">${fmt(stop,2)}</div></div>
         <div class="kpi"><div class="k">停利1</div><div class="v">${fmt(tp1,2)}</div></div>
         <div class="kpi"><div class="k">停利2</div><div class="v">${fmt(tp2,2)}</div></div>
-        <div class="kpi"><div class="k">移動停利價</div><div class="v">${fmt(trail,2)}</div></div>
+        <div class="kpi"><div class="k">移動停利啟動價</div><div class="v">${fmt(trailPreview,2)}</div></div>
       </div>
 
       <div class="reason">
         <b>今日該看什麼：</b>${(r.why || ['等待更多資料']).slice(0,4).join('、')}<br>
-        <b>作戰指令：</b>${i===0 ? '優先盯盤，只做最強表態。' : '主攻艦沒異常時，副攻艦再跟進。'}
+        <b>作戰指令：</b>${i===0 ? '優先盯盤，只做最強表態。' : '主攻艦沒異常時，副攻艦再跟進。'}<br>
+        <b>說明：</b>移動停利只有在先到 <b>停利1</b> 後才會啟動。
       </div>
     </div>
   `;
@@ -815,10 +395,11 @@ function updateBridge(){
     $('bridgeTrail').textContent = '—';
     return;
   }
+  const tp1 = main.price * (1+cfg.tp1Pct/100);
   $('bridgeStop').textContent = fmt(main.price * (1-cfg.stopPct/100),2);
-  $('bridgeTp1').textContent = fmt(main.price * (1+cfg.tp1Pct/100),2);
+  $('bridgeTp1').textContent = fmt(tp1,2);
   $('bridgeTp2').textContent = fmt(main.price * (1+cfg.tp2Pct/100),2);
-  $('bridgeTrail').textContent = fmt((main.price * (1+cfg.tp1Pct/100)) * (1-cfg.trailPct/100),2);
+  $('bridgeTrail').textContent = fmt(tp1 * (1-cfg.trailPct/100),2);
 }
 
 function updateConfidence(){
@@ -853,8 +434,15 @@ function addHolding(){
   if(existing){
     existing.buy = buy;
     existing.current = current;
+    if(current > existing.highest) existing.highest = current;
   } else {
-    holdings.push({symbol,buy,current,highest:current});
+    holdings.push({
+      symbol,
+      buy,
+      current,
+      highest: current,
+      trailArmed: false
+    });
   }
   clearHoldForm();
   updateHoldings();
@@ -879,32 +467,93 @@ function clearHoldForm(){
   $('holdCurrent').value = '';
 }
 
+/* ===========================
+   這裡是核心修正
+   =========================== */
 function calcHolding(h){
   const cfg = getCfg();
-  if(h.current > h.highest) h.highest = h.current;
+
+  if(h.current > (h.highest ?? h.current)){
+    h.highest = h.current;
+  }
+  if(h.trailArmed === undefined){
+    h.trailArmed = false;
+  }
+
   const stop = h.buy * (1-cfg.stopPct/100);
   const tp1 = h.buy * (1+cfg.tp1Pct/100);
   const tp2 = h.buy * (1+cfg.tp2Pct/100);
-  const trailPrice = h.highest * (1-cfg.trailPct/100);
+
+  // 只有當價格曾經到過 tp1，移動停利才啟動
+  if((h.highest ?? h.current) >= tp1){
+    h.trailArmed = true;
+  }
+
+  const trailPrice = h.trailArmed
+    ? (h.highest * (1-cfg.trailPct/100))
+    : null;
+
   const pnl = ((h.current - h.buy) / h.buy) * 100;
   const pnlAmt = (h.current - h.buy) * 1000;
 
   let action='持有', cls='ok', glow='glow-green', note='趨勢正常，繼續監控。';
+
   if(h.current <= stop){
-    action='停損出場'; cls='danger'; glow='glow-red'; note='已跌破固定停損線，今天先處理風險。';
-  } else if(h.current >= tp2){
-    action='全數停利'; cls='ok'; glow='glow-green'; note='已達第二停利，可考慮全數了結。';
-  } else if(h.current < trailPrice && h.current > h.buy){
-    action='移動停利'; cls='warn'; glow='glow-yellow'; note='從高點回撤達門檻，建議保住獲利。';
-  } else if(h.current >= tp1){
-    action='分批停利'; cls='warn'; glow='glow-yellow'; note='已達第一停利，建議先出一半。';
-  } else if(((tp1-h.current)/h.current*100) < 2 && h.current < tp1){
-    action='接近停利'; cls='warn'; glow='glow-yellow'; note='距離第一停利很近，今天重點看能否續強。';
-  } else if(((h.current-stop)/h.current*100) < 2){
-    action='接近停損'; cls='danger'; glow='glow-red'; note='已逼近停損，今天要優先控管。';
+    action='停損出場';
+    cls='danger';
+    glow='glow-red';
+    note='已跌破固定停損線，今天先處理風險。';
+  }
+  else if(h.current >= tp2){
+    action='全數停利';
+    cls='ok';
+    glow='glow-green';
+    note='已達第二停利，可考慮全數了結。';
+  }
+  else if(h.trailArmed && trailPrice !== null && h.current <= trailPrice){
+    action='移動停利出場';
+    cls='warn';
+    glow='glow-yellow';
+    note='價格已跌破移動停利保護價，表示獲利回撤已達門檻，應出場保護利潤。';
+  }
+  else if(h.current >= tp1){
+    action='分批停利';
+    cls='warn';
+    glow='glow-yellow';
+    note='已達第一停利，建議先出一半，剩餘部位交給移動停利保護。';
+  }
+  else if(h.trailArmed && trailPrice !== null){
+    action='移動停利監控中';
+    cls='warn';
+    glow='glow-yellow';
+    note='已進入移動停利模式，保護價會跟隨最高價上移，但不會下移。';
+  }
+  else if(((tp1-h.current)/h.current*100) < 2 && h.current < tp1){
+    action='接近停利';
+    cls='warn';
+    glow='glow-yellow';
+    note='距離第一停利很近，今天重點看能否續強突破。';
+  }
+  else if(((h.current-stop)/h.current*100) < 2){
+    action='接近停損';
+    cls='danger';
+    glow='glow-red';
+    note='已逼近停損，今天要優先控管。';
   }
 
-  return {...h, stop, tp1, tp2, trailPrice, pnl, pnlAmt, action, cls, glow, note};
+  return {
+    ...h,
+    stop,
+    tp1,
+    tp2,
+    trailPrice,
+    pnl,
+    pnlAmt,
+    action,
+    cls,
+    glow,
+    note
+  };
 }
 
 function updateHoldings(){
@@ -917,6 +566,7 @@ function updateHoldings(){
   }
 
   holdings = holdings.map(calcHolding);
+
   box.innerHTML = holdings.map((h,i)=>`
     <div class="holdCard ${h.glow}">
       <div class="holdHead">
@@ -935,12 +585,14 @@ function updateHoldings(){
         <div class="kpi"><div class="k">停損價</div><div class="v">${fmt(h.stop,2)}</div></div>
         <div class="kpi"><div class="k">停利1</div><div class="v">${fmt(h.tp1,2)}</div></div>
         <div class="kpi"><div class="k">停利2</div><div class="v">${fmt(h.tp2,2)}</div></div>
-        <div class="kpi"><div class="k">移動停利價</div><div class="v">${fmt(h.trailPrice,2)}</div></div>
+        <div class="kpi"><div class="k">移動停利價</div><div class="v">${h.trailPrice === null ? '未啟動' : fmt(h.trailPrice,2)}</div></div>
       </div>
 
       <div class="reason">
         <b>今日要做：</b>${h.action}<br>
         ${h.note}<br>
+        <b>最高價：</b>${fmt(h.highest,2)}｜
+        <b>移動停利：</b>${h.trailPrice === null ? '未啟動（尚未達停利1）' : fmt(h.trailPrice,2)}<br>
         <b>距離停損：</b>${pct(((h.current-h.stop)/h.current*100),2)}｜
         <b>距離停利1：</b>${pct(((h.tp1-h.current)/h.current*100),2)}
       </div>
@@ -955,6 +607,7 @@ function updateHoldings(){
   const dangerCount = holdings.filter(h=>h.cls==='danger').length;
   const warnCount = holdings.filter(h=>h.cls==='warn').length;
   $('mAlert').textContent = dangerCount ? '紅色警報' : warnCount ? '注意' : '安全';
+
   updateSystemTable();
 }
 
@@ -1032,7 +685,7 @@ function updateCommandCenter(){
       modeClass = 'danger';
     } else if(warnCount){
       cmd = '重點盯停利區';
-      sub = '持倉接近停利或已達第一停利，今天重點看續強與回撤。';
+      sub = '持倉接近停利、移動停利監控中，或已達第一停利。';
       mode = '收割模式';
       modeClass = 'warn';
     } else {
@@ -1101,16 +754,19 @@ function clearAll(){
   $('rankBody').innerHTML = '<tr><td colspan="11" class="small">尚未分析。</td></tr>';
   $('localSummary').textContent = '尚未分析。';
   $('aiSummary').textContent = '尚未解析 AI 結果。';
+
   localPicks = [];
   aiCodes = [];
   finalPicks = [];
   holdings = [];
   decisionSource = '—';
   flowState = {csvAnalyzed:false,promptCopied:false,aiParsed:false,decided:false};
+
   $('mLocal').textContent = '—';
   $('mAi').textContent = '—';
   $('mFinal').textContent = '—';
   $('mAlert').textContent = '待命';
+
   setFlowMessage('系統已清空，重新開始。');
   updateFinalCards();
   updateHoldings();
@@ -1137,12 +793,15 @@ function saveLocal(){
   };
   localStorage.setItem(STORE, JSON.stringify(data));
 }
+
 function loadLocal(){
   try{
     const data = JSON.parse(localStorage.getItem(STORE) || '{}');
     if(!data || !Object.keys(data).length) return;
+
     $('csvInput').value = data.csvInput || '';
     $('aiInput').value = data.aiInput || '';
+
     if(data.sliders){
       $('stopSlider').value = data.sliders.stop || 7;
       $('tp1Slider').value = data.sliders.tp1 || 10;
@@ -1151,6 +810,7 @@ function loadLocal(){
       $('allocSlider').value = data.sliders.alloc || 60;
       $('capitalSlider').value = data.sliders.capital || 20;
     }
+
     localPicks = Array.isArray(data.localPicks) ? data.localPicks : [];
     aiCodes = Array.isArray(data.aiCodes) ? data.aiCodes : [];
     finalPicks = Array.isArray(data.finalPicks) ? data.finalPicks : [];
@@ -1176,9 +836,11 @@ function loadLocal(){
           <td>${pct(r.dev,2)}</td>
           <td>${r.score}</td>
           <td>${r.status}</td>
-        </tr>`).join('');
+        </tr>
+      `).join('');
       $('localSummary').innerHTML = `本地前段班：<b>${localPicks.slice(0,3).map(x=>`${x.symbol} ${x.name||''}`).join('、')}</b>`;
     }
+
     if(aiCodes.length){
       $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b>`;
     }
@@ -1206,5 +868,3 @@ updateCommandCenter();
 updateLocks();
 updateConfidence();
 </script>
-</body>
-</html>
