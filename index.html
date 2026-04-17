@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max｜最終版</title>
+<title>AI 戰艦 Pro Max｜升級最終版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -53,16 +53,29 @@ body:before{
   box-shadow:0 12px 40px rgba(0,0,0,.36);
 }
 .topbarInner{
-  max-width:1540px;margin:0 auto;display:flex;justify-content:space-between;gap:16px;align-items:flex-start
+  max-width:1540px;
+  margin:0 auto;
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:flex-start;
 }
 .brandTitle{
-  display:flex;align-items:center;gap:10px;
-  font-size:18px;font-weight:900;letter-spacing:.04em;text-transform:uppercase
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:.04em;
+  text-transform:uppercase;
 }
 .brandSub{margin-top:4px;color:var(--muted);font-size:12px}
 .quickBadges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .badge{
-  padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800;
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
   border:1px solid var(--line);
 }
@@ -87,7 +100,10 @@ body:before{
   overflow:hidden;
 }
 .panel:before{
-  content:"";position:absolute;inset:0;pointer-events:none;
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
   background:linear-gradient(120deg, rgba(255,255,255,.03), transparent 26%, transparent 74%, rgba(255,255,255,.02));
 }
 .sectionTitle{margin:0 0 12px;font-size:18px;font-weight:900;display:flex;align-items:center;gap:8px}
@@ -96,15 +112,23 @@ body:before{
 .commandMain{font-size:30px;font-weight:900;letter-spacing:.02em}
 .commandSub{font-size:13px;color:var(--muted);margin-top:6px}
 .modeBadge{
-  padding:10px 14px;border-radius:999px;font-size:12px;font-weight:900;
+  padding:10px 14px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
   border:1px solid var(--line);
 }
-.ok{color:var(--green)} .warn{color:var(--yellow)} .danger{color:var(--red)} .info{color:var(--blue)}
+.ok{color:var(--green)}
+.warn{color:var(--yellow)}
+.danger{color:var(--red)}
+.info{color:var(--blue)}
+
 .metrics,.signalGrid,.bridgeGrid{display:grid;gap:12px}
 .metrics{grid-template-columns:repeat(4,1fr);margin-top:14px}
 .signalGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
 .bridgeGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
+
 .metric,.signal,.bridge,.kpi,.stepCard{
   background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.018));
   border:1px solid var(--line);
@@ -113,75 +137,123 @@ body:before{
 }
 .metric .k,.signal .k,.bridge .k,.kpi .k,.stepCard .k{font-size:12px;color:var(--muted)}
 .metric .v,.signal .v,.bridge .v,.kpi .v,.stepCard .v{font-size:24px;font-weight:900;margin-top:6px}
+
 .bar{height:10px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;margin-top:8px}
 .bar>div{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:999px}
+
 label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
 input,textarea{
-  width:100%;background:#09111f;color:var(--text);border:1px solid rgba(160,200,255,.12);
-  border-radius:14px;padding:12px 13px;font:inherit;outline:none;
+  width:100%;
+  background:#09111f;
+  color:var(--text);
+  border:1px solid rgba(160,200,255,.12);
+  border-radius:14px;
+  padding:12px 13px;
+  font:inherit;
+  outline:none;
 }
 input:focus,textarea:focus{
   border-color:rgba(103,232,249,.42);
   box-shadow:0 0 0 3px rgba(103,232,249,.10);
 }
 textarea{min-height:118px;resize:vertical}
+
 .toolbar{display:flex;gap:10px;flex-wrap:wrap}
 button{
-  border:0;border-radius:14px;padding:12px 16px;font:inherit;font-weight:900;cursor:pointer;min-width:120px;
-  background:linear-gradient(135deg,var(--blue),var(--cyan));color:#04111e;
+  border:0;
+  border-radius:14px;
+  padding:12px 16px;
+  font:inherit;
+  font-weight:900;
+  cursor:pointer;
+  min-width:120px;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));
+  color:#04111e;
 }
 button.secondary{
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-  color:var(--text);border:1px solid var(--line)
+  color:var(--text);
+  border:1px solid var(--line);
 }
 button.danger{
   background:linear-gradient(180deg, rgba(248,113,113,.16), rgba(248,113,113,.08));
-  color:#fecaca;border:1px solid rgba(248,113,113,.2)
+  color:#fecaca;
+  border:1px solid rgba(248,113,113,.2);
 }
 button:disabled{opacity:.45;cursor:not-allowed}
+
 .reason{
-  margin-top:12px;padding:12px 14px;border-radius:16px;
+  margin-top:12px;
+  padding:12px 14px;
+  border-radius:16px;
   background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
-  border:1px solid var(--line);line-height:1.7;font-size:13px
+  border:1px solid var(--line);
+  line-height:1.7;
+  font-size:13px;
 }
+
 .rangeWrap{
   background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
-  border:1px solid var(--line);border-radius:18px;padding:12px
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:12px;
 }
 .sliderRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
 .rangeValue{
-  min-width:78px;text-align:center;padding:10px 12px;border-radius:14px;background:#091323;
-  border:1px solid var(--line);font-weight:900
+  min-width:78px;
+  text-align:center;
+  padding:10px 12px;
+  border-radius:14px;
+  background:#091323;
+  border:1px solid var(--line);
+  font-weight:900;
 }
 input[type=range]{padding:0;border:0;background:transparent}
+
 .stockCards,.holdCards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .stockCard,.holdCard{
   background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.014));
   border:1px solid var(--line);
-  border-radius:20px;padding:15px;position:relative;overflow:hidden;
-  box-shadow:var(--shadow)
+  border-radius:20px;
+  padding:15px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:var(--shadow);
 }
 .stockCard:after,.holdCard:after{
-  content:"";position:absolute;right:-45px;top:-45px;width:140px;height:140px;border-radius:50%;
+  content:"";
+  position:absolute;
+  right:-45px;
+  top:-45px;
+  width:140px;
+  height:140px;
+  border-radius:50%;
   background:radial-gradient(circle, rgba(96,165,250,.16), transparent 65%);
 }
 .stockHead,.holdHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .role{font-size:12px;color:var(--cyan);font-weight:900}
 .name{font-size:26px;font-weight:900}
 .tag{
-  display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
   background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-  border:1px solid var(--line);font-size:12px;font-weight:900
+  border:1px solid var(--line);
+  font-size:12px;
+  font-weight:900;
 }
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
 .kpi{padding:10px;text-align:center;background:#091323}
 .glow-green{box-shadow:0 0 0 1px rgba(52,211,153,.20), 0 0 22px rgba(52,211,153,.10), var(--shadow)}
 .glow-yellow{box-shadow:0 0 0 1px rgba(251,191,36,.20), 0 0 22px rgba(251,191,36,.10), var(--shadow)}
 .glow-red{box-shadow:0 0 0 1px rgba(248,113,113,.20), 0 0 22px rgba(248,113,113,.10), var(--shadow)}
+
 .tableWrap{overflow:auto}
 table{width:100%;border-collapse:collapse;min-width:980px}
 th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;text-align:left}
 th{color:var(--muted)}
+
 .lockLine{
   margin-top:10px;
   padding:10px 12px;
@@ -191,6 +263,8 @@ th{color:var(--muted)}
   font-size:12px;
   color:var(--muted);
 }
+.footer{color:var(--muted);font-size:12px;text-align:center;padding:12px 0 6px}
+
 .trailBadge{
   display:inline-flex;
   align-items:center;
@@ -211,7 +285,28 @@ th{color:var(--muted)}
 .dot-green{ background: var(--green); box-shadow:0 0 10px rgba(52,211,153,.55); }
 .dot-yellow{ background: var(--yellow); box-shadow:0 0 10px rgba(251,191,36,.55); }
 .dot-red{ background: var(--red); box-shadow:0 0 10px rgba(248,113,113,.55); }
-.footer{color:var(--muted);font-size:12px;text-align:center;padding:12px 0 6px}
+
+.levelBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:42px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+}
+.roleMark{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-left:8px;
+  font-size:12px;
+  font-weight:900;
+  color:var(--cyan);
+}
 @media (max-width:1200px){
   .hero,.cols2,.cols3,.cols4,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards{grid-template-columns:1fr}
   .kpis{grid-template-columns:repeat(2,1fr)}
@@ -227,13 +322,13 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max｜最終版</div>
-        <div class="brandSub">重裝甲戰艦風格保留，移動停利狀態燈與今日指令升級已整合。</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max｜升級最終版</div>
+        <div class="brandSub">副攻股等級、排名角色標記、移動停利狀態燈、今日指令升級全部整合。</div>
       </div>
       <div class="quickBadges">
         <div class="badge">🔥 一鍵作戰流程</div>
         <div class="badge">🔒 真防呆鎖步驟</div>
-        <div class="badge">📡 信心值</div>
+        <div class="badge">⭐ 主攻 / 🔥 副攻 標記</div>
       </div>
     </div>
   </div>
@@ -244,7 +339,7 @@ th{color:var(--muted)}
       <div class="grid hero">
         <section class="panel">
           <div class="sectionTitle">🚀 戰情總覽</div>
-          <div class="sub">你可以逐步操作，也可以直接按一鍵作戰流程。系統會依序檢查：CSV → 提示詞 → AI解析 → 最終決策。</div>
+          <div class="sub">系統會依序檢查：CSV → 提示詞 → AI解析 → 最終決策。現在也會清楚區分「數據排名」與「主攻 / 副攻角色」。</div>
           <div class="metrics">
             <div class="metric"><div class="k">本地候選</div><div class="v" id="mLocal">—</div></div>
             <div class="metric"><div class="k">AI 候選</div><div class="v" id="mAi">—</div></div>
@@ -300,7 +395,7 @@ th{color:var(--muted)}
           <button id="runFlowBtn">🔥 一鍵作戰流程</button>
           <button id="saveBtn" class="secondary">儲存本機</button>
         </div>
-        <div id="flowMessage" class="reason">系統會依順序檢查：CSV → AI 提示詞 → AI 解析 → 最終決策。缺步驟就直接擋下。</div>
+        <div id="flowMessage" class="reason">系統會依順序檢查：CSV → AI 提示詞 → AI 解析 → 最終決策。</div>
       </section>
 
       <div class="grid cols2" style="margin-top:16px">
@@ -410,15 +505,27 @@ th{color:var(--muted)}
           <table>
             <thead>
               <tr>
-                <th>排名</th><th>股票</th><th>價格</th><th>漲跌%</th><th>相對量</th><th>SMA20</th><th>SMA60</th><th>RSI</th><th>20MA乖離</th><th>分數</th><th>狀態</th>
+                <th>排名</th>
+                <th>股票</th>
+                <th>角色</th>
+                <th>價格</th>
+                <th>漲跌%</th>
+                <th>相對量</th>
+                <th>SMA20</th>
+                <th>SMA60</th>
+                <th>RSI</th>
+                <th>20MA乖離</th>
+                <th>分數</th>
+                <th>等級</th>
+                <th>狀態</th>
               </tr>
             </thead>
-            <tbody id="rankBody"><tr><td colspan="11" class="small">尚未分析。</td></tr></tbody>
+            <tbody id="rankBody"><tr><td colspan="13" class="small">尚未分析。</td></tr></tbody>
           </table>
         </div>
       </section>
 
-      <div class="footer">最終版：移動停利狀態燈、今日指令升級、CSV / AI / 防呆流程全部保留。</div>
+      <div class="footer">升級最終版：副攻等級、角色標記、移動停利狀態燈、今日指令整合完成。</div>
     </div>
   </div>
 </div>
@@ -452,6 +559,26 @@ function getCfg(){
     allocMain: num($('allocSlider').value) ?? 60,
     capital: (num($('capitalSlider').value) ?? 20) * 10000
   };
+}
+
+function getLevel(score){
+  if(score >= 48) return 'S';
+  if(score >= 45) return 'A';
+  if(score >= 42) return 'B';
+  return 'C';
+}
+
+function getRoleOfSymbol(symbol){
+  if(finalPicks[0] && finalPicks[0].symbol === symbol) return 'main';
+  if(finalPicks[1] && finalPicks[1].symbol === symbol) return 'sub';
+  return '';
+}
+
+function getRoleLabel(symbol){
+  const role = getRoleOfSymbol(symbol);
+  if(role === 'main') return '⭐ 主攻';
+  if(role === 'sub') return '🔥 副攻';
+  return '—';
 }
 
 function refreshSliders(){
@@ -492,6 +619,7 @@ function findIdx(map, exact=[], fuzzy=[]){
   }
   return null;
 }
+
 function scoreRow(r){
   let score=0, why=[];
   if(r.price && r.price>15){ score += 8; why.push('價格合格'); } else { score -= 8; why.push('價格偏弱'); }
@@ -527,7 +655,36 @@ function scoreRow(r){
   }
   const s = Math.max(0, Math.min(100, Math.round(score)));
   const status = s>=75 ? '可進攻' : s>=60 ? '偏強' : s>=45 ? '觀察' : '淘汰';
-  return {...r, score:s, status, why};
+  return {...r, score:s, status, why, level:getLevel(s)};
+}
+
+function renderRankTable(){
+  const tbody = $('rankBody');
+  if(!localPicks.length){
+    tbody.innerHTML = `<tr><td colspan="13">沒有可用資料</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = localPicks.map((r,i)=>{
+    const roleLabel = getRoleLabel(r.symbol);
+    return `
+      <tr>
+        <td>${i+1}</td>
+        <td>${r.symbol} ${r.name||''}</td>
+        <td>${roleLabel}</td>
+        <td>${fmt(r.price,2)}</td>
+        <td>${pct(r.change,2)}</td>
+        <td>${fmt(r.relVol,2)}</td>
+        <td>${fmt(r.sma20,2)}</td>
+        <td>${fmt(r.sma60,2)}</td>
+        <td>${fmt(r.rsi,2)}</td>
+        <td>${pct(r.dev,2)}</td>
+        <td>${r.score}</td>
+        <td>${r.level}</td>
+        <td>${r.status}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function analyzeCSV(){
@@ -541,6 +698,7 @@ function analyzeCSV(){
     setFlowMessage('❌ CSV 內容不足。', true);
     return false;
   }
+
   const headers = raw[0].map(x=>String(x).trim());
   const map = {};
   headers.forEach((h,i)=> map[nrm(h)] = i);
@@ -572,20 +730,7 @@ function analyzeCSV(){
     });
   }).filter(x=>x.symbol).sort((a,b)=>b.score-a.score);
 
-  $('rankBody').innerHTML = localPicks.length ? localPicks.map((r,i)=>`
-    <tr>
-      <td>${i+1}</td>
-      <td>${r.symbol} ${r.name||''}</td>
-      <td>${fmt(r.price,2)}</td>
-      <td>${pct(r.change,2)}</td>
-      <td>${fmt(r.relVol,2)}</td>
-      <td>${fmt(r.sma20,2)}</td>
-      <td>${fmt(r.sma60,2)}</td>
-      <td>${fmt(r.rsi,2)}</td>
-      <td>${pct(r.dev,2)}</td>
-      <td>${r.score}</td>
-      <td>${r.status}</td>
-    </tr>`).join('') : `<tr><td colspan="11">沒有可用資料</td></tr>`;
+  renderRankTable();
 
   $('mLocal').textContent = localPicks.length ? localPicks.slice(0,2).map(x=>x.symbol).join(' / ') : '—';
   $('localSummary').innerHTML = localPicks.length
@@ -604,6 +749,7 @@ function analyzeCSV(){
   updateSystemTable();
   updateFinalCards();
   updateCommandCenter();
+  renderRankTable();
   saveLocal();
   return true;
 }
@@ -674,8 +820,11 @@ function decideFinal(){
     if(finalPicks.length < 2 && backup.length) finalPicks.push(backup[0]);
     decisionSource = '交集模式';
   } else {
-    finalPicks = aiCodes.map(code => localPicks.find(x=>x.symbol===code) || {
-      symbol:code,name:'AI 指定',price:null,score:60,status:'AI指定',why:['AI 指定標的'],dev:null
+    finalPicks = aiCodes.map(code => {
+      const found = localPicks.find(x=>x.symbol===code);
+      return found || {
+        symbol:code,name:'AI 指定',price:null,score:60,status:'AI指定',why:['AI 指定標的'],dev:null,level:getLevel(60)
+      };
     });
     decisionSource = 'AI優先';
   }
@@ -688,6 +837,7 @@ function decideFinal(){
   updateSystemTable();
   updateFinalCards();
   updateCommandCenter();
+  renderRankTable();
   saveLocal();
   return true;
 }
@@ -725,7 +875,10 @@ function buildFinalCard(r, i){
           <div class="role">${role}</div>
           <div class="name">${r.symbol} ${r.name||''}</div>
         </div>
-        <div class="tag">${decisionSource}</div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+          <div class="levelBadge">${r.level || getLevel(r.score || 0)}</div>
+          <div class="tag">${decisionSource}</div>
+        </div>
       </div>
 
       <div class="kpis">
@@ -1009,9 +1162,9 @@ function removeHolding(i){
 
 function updateSystemTable(){
   $('systemTable').innerHTML = `
-    <tr><td>決策來源</td><td>${decisionSource}</td><td>${decisionSource==='交集模式' ? '本地與 AI 有交集，可信度最高。' : decisionSource==='AI優先' ? '本地與 AI 分歧，採 AI 指令。' : decisionSource==='本地優先' ? '尚未導入 AI 或 AI 無法判定。' : decisionSource==='本地預設' ? '已先用本地前2名作預設。' : '尚未決策'}</td></tr>
-    <tr><td>主攻股</td><td>${finalPicks[0] ? finalPicks[0].symbol : '—'}</td><td>${finalPicks[0] ? (finalPicks[0].name || '已鎖定') : '尚未產生'}</td></tr>
-    <tr><td>副攻股</td><td>${finalPicks[1] ? finalPicks[1].symbol : '—'}</td><td>${finalPicks[1] ? (finalPicks[1].name || '已鎖定') : '尚未產生'}</td></tr>
+    <tr><td>決策來源</td><td>${decisionSource}</td><td>${decisionSource==='交集模式' ? '本地與 AI 有交集，可做低歧義決策。' : decisionSource==='AI優先' ? '本地與 AI 分歧，採 AI 指令。' : decisionSource==='本地優先' ? '尚未導入 AI 或 AI 無法判定。' : decisionSource==='本地預設' ? '已先用本地前2名作預設。' : '尚未決策'}</td></tr>
+    <tr><td>主攻股</td><td>${finalPicks[0] ? finalPicks[0].symbol : '—'}</td><td>${finalPicks[0] ? `${finalPicks[0].name || '已鎖定'} / 等級 ${finalPicks[0].level || getLevel(finalPicks[0].score || 0)}` : '尚未產生'}</td></tr>
+    <tr><td>副攻股</td><td>${finalPicks[1] ? finalPicks[1].symbol : '—'}</td><td>${finalPicks[1] ? `${finalPicks[1].name || '已鎖定'} / 等級 ${finalPicks[1].level || getLevel(finalPicks[1].score || 0)}` : '尚未產生'}</td></tr>
     <tr><td>總持倉數</td><td>${holdings.length}</td><td>${holdings.length ? '持倉監控已啟動' : '目前無持倉'}</td></tr>
   `;
 }
@@ -1053,8 +1206,8 @@ function updateCommandCenter(){
     modeClass = 'info';
   }
   if(flowState.decided){
-    cmd = '鎖定 1–2 檔，等開盤表態';
-    sub = `目前最終標的是 ${finalPicks.map(x=>x.symbol).join('、')}。不要分散火力。`;
+    cmd = `主攻 ${finalPicks[0]?.symbol || '—'}，副攻 ${finalPicks[1]?.symbol || '—'}`;
+    sub = '排名表反映純數據強弱；主攻 / 副攻反映你的最終戰略角色。';
     mode = decisionSource;
     modeClass = 'ok';
   }
@@ -1121,20 +1274,19 @@ function setFlowMessage(msg, isError=false){
 
 function loadDemo(){
   $('csvInput').value = `商品,描述,價格,價格 - 貨幣,價格變化 % 1天,成交量 1天,相對成交量 1天,簡單移動平均線 (20) 1天,簡單移動平均線 (60) 1天,相對強弱指標 (14) 1天
-8261,富鼎,116,TWD,6.42,5802825,2.79,106.23,99.25,66.98
-3236,千如,35.8,TWD,3.77,14760222,2.77,31.87,31.48,65.38
-3209,全科,47,TWD,2.17,5661955,1.76,43.47,37.97,70.58
-6271,同欣電,185,TWD,1.09,20196785,2.29,159.27,152.40,69.18
-4979,華星光,586,TWD,9.94,32773935,5.95,421.62,368.12,76.85`;
+6415,矽力*-KY,332.5,TWD,9.92,12400000,3.21,310.2,298.5,68.4
+8261,富鼎,127.5,TWD,9.91,15800000,4.26,118.8,106.2,71.0
+6187,萬潤,1215,TWD,9.95,9500000,2.49,1160.0,1085.0,73.2
+6205,詮欣,75,TWD,9.97,8300000,2.98,71.2,66.5,69.5`;
   $('aiInput').value = `主攻股：8261 富鼎
-副攻股：3236 千如`;
+副攻股：6415 矽力*-KY`;
   setFlowMessage('已載入範例資料。');
 }
 
 function clearAll(){
   $('csvInput').value = '';
   $('aiInput').value = '';
-  $('rankBody').innerHTML = '<tr><td colspan="11" class="small">尚未分析。</td></tr>';
+  $('rankBody').innerHTML = '<tr><td colspan="13" class="small">尚未分析。</td></tr>';
   $('localSummary').textContent = '尚未分析。';
   $('aiSummary').textContent = '尚未解析 AI 結果。';
   localPicks = [];
@@ -1173,6 +1325,7 @@ function saveLocal(){
   };
   localStorage.setItem(STORE, JSON.stringify(data));
 }
+
 function loadLocal(){
   try{
     const data = JSON.parse(localStorage.getItem(STORE) || '{}');
@@ -1199,20 +1352,7 @@ function loadLocal(){
     $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
 
     if(localPicks.length){
-      $('rankBody').innerHTML = localPicks.map((r,i)=>`
-        <tr>
-          <td>${i+1}</td>
-          <td>${r.symbol} ${r.name||''}</td>
-          <td>${fmt(r.price,2)}</td>
-          <td>${pct(r.change,2)}</td>
-          <td>${fmt(r.relVol,2)}</td>
-          <td>${fmt(r.sma20,2)}</td>
-          <td>${fmt(r.sma60,2)}</td>
-          <td>${fmt(r.rsi,2)}</td>
-          <td>${pct(r.dev,2)}</td>
-          <td>${r.score}</td>
-          <td>${r.status}</td>
-        </tr>`).join('');
+      renderRankTable();
       $('localSummary').innerHTML = `本地前段班：<b>${localPicks.slice(0,3).map(x=>`${x.symbol} ${x.name||''}`).join('、')}</b>`;
     }
     if(aiCodes.length){
@@ -1241,6 +1381,7 @@ updateHoldings();
 updateCommandCenter();
 updateLocks();
 updateConfidence();
+renderRankTable();
 </script>
 </body>
 </html>
