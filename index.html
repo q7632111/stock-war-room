@@ -2,171 +2,159 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 戰艦 Pro Max v4.9 共振版</title>
-
+<title>AI戰艦 Pro Max v4.9（共振最終版）</title>
 <style>
-body{background:#0b0f1a;color:#fff;font-family:Arial;margin:0}
-.container{padding:16px}
-.card{background:#111827;border-radius:12px;padding:12px;margin-bottom:12px}
-.title{color:#00eaff;margin-bottom:8px}
-
-textarea{width:100%;height:120px;background:#000;color:#0f0}
-button{width:100%;padding:10px;margin-top:8px;background:#00eaff;border:none;border-radius:8px}
-
-.stock{display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid #222}
-
-.badge{padding:2px 6px;border-radius:6px}
-.Splus{background:#00ffe1;color:#000}
-.A{background:#4caf50}
-.B{background:#ff9800}
-.D{background:#f44336}
-
-.lock{color:red}
-.warn{color:orange}
+body{
+  background:#0b0f1a;
+  color:#fff;
+  font-family:Arial;
+  margin:0;
+}
+.container{padding:20px;}
+.card{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
+}
+button{
+  padding:10px 16px;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+}
+.primary{background:#00c3ff;color:#000;}
+.danger{background:#ff4444;}
+textarea{width:100%;height:120px;background:#111;color:#fff;}
+input{background:#111;color:#fff;}
+.grade{font-size:20px;font-weight:bold;}
 </style>
 </head>
 
 <body>
 <div class="container">
 
+<h1>🚀 AI戰艦 Pro Max v4.9</h1>
+
 <div class="card">
-<div class="title">CSV</div>
-<textarea id="csv"></textarea>
-<button onclick="analyze()">開始分析</button>
+<h3>CSV輸入</h3>
+<textarea id="csvInput"></textarea>
+<button class="primary" onclick="analyze()">開始分析</button>
 </div>
 
 <div class="card">
-<div class="title">AI輸入（貼AI選股）</div>
-<textarea id="ai"></textarea>
+<h3>AI覆蓋</h3>
+<textarea id="aiInput"></textarea>
 <button onclick="parseAI()">解析AI</button>
 </div>
 
 <div class="card">
-<div class="title">排名</div>
-<div id="rank"></div>
-</div>
-
-<div class="card">
-<div class="title">最終決策</div>
-<div id="final"></div>
-<button onclick="decision()">一鍵決策</button>
+<h3>結果</h3>
+<div id="result"></div>
 </div>
 
 </div>
 
 <script>
 
-let data=[]
-let aiList=[]
+let localPicks=[]
+let aiCodes=[]
+let finalPicks=[]
+let maxDev=15
 
-// ===== CSV =====
 function analyze(){
-  let rows=csv.value.split('\n').slice(1)
+  const txt=document.getElementById('csvInput').value
+  const rows=txt.split('\n').slice(1)
 
-  data=rows.map(r=>{
-    let c=r.split(',')
-    let price=parseFloat(c[2])
-    let vol=parseFloat(c[6])
-    let sma20=parseFloat(c[17])
-    let rsi=parseFloat(c[19])
-    let dev=((price-sma20)/sma20)*100
+  localPicks=rows.map(r=>{
+    const c=r.split(',')
+    const price=parseFloat(c[2])
+    const sma20=parseFloat(c[16])
+    const dev=((price-sma20)/sma20)*100
 
-    return{code:c[0],name:c[1],price,vol,sma20,rsi,dev}
-  })
-
-  data.forEach(r=>{
-    r.lock=r.dev>15
-    r.score=score(r)
-  })
+    return {
+      symbol:c[0],
+      name:c[1],
+      price,
+      sma20,
+      dev,
+      score:100-dev
+    }
+  }).sort((a,b)=>b.score-a.score)
 
   render()
 }
 
-// ===== AI解析 =====
 function parseAI(){
-  let txt=ai.value
-  let codes=txt.match(/\d{4}/g)||[]
+  const txt=document.getElementById('aiInput').value
+  const raw=txt.match(/\d{4,6}/g)||[]
 
-  aiList=codes
+  const valid=new Set(localPicks.map(x=>x.symbol))
+
+  aiCodes=[...new Set(raw.filter(c=>{
+    const s=localPicks.find(x=>x.symbol==c)
+    return valid.has(c)&&(!s.dev||s.dev<=maxDev)
+  }))].slice(0,2)
+
+  render()
 }
 
-// ===== 評分 =====
-function score(r){
-  let s=0
-  if(r.dev<5)s+=30
-  else if(r.dev<10)s+=20
-  else if(r.dev<15)s+=10
-  else s-=30
+function getGrade(s){
+  const inLocal=localPicks.slice(0,2).some(x=>x.symbol==s.symbol)
+  const inAI=aiCodes.includes(s.symbol)
 
-  if(r.rsi<70)s+=20
-  if(r.vol>2)s+=20
+  if(s.dev>maxDev) return {g:'D',t:'🚨禁追'}
 
-  return s
+  if(inLocal&&inAI) return {g:'S+',t:'🔥共振'}
+  if(inLocal) return {g:'A',t:'📊本地'}
+  if(inAI) return {g:'B',t:'🧠AI'}
+
+  return {g:'D',t:'淘汰'}
 }
 
-// ===== 排名 =====
+function decide(){
+  const ranked=localPicks.map(s=>{
+    const g=getGrade(s)
+    let sc=s.score
+
+    if(g.g=='S+') sc+=50
+    if(g.g=='A') sc+=20
+    if(g.g=='B') sc+=5
+    if(g.g=='D') sc-=100
+
+    return {...s,finalScore:sc,grade:g}
+  }).sort((a,b)=>b.finalScore-a.finalScore)
+
+  finalPicks=ranked.slice(0,2)
+}
+
 function render(){
-  data.sort((a,b)=>b.score-a.score)
+  decide()
 
-  rank.innerHTML=data.map(r=>`
-  <div class="stock">
-    <div>${r.code} ${r.name}</div>
-    <div>
-      ${r.lock?'<span class="lock">🚨</span>':''}
-    </div>
-  </div>`).join('')
-}
+  const box=document.getElementById('result')
+  box.innerHTML=''
 
-// ===== 決策 =====
-function decision(){
+  finalPicks.forEach(s=>{
+    const g=s.grade
 
-  let picks=data.filter(r=>!r.lock)
+    const color={
+      'S+':'#00ffcc',
+      'A':'#66ccff',
+      'B':'#ffcc00',
+      'D':'#ff4444'
+    }[g.g]
 
-  picks.forEach(r=>{
-    let inAI=aiList.includes(r.code)
-
-    if(inAI && !r.lock){
-      r.final="S+"
-      r.priority=3
-    }
-    else if(!r.lock){
-      r.final="A"
-      r.priority=2
-    }
-    else if(inAI){
-      r.final="B"
-      r.priority=1
-    }
-    else{
-      r.final="D"
-      r.priority=0
-    }
+    box.innerHTML+=`
+      <div class="card">
+        <div>${s.symbol} ${s.name}</div>
+        <div class="grade" style="color:${color}">
+          ${g.g}（${g.t}）
+        </div>
+        <div>乖離：${s.dev.toFixed(2)}%</div>
+      </div>
+    `
   })
-
-  picks.sort((a,b)=>b.priority-a.priority)
-
-  let top=picks.slice(0,2)
-
-  let html=""
-
-  top.forEach(r=>{
-    let warn=""
-    if(aiList.includes(r.code) && r.priority<3){
-      warn="⚠️ AI與量化不一致"
-    }
-
-    html+=`
-    <div>
-    ${r.code} ${r.name}
-    <span class="badge ${r.final=='S+'?'Splus':r.final}">
-    ${r.final}
-    </span>
-    ${warn}
-    </div>`
-  })
-
-  final.innerHTML=html
 }
 
 </script>
