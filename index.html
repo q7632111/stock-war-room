@@ -1613,6 +1613,11 @@ function renderRankTable(){
 }
 
 function analyzeCSV(){
+  if(!marketConfirmed){
+    setFlowMessage('❌ 請先完成今日市場確認（Step 1），再開始分析 CSV。', true);
+    updateLocks();
+    return false;
+  }
   const text = $('csvInput').value.trim();
   if(!text){
     setFlowMessage('❌ 先貼 CSV 才能開始分析。', true);
@@ -2688,6 +2693,7 @@ function updateRiskAlerts(){
   const lockedCount = localPicks.filter(isLockedStock).length;
   const warPct = getCfg().warChestPct;
   const market = getMarketState();
+  const riskInfo = getTotalExposureInfo();
 
   if(dangerList.length){
     alerts.push({ type:'red', text:`🔴 高風險：目前有 ${dangerList.length} 檔進入紅色警戒，優先處理 ${dangerList.map(x=>x.symbol).join('、')}。` });
@@ -2704,10 +2710,10 @@ function updateRiskAlerts(){
   if(totalPnlAmt < 0 && Math.abs(totalPnlAmt) >= 3000){
     alerts.push({ type:'red', text:`🔻 總損益壓力：目前整體損益 ${fmt(totalPnlAmt,0)}，今晚要偏防守，不要新增高風險單。` });
   }
-  if(holdings.length && totalRisk.riskPct > 6){
-    alerts.push({ type:'red', text:`🧨 總曝險過高：目前若全部持倉打到停損，帳戶理論風險約 ${pct(totalRisk.riskPct,2)}。今晚禁止開新倉。` });
-  } else if(holdings.length && totalRisk.riskPct > 3){
-    alerts.push({ type:'yellow', text:`⚠️ 總曝險注意：目前總曝險約 ${pct(totalRisk.riskPct,2)}，新倉應保守。` });
+  if(holdings.length && riskInfo.riskPct > 6){
+    alerts.push({ type:'red', text:`🧨 總曝險過高：目前若全部持倉打到停損，帳戶理論風險約 ${pct(riskInfo.riskPct,2)}。今晚禁止開新倉。` });
+  } else if(holdings.length && riskInfo.riskPct > 3){
+    alerts.push({ type:'yellow', text:`⚠️ 總曝險注意：目前總曝險約 ${pct(riskInfo.riskPct,2)}，新倉應保守。` });
   }
   if(holdings.length && avgPnl > 4 && dangerList.length===0){
     alerts.push({ type:'green', text:`🟢 戰況穩定：目前平均報酬 ${pct(avgPnl,2)}，可以持有續強，但仍要守紀律。` });
@@ -2910,6 +2916,7 @@ $('applyMarketBtn').addEventListener('click', ()=>{
   updateMarketPanelSummary();
   updateLocks();
   updateCommandCenter();
+  setFlowMessage('⚠️ 市場條件已變更，請重新按「套用市場判斷」後再分析與決策。', true);
 }));
 ['marketRiseCount','marketFallCount'].forEach(id=>$(id).addEventListener('input', ()=>{
   marketConfirmed = false;
