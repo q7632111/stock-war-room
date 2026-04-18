@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max v6.1｜市場鎖死版</title>
+<title>AI 戰艦 Pro Max v6.2｜紀律強化版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -104,7 +104,7 @@ body:before{
 .metrics{grid-template-columns:repeat(4,1fr);margin-top:14px}
 .signalGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
 .bridgeGrid{grid-template-columns:repeat(4,1fr);margin-top:16px}
-.hudGrid{grid-template-columns:repeat(5,1fr)}
+.hudGrid{grid-template-columns:repeat(6,1fr)}
 .tacticGrid{grid-template-columns:repeat(4,1fr)}
 .riskGrid{grid-template-columns:1.15fr .85fr}
 .heatGrid{grid-template-columns:repeat(3,1fr)}
@@ -329,7 +329,7 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6.1｜市場鎖死版</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6.2｜紀律強化版</div>
         <div class="brandSub">S+ 共振優先、自適應市場判斷、動態乖離門檻、AI 代碼過濾、TP/SL 自動建議、戰場視覺與雲端同步整合。</div>
       </div>
       <div class="quickBadges">
@@ -389,6 +389,11 @@ th{color:var(--muted)}
             <div class="k">戰備資金</div>
             <div class="v" id="hudWarChest">—</div>
             <div class="small" id="hudWarChestSub">尚未計算</div>
+          </div>
+          <div class="hudCard">
+            <div class="k">總曝險</div>
+            <div class="v" id="hudTotalRisk">—</div>
+            <div class="small" id="hudTotalRiskSub">未確認持倉風險</div>
           </div>
         </div>
 
@@ -470,7 +475,8 @@ th{color:var(--muted)}
         <div class="toolbar" style="margin-top:12px">
           <button id="applyMarketBtn" class="secondary">套用市場判斷</button>
         </div>
-        <div id="marketPanelSummary" class="reason" style="margin-top:12px">目前尚未套用市場條件，將使用預設：OTC / 在20MA上 / RSI 55~65 / 漲跌家數未填（視為混合）。</div>
+        <div id="marketPanelSummary" class="reason" style="margin-top:12px">今日尚未確認市場條件。請先依券商 OTC00 填完面板並按「套用市場判斷」，系統才會解鎖分析。</div>
+        <div id="marketLockLine" class="lockLine" style="margin-top:10px">🔒 今日市場尚未確認，開始分析與一鍵流程已鎖定。</div>
       </section>
 
       <div class="grid hero" style="margin-top:16px">
@@ -690,6 +696,7 @@ let finalPicks = [];
 let holdings = [];
 let decisionSource = '—';
 let flowState = { csvAnalyzed:false, promptCopied:false, aiParsed:false, decided:false };
+let marketConfirmed = false;
 
 const DEFAULT_MARKET_FORM = {
   marketBasis:'OTC',
@@ -788,8 +795,51 @@ function normalizeHolding(row){
     sourceGrade: String(row.sourceGrade || '').trim(),
     sourceLabel: String(row.sourceLabel || '').trim(),
     marketLabel: String(row.marketLabel || '').trim(),
+    entryDate: row.entryDate || '',
     updatedAt: row.updatedAt || ''
   };
+}
+function getTodayDateString(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function calcHoldingDays(entryDate){
+  if(!entryDate) return null;
+  const start = new Date(entryDate + 'T00:00:00');
+  if(Number.isNaN(start.getTime())) return null;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(1, Math.floor((today - start) / 86400000) + 1);
+}
+function getSwapStatus(h){
+  const days = calcHoldingDays(h.entryDate);
+  if(days === null){
+    return {label:'未計時', className:'info', note:'尚未記錄買入日期，暫不啟動換牌規則。'};
+  }
+
+  const pnl = Number(h.pnl) || 0;
+  const highest = Number(h.highest) || Number(h.current) || Number(h.buy) || 0;
+  const buy = Number(h.buy) || 0;
+  const bouncedToCost = Number(h.current) >= buy;
+  const madeMeaningfulHigh = buy > 0 ? highest >= buy * 1.03 : false;
+
+  if(days <= 5){
+    if(pnl <= -5) return {label:'提前警戒', className:'danger', note:'前 5 天就出現明顯虧損，這張牌偏弱，該提高警覺。'};
+    return {label:'給機會', className:'ok', note:'前 5 天屬於觀察期，先給它表態空間，不急著換牌。'};
+  }
+  if(days <= 10){
+    if(!bouncedToCost) return {label:'換牌候選', className:'warn', note:'第 6~10 天還沒回到成本附近，資金效率偏低，可列入換牌候選。'};
+    return {label:'續抱觀察', className:'ok', note:'第 6~10 天已回到成本附近，先保留，等它選方向。'};
+  }
+  if(days <= 20){
+    if(!madeMeaningfulHigh && pnl < 2) return {label:'建議換牌', className:'danger', note:'超過 10 天還沒創出像樣高點，這張牌大概率不是快節奏強勢股。'};
+    return {label:'留牌', className:'ok', note:'超過 10 天後仍有創高能力，可繼續留牌，交給趨勢處理。'};
+  }
+  if(pnl >= 0) return {label:'波段觀察', className:'info', note:'持有超過 20 天且已不虧，可轉為波段觀察，不必急著汰換。'};
+  return {label:'拖牌過久', className:'danger', note:'持有超過 20 天仍未脫離弱勢，建議直接換牌，把資金留給更強的牌。'};
 }
 function clamp(v,min,max){
   return Math.min(max, Math.max(min, v));
@@ -922,12 +972,16 @@ function addHolding(){
     refTrailPct: strategyRef?.refTrailPct ?? null,
     sourceGrade: strategyRef?.sourceGrade ?? '',
     sourceLabel: strategyRef?.sourceLabel ?? '',
-    marketLabel: strategyRef?.marketLabel ?? getMarketState().label
+    marketLabel: strategyRef?.marketLabel ?? getMarketState().label,
+    entryDate: getTodayDateString()
   };
 
   const existing = holdings.find(h=>h.symbol===symbol);
   if(existing){
-    Object.assign(existing, payload, { highest: Math.max(existing.highest ?? current, current) });
+    Object.assign(existing, payload, {
+      highest: Math.max(existing.highest ?? current, current),
+      entryDate: existing.entryDate || payload.entryDate
+    });
   }else{
     holdings.push(payload);
   }
@@ -951,6 +1005,31 @@ function getWarChestCapital(){
   const cfg = getCfg();
   return Math.round(cfg.capital * (cfg.warChestPct / 100));
 }
+function getTotalExposureInfo(){
+  const cfg = getCfg();
+  const capital = cfg.capital || 0;
+  if(!holdings.length || !capital){
+    return { riskAmt:0, riskPct:0, label:'🟢 安全', className:'ok', note:'目前尚無持倉總曝險。' };
+  }
+  const riskAmt = holdings.reduce((sum,h)=>{
+    const buy = Number(h.buy)||0;
+    const stop = Number(h.stop)||0;
+    if(!buy || !stop || stop >= buy) return sum;
+    return sum + (buy - stop) * 1000;
+  },0);
+  const riskPct = capital ? (riskAmt / capital) * 100 : 0;
+  let label = '🟢 安全', className = 'ok', note = '總曝險低，可維持正常節奏。';
+  if(riskPct > 6){
+    label = '🔴 過高';
+    className = 'danger';
+    note = '總曝險高於 6%，禁止開新倉或應降低部位風險。';
+  }else if(riskPct > 3){
+    label = '🟡 注意';
+    className = 'warn';
+    note = '總曝險進入注意區，今晚應降低新倉衝動。';
+  }
+  return { riskAmt, riskPct, label, className, note };
+}
 function getMarketState(){
   const basis = $('marketBasis')?.value || 'OTC';
   const trend = $('marketTrend')?.value || 'above';
@@ -965,14 +1044,20 @@ function getMarketState(){
 
   if(trend === 'below' && (rsiBand === 'lt45' || breadth.key === 'weak')){
     state = { key:'weak', label:'🛡 保守', badge:'🌡 市場模式：保守', maxDev:10, tpBoost:-2, slBoost:-1, trailBoost:-1 };
+  } else if(trend === 'below'){
+    state = { key:'weak', label:'🛡 保守', badge:'🌡 市場模式：保守', maxDev:10, tpBoost:-2, slBoost:-1, trailBoost:-1 };
+  } else if(trend === 'near' && breadth.key === 'weak'){
+    state = { key:'weak', label:'🛡 近線偏弱', badge:'🌡 市場模式：近線偏弱', maxDev:11, tpBoost:-2, slBoost:-1, trailBoost:-1 };
+  } else if(trend === 'near' && (rsiBand === '65_75' || rsiBand === 'gt75')){
+    state = { key:'hot', label:'🚨 近線過熱', badge:'🌡 市場模式：近線過熱', maxDev:11, tpBoost:-1, slBoost:0, trailBoost:-1 };
+  } else if(trend === 'near'){
+    state = { key:'neutral', label:'⚖️ 近線整理', badge:'🌡 市場模式：近線整理', maxDev:13, tpBoost:-1, slBoost:0, trailBoost:0 };
   } else if(trend === 'above' && rsiBand === 'gt75'){
     state = { key:'hot', label:'🚨 過熱', badge:'🌡 市場模式：過熱', maxDev:12, tpBoost:0, slBoost:0, trailBoost:-1 };
   } else if(trend === 'above' && (rsiBand === '55_65' || rsiBand === '65_75') && breadth.key === 'strong'){
     state = { key:'strong', label:'🔥 強勢', badge:'🌡 市場模式：強勢', maxDev:18, tpBoost:1, slBoost:1, trailBoost:1 };
   } else if(trend === 'above' && (rsiBand === '45_55' || rsiBand === '55_65') && breadth.key === 'mixed'){
     state = { key:'neutral', label:'⚖️ 標準', badge:'🌡 市場模式：標準', maxDev:15, tpBoost:0, slBoost:0, trailBoost:0 };
-  } else if(trend === 'below'){
-    state = { key:'weak', label:'🛡 保守', badge:'🌡 市場模式：保守', maxDev:10, tpBoost:-2, slBoost:-1, trailBoost:-1 };
   } else if(trend === 'above' && breadth.key === 'weak'){
     state = { key:'hot', label:'🚨 過熱', badge:'🌡 市場模式：過熱', maxDev:12, tpBoost:0, slBoost:0, trailBoost:-1 };
   }
@@ -1002,7 +1087,14 @@ function updateMarketPanelSummary(){
   const el = $('marketPanelSummary');
   if(!el) return;
   const state = getMarketState();
-  el.innerHTML = `<b>目前依市場面板鎖死判斷。</b><br>${state.basisLabel} ｜ ${state.trendLabel} ｜ RSI14 ${state.rsiLabel} ｜ ${state.breadthLabel}<br>系統結論：<b>${state.label}</b> ｜ 動態乖離上限 <b>${state.maxDev}%</b>`;
+  const prefix = marketConfirmed ? '<b>✅ 今日市場已確認。</b>' : '<b>⚠️ 今日市場尚未確認。</b>';
+  el.innerHTML = `${prefix}<br>${state.basisLabel} ｜ ${state.trendLabel} ｜ RSI14 ${state.rsiLabel} ｜ ${state.breadthLabel}<br>系統結論：<b>${state.label}</b> ｜ 動態乖離上限 <b>${state.maxDev}%</b>`;
+  const lock = $('marketLockLine');
+  if(lock){
+    lock.textContent = marketConfirmed
+      ? `✅ 已完成今日市場確認：${state.label}。分析功能已解鎖。`
+      : '🔒 今日市場尚未確認，開始分析與一鍵流程已鎖定。';
+  }
 }
 function isLockedStock(r){
   const maxDev = getMaxDev();
@@ -1806,13 +1898,17 @@ function calcHolding(h){
     note='已逼近停損，今天要優先控管。';
   }
 
+  const holdingDays = calcHoldingDays(h.entryDate);
+  const swapStatus = getSwapStatus({ ...h, pnl, current: h.current, highest: h.highest ?? h.current, buy: h.buy, entryDate: h.entryDate });
+
   return {
     ...h, stop, tp1, tp2, trailPrice, pnl, pnlAmt,
     action, cls, glow, note, trailStatus, trailColor, distToStop, distToTp1,
     dynamicStopPct: stopPct, dynamicTp1Pct: tp1Pct, dynamicTp2Pct: tp2Pct, dynamicTrailPct: trailPct,
     effectiveTrailPct, trailStage: adaptiveTrail.trailStage, trailHint: adaptiveTrail.trailHint,
     driftPct: dynamicPlan.driftPct, driftText: dynamicPlan.driftText, driftClass: dynamicPlan.driftClass,
-    refPrice: dynamicPlan.refPrice
+    refPrice: dynamicPlan.refPrice,
+    holdingDays, swapStatus
   };
 }
 function battlePositionPercent(h){
@@ -1915,11 +2011,17 @@ function updateHoldings(){
         <div class="kpi"><div class="k">停利1</div><div class="v">${fmt(h.tp1,2)}</div><div class="small">+${pct(h.dynamicTp1Pct,1).replace('%','')}%</div></div>
         <div class="kpi"><div class="k">停利2</div><div class="v">${fmt(h.tp2,2)}</div><div class="small">+${pct(h.dynamicTp2Pct,1).replace('%','')}%</div></div>
         <div class="kpi"><div class="k">移動停利價</div><div class="v">${h.trailPrice === null ? '未啟動' : fmt(h.trailPrice,2)}</div><div class="small">${h.trailStage}｜回撤 ${pct(h.effectiveTrailPct,1)}</div></div>
+        <div class="kpi"><div class="k">持有天數</div><div class="v">${h.holdingDays ?? '—'}</div><div class="small">${h.entryDate || '未記錄'}</div></div>
+        <div class="kpi"><div class="k">換牌狀態</div><div class="v ${h.swapStatus.className}">${h.swapStatus.label}</div><div class="small">${h.swapStatus.note}</div></div>
       </div>
 
       <div class="reason">
         <b>今日指令：</b>${h.action}<br>
         ${h.note}<br>
+        <b>進場日期：</b>${h.entryDate || '未記錄'}｜
+        <b>持有天數：</b>${h.holdingDays ?? '—'} 天<br>
+        <b>換牌判斷：</b><span class="${h.swapStatus.className}">${h.swapStatus.label}</span>｜
+        <b>換牌說明：</b><span class="${h.swapStatus.className}">${h.swapStatus.note}</span><br>
         <b>策略參考價：</b>${h.refPrice !== null && h.refPrice !== undefined ? fmt(h.refPrice,2) : '—'}｜
         <b>買價偏差：</b><span class="${h.driftClass}">${h.driftPct === null || h.driftPct === undefined ? '尚未比對' : pct(h.driftPct,2)}</span><br>
         <b>偏差提醒：</b><span class="${h.driftClass}">${h.driftText}</span><br>
@@ -2001,13 +2103,21 @@ function updateCommandCenter(){
   $('pressureBar').style.width = pressure + '%';
 
   let cmd = '等待資料';
-  let sub = '請先分析 CSV，再導入 AI，最後監控持倉。';
+  let sub = '請先完成今日市場確認，再分析 CSV、導入 AI，最後監控持倉。';
   let mode = '待機模式';
   let modeClass = 'info';
   let headline = '等待資料進站';
-  let headlineDesc = '先分析 CSV，再導入 AI，最後同步與監控持倉。這裡會直接告訴你今天最該做什麼。';
+  let headlineDesc = '先完成市場確認，再分析 CSV、導入 AI，最後同步與監控持倉。這裡會直接告訴你今天最該做什麼。';
 
-  if(flowState.csvAnalyzed && !flowState.aiParsed){
+  if(!marketConfirmed){
+    cmd = '先確認市場，不准跳步';
+    sub = '先填完 OTC00 市場面板並按「套用市場判斷」，系統才會解鎖分析。';
+    mode = '市場未確認';
+    modeClass = 'danger';
+    headline = '今日市場尚未確認';
+    headlineDesc = '這套系統先看市場再看股票。沒按「套用市場判斷」前，不開放分析與決策。';
+  }
+  else if(flowState.csvAnalyzed && !flowState.aiParsed){
     cmd = '去問 AI，拿回答案';
     sub = '本地排序已完成，現在要讓 AI 做題材與新聞補強。';
     mode = '情報蒐集';
@@ -2068,9 +2178,12 @@ function updateCommandCenter(){
   updateLocks();
 }
 function updateLocks(){
-  $('copyPromptBtn').disabled = !flowState.csvAnalyzed;
-  $('parseAiBtn').disabled = !flowState.csvAnalyzed;
-  $('decideBtn').disabled = !flowState.aiParsed;
+  const marketReady = marketConfirmed;
+  $('analyzeBtn').disabled = !marketReady;
+  $('runFlowBtn').disabled = !marketReady;
+  $('copyPromptBtn').disabled = !marketReady || !flowState.csvAnalyzed;
+  $('parseAiBtn').disabled = !marketReady || !flowState.csvAnalyzed;
+  $('decideBtn').disabled = !marketReady || !flowState.aiParsed;
 
   $('stepCsv').textContent = flowState.csvAnalyzed ? '完成' : '待命';
   $('stepCsvSub').textContent = flowState.csvAnalyzed ? 'CSV 已完成分析' : '尚未分析 CSV';
@@ -2081,18 +2194,24 @@ function updateLocks(){
   $('stepDecision').textContent = flowState.decided ? '完成' : '待命';
   $('stepDecisionSub').textContent = flowState.decided ? '最終標的已鎖定' : '尚未最終決策';
 
-  $('csvLock').textContent = flowState.csvAnalyzed
-    ? '✅ CSV 已分析。乖離 > 15% 的股票會被標紅並鎖單。'
-    : 'CSV 是第一步，其他流程都依賴它。';
+  $('csvLock').textContent = !marketReady
+    ? '🔒 尚未完成今日市場確認，開始分析鎖定。'
+    : flowState.csvAnalyzed
+      ? `✅ CSV 已分析。超過動態上限 ${getMaxDev()}% 的股票會被標紅並鎖單。`
+      : 'CSV 是第一步，其他流程都依賴它。';
 
-  $('aiLock').textContent = !flowState.csvAnalyzed
-    ? '🔒 尚未分析 CSV，AI 流程鎖定。'
-    : !flowState.aiParsed
-      ? '⚠️ 已開放 AI 流程，先貼 AI 回覆並解析。只接受 CSV 存在且未鎖單的代號。'
-      : '✅ AI 已解析，可以做最終決策。';
-  $('globalLockLine').textContent = flowState.decided
-    ? '✅ 主副攻已鎖定。現在重點是同步資料、監控持倉、依智能建議掛單。'
-    : '會依序執行：CSV 分析 → 複製 AI 提示詞 → 解析 AI → 最終決策。';
+  $('aiLock').textContent = !marketReady
+    ? '🔒 市場未確認，AI 流程鎖定。'
+    : !flowState.csvAnalyzed
+      ? '🔒 尚未分析 CSV，AI 流程鎖定。'
+      : !flowState.aiParsed
+        ? '⚠️ 已開放 AI 流程，先貼 AI 回覆並解析。只接受 CSV 存在且未鎖單的代號。'
+        : '✅ AI 已解析，可以做最終決策。';
+  $('globalLockLine').textContent = !marketReady
+    ? '請先完成：市場確認 → CSV 分析 → 複製 AI 提示詞 → 解析 AI → 最終決策。'
+    : flowState.decided
+      ? '✅ 主副攻已鎖定。現在重點是同步資料、監控持倉、依智能建議掛單。'
+      : '會依序執行：市場確認 → CSV 分析 → 複製 AI 提示詞 → 解析 AI → 最終決策。';
 }
 
 function updateHud(){
@@ -2103,6 +2222,10 @@ function updateHud(){
   const market = getMarketState();
   const subText = warPct < 20 ? '⚠️ 低於 20%，建議保守' : '戰備水位正常';
   $('hudWarChestSub').textContent = `${warPct}% ｜ ${subText} ｜ ${market.label}`;
+
+  const risk = getTotalExposureInfo();
+  $('hudTotalRisk').textContent = holdings.length ? pct(risk.riskPct,2) : '—';
+  $('hudTotalRiskSub').innerHTML = holdings.length ? `<span class="${risk.className}">${risk.label}</span> ｜ ${risk.note}` : '未確認持倉風險';
 
   if(!holdings.length){
     $('hudTotalPnl').textContent = '—';
@@ -2201,6 +2324,11 @@ function updateRiskAlerts(){
   }
   if(totalPnlAmt < 0 && Math.abs(totalPnlAmt) >= 3000){
     alerts.push({ type:'red', text:`🔻 總損益壓力：目前整體損益 ${fmt(totalPnlAmt,0)}，今晚要偏防守，不要新增高風險單。` });
+  }
+  if(holdings.length && totalRisk.riskPct > 6){
+    alerts.push({ type:'red', text:`🧨 總曝險過高：目前若全部持倉打到停損，帳戶理論風險約 ${pct(totalRisk.riskPct,2)}。今晚禁止開新倉。` });
+  } else if(holdings.length && totalRisk.riskPct > 3){
+    alerts.push({ type:'yellow', text:`⚠️ 總曝險注意：目前總曝險約 ${pct(totalRisk.riskPct,2)}，新倉應保守。` });
   }
   if(holdings.length && avgPnl > 4 && dangerList.length===0){
     alerts.push({ type:'green', text:`🟢 戰況穩定：目前平均報酬 ${pct(avgPnl,2)}，可以持有續強，但仍要守紀律。` });
@@ -2303,6 +2431,7 @@ function clearAll(){
   $('mFinal').textContent = '—';
   $('mAlert').textContent = '待命';
   applyMarketForm(DEFAULT_MARKET_FORM);
+  marketConfirmed = false;
   setCloudStatus('尚未同步', 'idle');
   setFlowMessage('系統已清空，重新開始。');
   updateFinalCards();
@@ -2372,6 +2501,7 @@ $('holdSymbol').addEventListener('input', updateEntryDriftGuide);
 $('holdBuy').addEventListener('input', updateEntryDriftGuide);
 $('applyMainSuggestBtn').addEventListener('click', applyMainSuggestedMode);
 $('applyMarketBtn').addEventListener('click', ()=>{
+  marketConfirmed = true;
   updateMarketPanelSummary();
   updateMarketBadge();
   updateFinalCards();
@@ -2389,8 +2519,18 @@ $('applyMarketBtn').addEventListener('click', ()=>{
   saveLocal();
   setFlowMessage(`✅ 已套用市場判斷：${getMarketState().label}。`);
 });
-['marketBasis','marketTrend','marketRsiBand','marketRiseCount','marketFallCount'].forEach(id=>$(id).addEventListener('change', updateMarketPanelSummary));
-['marketRiseCount','marketFallCount'].forEach(id=>$(id).addEventListener('input', updateMarketPanelSummary));
+['marketBasis','marketTrend','marketRsiBand','marketRiseCount','marketFallCount'].forEach(id=>$(id).addEventListener('change', ()=>{
+  marketConfirmed = false;
+  updateMarketPanelSummary();
+  updateLocks();
+  updateCommandCenter();
+}));
+['marketRiseCount','marketFallCount'].forEach(id=>$(id).addEventListener('input', ()=>{
+  marketConfirmed = false;
+  updateMarketPanelSummary();
+  updateLocks();
+  updateCommandCenter();
+}));
 
 initApp();
 </script>
