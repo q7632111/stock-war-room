@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max v6.8.2｜主攻修正版</title>
+<title>AI 戰艦 Pro Max v7.0.1｜主攻修正版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -356,7 +356,7 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6.8.2｜主攻修正版</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v7.0.1｜主攻修正版</div>
         <div class="brandSub">S+ 共振優先、自適應市場判斷、動態乖離門檻、AI 代碼過濾、TP/SL 自動建議、戰場視覺與雲端同步整合。</div>
       </div>
       <div class="quickBadges"><div class="badge">作者：q7632111@gmail.com</div>
@@ -1082,6 +1082,7 @@ function clearHoldForm(){
   setHoldGuideMessage('加入持倉時會優先帶入股票名稱。移動停利會在達第一停利後啟動，獲利越大會自動收緊。');
 }
 function addHolding(){
+  
   const symbol = $('holdSymbol').value.trim();
   const buy = num($('holdBuy').value);
   const current = num($('holdCurrent').value);
@@ -1127,6 +1128,7 @@ function addHolding(){
   updateHoldings();
   updateCommandCenter();
   updateHud();
+checkPanicMode();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
@@ -1245,7 +1247,8 @@ function classifyMode(r){
   if(isLockedStock(r)){
     return { mode:'禁追', label:`🚨 禁追（>${market.maxDev}%）`, stop:null, tp1:null, tp2:null, trail:null, className:'danger' };
   }
-  if((r.rsi ?? 0) >= 75 && (r.relVol ?? 0) >= 2.5){
+  const avgV3 = Number.isFinite(r.avgVol3) ? r.avgVol3 : ((r.relVol ?? 0));
+  if((r.rsi ?? 0) >= 75 && (r.relVol ?? 0) >= 2.5 && avgV3 >= 1.25){
     return {
       mode: market.key === 'strong' ? '強勢追擊' : market.key === 'hot' ? '過熱強勢' : '強勢',
       label: market.key === 'strong' ? '🔥 強勢追擊' : market.key === 'hot' ? '🚨 過熱強勢' : '🔥 強勢',
@@ -1430,6 +1433,7 @@ async function loadCloud(){
   renderRankTable();
   updateMarketBadge();
   updateHud();
+checkPanicMode();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
@@ -1523,6 +1527,7 @@ function refreshSliders(shouldSave=true){
   updateFinalCards();
   updateHoldings();
   updateHud();
+checkPanicMode();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
@@ -1606,7 +1611,7 @@ function renderRankTable(){
     const modeInfo = classifyMode(r);
     const locked = isLockedStock(r);
     const resonance = getResonanceInfo(r);
-    const suggest = locked ? `禁止追高（>${getMaxDev()}%）` : `TP ${modeInfo.tp1}% / ${modeInfo.tp2}% ｜ SL -${modeInfo.stop}%`;
+    const suggest = locked ? `禁止追高（>${getMaxDev()}%）` : `TP ${modeInfo.tp1}% / ${modeInfo.tp2}% ｜ SL -${modeInfo.stop}% ｜ R/R ${(modeInfo.tp1/(modeInfo.stop||1)).toFixed(2)}`;
     return `
       <tr style="${locked ? 'background:rgba(248,113,113,.06)' : ''}">
         <td>${i+1}</td>
@@ -1628,6 +1633,7 @@ function renderRankTable(){
 }
 
 function analyzeCSV(){
+  
   if(!marketConfirmed){
     setFlowMessage('❌ 請先完成今日市場確認（Step 1），再開始分析 CSV。', true);
     updateLocks();
@@ -1697,6 +1703,7 @@ function analyzeCSV(){
   updateCommandCenter();
   updateConfidence();
   updateHud();
+checkPanicMode();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
@@ -1723,6 +1730,7 @@ function copyPrompt(){
 }
 
 function parseAI(){
+  
   if(!flowState.csvAnalyzed){
     setFlowMessage('❌ 先分析 CSV，才能解析 AI。', true);
     return false;
@@ -1770,6 +1778,7 @@ function parseAI(){
 }
 
 function decideFinal(){
+  
   if(!flowState.csvAnalyzed){
     setFlowMessage('❌ 先分析 CSV，才能最終決策。', true);
     return false;
@@ -1785,7 +1794,7 @@ function decideFinal(){
   const allCandidates = selectableLocalPicks().slice(0,8).map(x=>{
     const resonance = getResonanceInfo(x);
     const tradable = isTradableCandidate(x);
-    return { ...x, resonance, tradable, finalScore:(x.score ?? 0) + resonance.weight };
+    return { ...x, resonance, tradable, finalScore:(x.score ?? 0) + resonance.weight + ((x.aiScore||0)*0.25) };
   }).sort((a,b)=>b.finalScore-a.finalScore);
 
   const tradableCandidates = allCandidates.filter(x=>x.tradable);
@@ -1822,6 +1831,7 @@ function decideFinal(){
   renderRankTable();
   updateMarketBadge();
   updateHud();
+checkPanicMode();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
@@ -2157,12 +2167,14 @@ function updatePressurePanel(){
 }
 
 function updateHoldings(){
+  
   const box = $('holdCards');
   if(!holdings.length){
     box.innerHTML = '<div class="holdCard"><div class="small">尚未加入持倉。</div></div>';
     $('mAlert').textContent = '待命';
     updateSystemTable();
     updateHud();
+checkPanicMode();
     updateTacticGrid();
     updateRiskAlerts();
     updateHeatMap();
@@ -2255,6 +2267,7 @@ function updateHoldings(){
 
   updateSystemTable();
   updateHud();
+checkPanicMode();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
@@ -2276,6 +2289,7 @@ function removeHolding(i){
   updateHoldings();
   updateCommandCenter();
   updateHud();
+checkPanicMode();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
@@ -2307,7 +2321,7 @@ function classifyTradeMistakes(t){
   if(t.closeReason === 'manual' && pnl < 0){
     tags.push('手動硬砍');
   }
-  if(t.closeReason === 'manual' && pnl > 8 && days >= 10){
+  if(t.closeReason === 'manual' && (t.highestPct ?? 0) >= 15 && pnl <= 5){
     tags.push('拖延出場');
   }
   return tags;
@@ -2472,6 +2486,7 @@ function confirmClosePosition(){
   updateSystemTable();
   updateCommandCenter();
   updateHud();
+checkPanicMode();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
@@ -2627,6 +2642,27 @@ function updateLocks(){
     : flowState.decided
       ? '✅ 主副攻已鎖定。現在重點是同步資料、監控持倉、依智能建議掛單。'
       : '會依序執行：市場確認 → CSV 分析 → 複製 AI 提示詞 → 解析 AI（可 fallback） → 最終決策。';
+}
+
+
+// === v7.0.1 Panic Mode ===
+function checkPanicMode(){
+  const market = getMarketState();
+  const risk = getTotalExposureInfo?.().riskPct || 0;
+  const bigDrop = (market.change || 0) <= -2;
+  const multiLoss = holdings.filter(h => (h.pnlPct||0) <= -5).length >= 2;
+
+  if(bigDrop || multiLoss || risk > 8){
+    document.body.classList.add('panic');
+    document.getElementById('panicBanner')?.remove();
+    const div = document.createElement('div');
+    div.id='panicBanner';
+    div.innerHTML = "🚨 Panic Mode：只執行停損 / 停利";
+    div.style = "position:fixed;top:0;left:0;width:100%;background:red;color:white;text-align:center;padding:8px;z-index:9999;";
+    document.body.appendChild(div);
+  }else{
+    document.body.classList.remove('panic');
+  }
 }
 
 function updateHud(){
@@ -2819,6 +2855,7 @@ function applyMainSuggestedMode(){
 }
 
 function loadDemo(){
+  if(!marketConfirmed){ setFlowMessage('❌ 請先確認市場', true); return; }
   $('csvInput').value = `商品,描述,價格,價格 - 貨幣,價格變化 % 1天,成交量 1天,相對成交量 1天,簡單移動平均線 (20) 1天,簡單移動平均線 (60) 1天,相對強弱指標 (14) 1天
 6415,矽力*-KY,332.5,TWD,9.92,12400000,3.21,310.2,298.5,68.4
 8261,富鼎,127.5,TWD,9.91,15800000,4.26,118.8,106.2,71.0
@@ -2859,6 +2896,7 @@ function clearAll(){
   updateLocks();
   updateConfidence();
   updateHud();
+checkPanicMode();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
@@ -2881,6 +2919,7 @@ async function initApp(){
   renderRankTable();
   updateMarketBadge();
   updateHud();
+checkPanicMode();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
@@ -2934,6 +2973,7 @@ $('applyMarketBtn').addEventListener('click', ()=>{
   updateMarketPanelSummary();
   renderRankTable();
   updateHud();
+checkPanicMode();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
@@ -2957,6 +2997,40 @@ $('applyMarketBtn').addEventListener('click', ()=>{
 }));
 
 initApp();
+
+function failLoudly(err, context='核心運算'){
+  console.error('[AI戰艦 v7.0.1 Hotfix]', context, err);
+  const msg = `🚨 ${context}崩潰，請勿參考目前數據！`;
+  try{
+    const el = document.getElementById('flowMessage') || document.getElementById('flowMsg');
+    if(el) el.innerHTML = `<span class="danger">${msg}</span>`;
+  }catch(_){}
+  let overlay = document.getElementById('crashOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'crashOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(120,0,0,.88);z-index:999999;display:flex;align-items:center;justify-content:center;padding:24px;';
+    overlay.innerHTML = '<div style="max-width:760px;background:#220;padding:24px;border:1px solid rgba(255,255,255,.2);border-radius:16px;color:#fff;text-align:center;font-size:20px;line-height:1.6">🚨 核心運算崩潰<br>請勿依賴目前畫面進行交易<br><div style="font-size:14px;opacity:.85;margin-top:10px">請重新整理頁面並重新確認市場 / CSV / 持倉資料</div></div>';
+    document.body.appendChild(overlay);
+  }
+}
+function safeRun(fn, context='核心運算'){
+  try{ return fn(); }
+  catch(err){ failLoudly(err, context); return null; }
+}
+window.addEventListener('error', function(e){ failLoudly(e.error || e.message, '腳本'); });
+window.addEventListener('unhandledrejection', function(e){ failLoudly(e.reason || 'Promise Error', '非同步腳本'); });
+
+
+['analyzeCSV','addHolding','updateHoldings','decideFinal','parseAI','runFlow'].forEach(function(name){
+  if(typeof window[name] === 'function' && !window[name].__hotfixed){
+    const original = window[name];
+    const wrapped = function(){ return safeRun(() => original.apply(this, arguments), name); };
+    wrapped.__hotfixed = true;
+    window[name] = wrapped;
+  }
+});
+
 </script>
 </body>
 </html>
