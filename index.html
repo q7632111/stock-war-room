@@ -300,6 +300,12 @@ th{color:var(--muted)}
   display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;
   border:1px solid var(--line);background:rgba(255,255,255,.04);
 }
+
+.driftBanner{margin-top:10px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);font-size:12px;line-height:1.7;background:rgba(255,255,255,.03)}
+.driftBanner.ok{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.08);color:#d9fff0}
+.driftBanner.warn{border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.08);color:#fff3cd}
+.driftBanner.danger{border-color:rgba(248,113,113,.30);background:rgba(248,113,113,.10);color:#ffe2e2}
+.driftBanner.info{border-color:rgba(96,165,250,.28);background:rgba(96,165,250,.08);color:#dceeff}
 @media (max-width:1200px){
   .hero,.cols2,.cols3,.cols4,.cols5,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards,.hudGrid,.tacticGrid,.centerCommand,.riskGrid,.heatGrid,.recommendGrid{grid-template-columns:1fr}
   .kpis{grid-template-columns:repeat(2,1fr)}
@@ -779,7 +785,7 @@ function updateEntryDriftGuide(){
   const buy = num($('holdBuy').value);
   const strategyRef = getStrategyRefBySymbol(symbol || finalPicks[0]?.symbol || '');
   if(!strategyRef){
-    setHoldGuideMessage('加入持倉時會優先帶入股票名稱。移動停利只有先達停利1後才會啟動。');
+    setHoldGuideMessage('加入持倉時會優先帶入股票名稱。移動停利會在達第一停利後啟動，獲利越大會自動收緊。');
     return;
   }
   const fallbackCfg = getCfg();
@@ -809,7 +815,7 @@ function clearHoldForm(){
   $('holdSymbol').value = '';
   $('holdBuy').value = '';
   $('holdCurrent').value = '';
-  setHoldGuideMessage('加入持倉時會優先帶入股票名稱。移動停利只有先達停利1後才會啟動。');
+  setHoldGuideMessage('加入持倉時會優先帶入股票名稱。移動停利會在達第一停利後啟動，獲利越大會自動收緊。');
 }
 function addHolding(){
   const symbol = $('holdSymbol').value.trim();
@@ -1574,6 +1580,33 @@ function updateConfidence(){
   $('heatValue').textContent = heat !== null && heat !== undefined ? pct(heat,1) : '—';
 }
 
+
+function getAdaptiveTrailState(buy, highest, tp1, tp2, baseTrailPct, dynamicTp2Pct){
+  let effectiveTrailPct = baseTrailPct;
+  let trailStage = '預備';
+  let trailHint = '尚未達第一停利，移動停利未啟動。';
+
+  if(Number.isFinite(highest) && Number.isFinite(tp1) && highest >= tp1){
+    trailStage = '第一段鎖利';
+    trailHint = `已達第一停利，開始以回撤 ${pct(baseTrailPct,1)} 保護。`;
+  }
+  if(Number.isFinite(highest) && Number.isFinite(tp2) && highest >= tp2){
+    effectiveTrailPct = clamp(baseTrailPct - 1, 1.5, 10);
+    trailStage = '第二段收緊';
+    trailHint = `已達第二停利，移動停利收緊為回撤 ${pct(effectiveTrailPct,1)}。`;
+  }
+  const overRunPrice = Number.isFinite(buy) && Number.isFinite(dynamicTp2Pct)
+    ? buy * (1 + (dynamicTp2Pct + 5) / 100)
+    : null;
+  if(Number.isFinite(highest) && Number.isFinite(overRunPrice) && highest >= overRunPrice){
+    effectiveTrailPct = clamp(baseTrailPct - 2, 1.2, 10);
+    trailStage = '第三段極速鎖利';
+    trailHint = `獲利已明顯擴大，移動停利強化為回撤 ${pct(effectiveTrailPct,1)}。`;
+  }
+
+  return { effectiveTrailPct, trailStage, trailHint };
+}
+
 function calcHolding(h){
   const cfg = getCfg();
 
@@ -1603,7 +1636,9 @@ function calcHolding(h){
     h.trailArmed = true;
   }
 
-  const trailPrice = h.trailArmed ? (h.highest * (1-trailPct/100)) : null;
+  const adaptiveTrail = getAdaptiveTrailState(h.buy, h.highest ?? h.current, tp1, tp2, trailPct, tp2Pct);
+  const effectiveTrailPct = adaptiveTrail.effectiveTrailPct;
+  const trailPrice = h.trailArmed ? (h.highest * (1-effectiveTrailPct/100)) : null;
   const pnl = ((h.current - h.buy) / h.buy) * 100;
   const pnlAmt = (h.current - h.buy) * 1000;
 
@@ -1668,6 +1703,7 @@ function calcHolding(h){
     ...h, stop, tp1, tp2, trailPrice, pnl, pnlAmt,
     action, cls, glow, note, trailStatus, trailColor, distToStop, distToTp1,
     dynamicStopPct: stopPct, dynamicTp1Pct: tp1Pct, dynamicTp2Pct: tp2Pct, dynamicTrailPct: trailPct,
+    effectiveTrailPct, trailStage: adaptiveTrail.trailStage, trailHint: adaptiveTrail.trailHint,
     driftPct: dynamicPlan.driftPct, driftText: dynamicPlan.driftText, driftClass: dynamicPlan.driftClass,
     refPrice: dynamicPlan.refPrice
   };
@@ -1757,6 +1793,10 @@ function updateHoldings(){
           <span class="dot dot-${h.trailColor}"></span>
           <span>移動停利狀態：${h.trailStatus}</span>
         </div>
+        <div class="driftBanner ${h.driftClass}" style="margin-top:10px">
+          <b>${h.driftPct !== null && h.driftPct !== undefined && h.driftPct > 6 ? '🔴 高買風險' : h.driftPct !== null && h.driftPct !== undefined && h.driftPct > 3 ? '🟡 買價偏高' : h.driftPct !== null && h.driftPct !== undefined && h.driftPct < -3 ? '🟢 買價有利' : 'ℹ️ 買價正常'}</b><br>
+          ${h.driftText}
+        </div>
       </div>
 
       <div class="kpis">
@@ -1767,7 +1807,7 @@ function updateHoldings(){
         <div class="kpi"><div class="k">停損價</div><div class="v">${fmt(h.stop,2)}</div><div class="small">-${pct(h.dynamicStopPct,1).replace('%','')}%</div></div>
         <div class="kpi"><div class="k">停利1</div><div class="v">${fmt(h.tp1,2)}</div><div class="small">+${pct(h.dynamicTp1Pct,1).replace('%','')}%</div></div>
         <div class="kpi"><div class="k">停利2</div><div class="v">${fmt(h.tp2,2)}</div><div class="small">+${pct(h.dynamicTp2Pct,1).replace('%','')}%</div></div>
-        <div class="kpi"><div class="k">移動停利價</div><div class="v">${h.trailPrice === null ? '未啟動' : fmt(h.trailPrice,2)}</div><div class="small">回撤 ${pct(h.dynamicTrailPct,1)}</div></div>
+        <div class="kpi"><div class="k">移動停利價</div><div class="v">${h.trailPrice === null ? '未啟動' : fmt(h.trailPrice,2)}</div><div class="small">${h.trailStage}｜回撤 ${pct(h.effectiveTrailPct,1)}</div></div>
       </div>
 
       <div class="reason">
@@ -1776,6 +1816,7 @@ function updateHoldings(){
         <b>策略參考價：</b>${h.refPrice !== null && h.refPrice !== undefined ? fmt(h.refPrice,2) : '—'}｜
         <b>買價偏差：</b><span class="${h.driftClass}">${h.driftPct === null || h.driftPct === undefined ? '尚未比對' : pct(h.driftPct,2)}</span><br>
         <b>偏差提醒：</b><span class="${h.driftClass}">${h.driftText}</span><br>
+        <b>移動停利強化：</b>${h.trailHint}<br>
         <b>最高價：</b>${fmt(h.highest,2)}｜
         <b>移動停利：</b>${h.trailPrice === null ? '未啟動（尚未達停利1）' : fmt(h.trailPrice,2)}<br>
         <b>距離停損：</b>${pct(h.distToStop,2)}｜
