@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max v6.7｜主攻修正版</title>
+<title>AI 戰艦 Pro Max v6.8.2｜主攻修正版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -356,7 +356,7 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6.7｜主攻修正版</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6.8.2｜主攻修正版</div>
         <div class="brandSub">S+ 共振優先、自適應市場判斷、動態乖離門檻、AI 代碼過濾、TP/SL 自動建議、戰場視覺與雲端同步整合。</div>
       </div>
       <div class="quickBadges"><div class="badge">作者：q7632111@gmail.com</div>
@@ -936,7 +936,13 @@ function getTodayDateString(){
   const day = String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
-function calcHoldingDays(entryDate){
+
+function getTrailAnchor(h){
+  const intradayHigh = h.holdHighest || 0;
+  return Math.max(h.highest || 0, intradayHigh, h.current || 0);
+}
+function calcHolding
+Days(entryDate){
   if(!entryDate) return null;
   const start = new Date(entryDate + 'T00:00:00');
   if(Number.isNaN(start.getTime())) return null;
@@ -1991,7 +1997,13 @@ function getAdaptiveTrailState(buy, highest, tp1, tp2, baseTrailPct, dynamicTp2P
   return { effectiveTrailPct, trailStage, trailHint };
 }
 
-function calcHolding(h){
+
+function getTrailAnchor(h){
+  const intradayHigh = h.holdHighest || 0;
+  return Math.max(h.highest || 0, intradayHigh, h.current || 0);
+}
+function calcHolding
+(h){
   const cfg = getCfg();
 
   if(h.current > (h.highest ?? h.current)) h.highest = h.current;
