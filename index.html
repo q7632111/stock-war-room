@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max v6｜市場真實感知版</title>
+<title>AI 戰艦 Pro Max v6.1｜市場鎖死版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -329,8 +329,8 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6｜市場真實感知版</div>
-        <div class="brandSub">獨立市場面板、手動大盤判斷、自適應乖離門檻、S+ 共振優先、AI 代碼過濾、動態 TP/SL 與分段移動停利整合。</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6.1｜市場鎖死版</div>
+        <div class="brandSub">S+ 共振優先、自適應市場判斷、動態乖離門檻、AI 代碼過濾、TP/SL 自動建議、戰場視覺與雲端同步整合。</div>
       </div>
       <div class="quickBadges">
         <div class="badge">⭐ S+ 共振</div>
@@ -348,7 +348,6 @@ th{color:var(--muted)}
         <div class="centerCommand">
           <div class="commandBoard">
             <div class="title">Tactical Center</div>
-            <div style="margin-top:10px"><div id="marketBadge" class="trailBadge"><span class="dot dot-yellow"></span><span>🌡 市場模式：標準</span></div></div>
             <div id="todayCommandHeadline" class="headline">等待資料進站</div>
             <div id="todayCommandDesc" class="desc">先分析 CSV，再導入 AI，最後同步與監控持倉。這裡會直接告訴你今天最該做什麼。</div>
           </div>
@@ -399,54 +398,6 @@ th{color:var(--muted)}
       </section>
 
       <section class="panel" style="margin-top:16px">
-        <div class="sectionTitle">🌡 市場環境面板</div>
-        <div class="sub">不自動抓值。你晚上手動看大盤後，只要填這 4 格，系統就會獨立判斷目前市場熱度，不再用強勢股樣本反推市場。</div>
-        <div class="grid cols5" style="margin-top:14px">
-          <div>
-            <label for="marketIndexName">市場基準</label>
-            <input id="marketIndexName" value="TWII / OTC" placeholder="例如 TWII / OTC">
-          </div>
-          <div>
-            <label for="marketPricePos">指數相對 20MA</label>
-            <select id="marketPricePos">
-              <option value="above">站上 20MA</option>
-              <option value="near" selected>貼近 20MA</option>
-              <option value="below">跌破 20MA</option>
-            </select>
-          </div>
-          <div>
-            <label for="marketRsiState">大盤 RSI 區間</label>
-            <select id="marketRsiState">
-              <option value="strong">> 60</option>
-              <option value="neutral" selected>50 ~ 60</option>
-              <option value="weak">&lt; 50</option>
-            </select>
-          </div>
-          <div>
-            <label for="marketBreadthState">漲跌家數</label>
-            <select id="marketBreadthState">
-              <option value="up">上漲家數明顯較多</option>
-              <option value="mixed" selected>差不多 / 混合</option>
-              <option value="down">下跌家數明顯較多</option>
-            </select>
-          </div>
-          <div>
-            <label for="marketModeOverride">市場模式</label>
-            <select id="marketModeOverride">
-              <option value="auto" selected>自動判斷</option>
-              <option value="strong">手動改成 強勢</option>
-              <option value="neutral">手動改成 標準</option>
-              <option value="weak">手動改成 保守</option>
-            </select>
-          </div>
-        </div>
-        <div class="toolbar" style="margin-top:12px">
-          <button id="applyMarketBtn" class="secondary">套用市場判斷</button>
-        </div>
-        <div id="marketJudgeBox" class="reason">尚未特別調整，預設以中性市場處理。</div>
-      </section>
-
-      <section class="panel" style="margin-top:16px">
         <div class="sectionTitle">⚠️ 風險警告與倉位熱力</div>
         <div class="riskGrid">
           <div class="riskBox">
@@ -477,6 +428,49 @@ th{color:var(--muted)}
             <div id="heatMiniList" class="heatMini"></div>
           </div>
         </div>
+      </section>
+
+      <section class="panel" style="margin-top:16px">
+        <div class="sectionTitle">🌡️ 市場環境鎖死面板</div>
+        <div class="sub">固定用券商 APP 的櫃買指數（OTC00）做市場判斷。只填 4 個欄位：市場基準、相對 20MA、RSI14 區間、漲跌家數。系統會依固定規則自動判斷：🔥 強勢 / ⚖️ 標準 / 🚨 過熱 / 🛡 保守。</div>
+        <div class="grid cols4" style="margin-top:14px">
+          <div>
+            <label for="marketBasis">市場基準</label>
+            <select id="marketBasis">
+              <option value="OTC" selected>OTC 櫃買指數（預設）</option>
+              <option value="TWII">TWII 台灣加權指數</option>
+            </select>
+          </div>
+          <div>
+            <label for="marketTrend">指數相對 20MA</label>
+            <select id="marketTrend">
+              <option value="above" selected>✔ 在 20MA 上</option>
+              <option value="near">⚖️ 貼近 20MA</option>
+              <option value="below">❄️ 跌破 20MA</option>
+            </select>
+          </div>
+          <div>
+            <label for="marketRsiBand">RSI14 區間</label>
+            <select id="marketRsiBand">
+              <option value="lt45">&lt; 45（弱）</option>
+              <option value="45_55">45 ~ 55（中性）</option>
+              <option value="55_65" selected>55 ~ 65（偏強）</option>
+              <option value="65_75">65 ~ 75（強）</option>
+              <option value="gt75">&gt; 75（過熱）</option>
+            </select>
+          </div>
+          <div>
+            <label for="marketRiseCount">券商漲跌家數（差值法）</label>
+            <div class="grid cols2" style="gap:10px">
+              <input id="marketRiseCount" type="number" min="0" step="1" placeholder="漲家數，例如 362">
+              <input id="marketFallCount" type="number" min="0" step="1" placeholder="跌家數，例如 376">
+            </div>
+          </div>
+        </div>
+        <div class="toolbar" style="margin-top:12px">
+          <button id="applyMarketBtn" class="secondary">套用市場判斷</button>
+        </div>
+        <div id="marketPanelSummary" class="reason" style="margin-top:12px">目前尚未套用市場條件，將使用預設：OTC / 在20MA上 / RSI 55~65 / 漲跌家數未填（視為混合）。</div>
       </section>
 
       <div class="grid hero" style="margin-top:16px">
@@ -680,7 +674,7 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">v6 市場真實感知版：保留重裝甲戰情室 UI，加入獨立市場面板、手動大盤判斷、自適應乖離、S+ 共振、智慧帶入、動態 TP/SL 與分段移動停利。</div>
+      <div class="footer">v6.1 市場鎖死版：OTC / TWII 市場面板、固定 RSI14 / 漲跌家數規則、S+ 共振、動態乖離門檻與戰備資金整合完成。</div>
     </div>
   </div>
 </div>
@@ -696,6 +690,41 @@ let finalPicks = [];
 let holdings = [];
 let decisionSource = '—';
 let flowState = { csvAnalyzed:false, promptCopied:false, aiParsed:false, decided:false };
+
+const DEFAULT_MARKET_FORM = {
+  marketBasis:'OTC',
+  marketTrend:'above',
+  marketRsiBand:'55_65',
+  marketRiseCount:'',
+  marketFallCount:''
+};
+
+function getMarketForm(){
+  return {
+    marketBasis: $('marketBasis')?.value || 'OTC',
+    marketTrend: $('marketTrend')?.value || 'above',
+    marketRsiBand: $('marketRsiBand')?.value || '55_65',
+    marketRiseCount: $('marketRiseCount')?.value || '',
+    marketFallCount: $('marketFallCount')?.value || ''
+  };
+}
+function applyMarketForm(form={}){
+  const f = { ...DEFAULT_MARKET_FORM, ...(form||{}) };
+  if($('marketBasis')) $('marketBasis').value = f.marketBasis;
+  if($('marketTrend')) $('marketTrend').value = f.marketTrend;
+  if($('marketRsiBand')) $('marketRsiBand').value = f.marketRsiBand;
+  if($('marketRiseCount')) $('marketRiseCount').value = f.marketRiseCount;
+  if($('marketFallCount')) $('marketFallCount').value = f.marketFallCount;
+}
+function getBreadthState(){
+  const rise = num($('marketRiseCount')?.value);
+  const fall = num($('marketFallCount')?.value);
+  if(!Number.isFinite(rise) || !Number.isFinite(fall)) return { key:'mixed', label:'⚖️ 混合', diff:null };
+  const diff = rise - fall;
+  if(diff > 100) return { key:'strong', label:`🔥 漲多於跌（+${diff}）`, diff };
+  if(diff < -100) return { key:'weak', label:`❄️ 跌多於漲（${diff}）`, diff };
+  return { key:'mixed', label:`⚖️ 混合（${diff >= 0 ? '+' : ''}${diff}）`, diff };
+}
 
 function num(v){ const n = Number(String(v ?? '').replace(/,/g,'')); return Number.isFinite(n) ? n : null; }
 function fmt(n,d=2){ return n===null || n===undefined || Number.isNaN(n) ? '—' : Number(n).toLocaleString('zh-TW',{maximumFractionDigits:d}); }
@@ -922,59 +951,43 @@ function getWarChestCapital(){
   const cfg = getCfg();
   return Math.round(cfg.capital * (cfg.warChestPct / 100));
 }
-function getMarketInputs(){
-  return {
-    indexName: $('marketIndexName')?.value?.trim() || 'TWII / OTC',
-    pricePos: $('marketPricePos')?.value || 'near',
-    rsiState: $('marketRsiState')?.value || 'neutral',
-    breadthState: $('marketBreadthState')?.value || 'mixed',
-    override: $('marketModeOverride')?.value || 'auto'
-  };
-}
-function buildMarketState(key, source='auto', inputs=null){
-  const map = {
-    strong: { key:'strong', label:'🔥 強勢', badge:'🌡 市場模式：強勢', maxDev:22, tpBoost:2, slBoost:1, trailBoost:1 },
-    neutral: { key:'neutral', label:'⚖️ 標準', badge:'🌡 市場模式：標準', maxDev:15, tpBoost:0, slBoost:0, trailBoost:0 },
-    weak: { key:'weak', label:'🛡 保守', badge:'🌡 市場模式：保守', maxDev:10, tpBoost:-2, slBoost:-1, trailBoost:-1 }
-  };
-  const base = { ...(map[key] || map.neutral) };
-  base.source = source;
-  base.indexName = inputs?.indexName || 'TWII / OTC';
-  return base;
-}
-function describeMarketState(state, inputs){
-  const posText = { above:'站上 20MA', near:'貼近 20MA', below:'跌破 20MA' }[inputs.pricePos] || '貼近 20MA';
-  const rsiText = { strong:'RSI > 60', neutral:'RSI 50~60', weak:'RSI < 50' }[inputs.rsiState] || 'RSI 50~60';
-  const breadthText = { up:'上漲家數偏多', mixed:'漲跌家數混合', down:'下跌家數偏多' }[inputs.breadthState] || '漲跌家數混合';
-  const sourceText = state.source === 'override' ? '目前是手動覆蓋模式。' : '目前是依市場面板自動判斷。';
-  return `${sourceText}<br><b>${inputs.indexName}</b>：${posText} ｜ ${rsiText} ｜ ${breadthText}<br><b>系統結論：</b>${state.label} ｜ 動態乖離上限 ${state.maxDev}%`;
-}
-function updateMarketJudgeBox(){
-  const el = $('marketJudgeBox');
-  if(!el) return;
-  const inputs = getMarketInputs();
-  const state = getMarketState();
-  el.innerHTML = describeMarketState(state, inputs);
-}
 function getMarketState(){
-  const inputs = getMarketInputs();
-  if(inputs.override === 'strong') return buildMarketState('strong', 'override', inputs);
-  if(inputs.override === 'neutral') return buildMarketState('neutral', 'override', inputs);
-  if(inputs.override === 'weak') return buildMarketState('weak', 'override', inputs);
+  const basis = $('marketBasis')?.value || 'OTC';
+  const trend = $('marketTrend')?.value || 'above';
+  const rsiBand = $('marketRsiBand')?.value || '55_65';
+  const breadth = getBreadthState();
 
-  let score = 0;
-  if(inputs.pricePos === 'above') score += 1;
-  else if(inputs.pricePos === 'below') score -= 1;
+  const basisLabel = basis === 'TWII' ? 'TWII 台灣加權' : 'OTC 櫃買指數';
+  const trendLabelMap = { above:'✔ 在20MA上', near:'⚖️ 貼近20MA', below:'❄️ 跌破20MA' };
+  const rsiLabelMap = { lt45:'<45（弱）', '45_55':'45~55（中性）', '55_65':'55~65（偏強）', '65_75':'65~75（強）', gt75:'>75（過熱）' };
 
-  if(inputs.rsiState === 'strong') score += 1;
-  else if(inputs.rsiState === 'weak') score -= 1;
+  let state = { key:'neutral', label:'⚖️ 標準', badge:'🌡 市場模式：標準', maxDev:15, tpBoost:0, slBoost:0, trailBoost:0 };
 
-  if(inputs.breadthState === 'up') score += 1;
-  else if(inputs.breadthState === 'down') score -= 1;
+  if(trend === 'below' && (rsiBand === 'lt45' || breadth.key === 'weak')){
+    state = { key:'weak', label:'🛡 保守', badge:'🌡 市場模式：保守', maxDev:10, tpBoost:-2, slBoost:-1, trailBoost:-1 };
+  } else if(trend === 'above' && rsiBand === 'gt75'){
+    state = { key:'hot', label:'🚨 過熱', badge:'🌡 市場模式：過熱', maxDev:12, tpBoost:0, slBoost:0, trailBoost:-1 };
+  } else if(trend === 'above' && (rsiBand === '55_65' || rsiBand === '65_75') && breadth.key === 'strong'){
+    state = { key:'strong', label:'🔥 強勢', badge:'🌡 市場模式：強勢', maxDev:18, tpBoost:1, slBoost:1, trailBoost:1 };
+  } else if(trend === 'above' && (rsiBand === '45_55' || rsiBand === '55_65') && breadth.key === 'mixed'){
+    state = { key:'neutral', label:'⚖️ 標準', badge:'🌡 市場模式：標準', maxDev:15, tpBoost:0, slBoost:0, trailBoost:0 };
+  } else if(trend === 'below'){
+    state = { key:'weak', label:'🛡 保守', badge:'🌡 市場模式：保守', maxDev:10, tpBoost:-2, slBoost:-1, trailBoost:-1 };
+  } else if(trend === 'above' && breadth.key === 'weak'){
+    state = { key:'hot', label:'🚨 過熱', badge:'🌡 市場模式：過熱', maxDev:12, tpBoost:0, slBoost:0, trailBoost:-1 };
+  }
 
-  if(score >= 2) return buildMarketState('strong', 'manual-input', inputs);
-  if(score <= -2) return buildMarketState('weak', 'manual-input', inputs);
-  return buildMarketState('neutral', 'manual-input', inputs);
+  return {
+    ...state,
+    basis,
+    basisLabel,
+    trend,
+    trendLabel: trendLabelMap[trend],
+    rsiBand,
+    rsiLabel: rsiLabelMap[rsiBand],
+    breadthKey: breadth.key,
+    breadthLabel: breadth.label
+  };
 }
 function getMaxDev(){
   return getMarketState().maxDev;
@@ -983,8 +996,13 @@ function updateMarketBadge(){
   const el = $('marketBadge');
   if(!el) return;
   const state = getMarketState();
-  const dot = state.key === 'strong' ? 'dot-green' : state.key === 'weak' ? 'dot-red' : 'dot-yellow';
-  el.innerHTML = `<span class="dot ${dot}"></span><span>${state.badge}</span>`;
+  el.textContent = state.badge;
+}
+function updateMarketPanelSummary(){
+  const el = $('marketPanelSummary');
+  if(!el) return;
+  const state = getMarketState();
+  el.innerHTML = `<b>目前依市場面板鎖死判斷。</b><br>${state.basisLabel} ｜ ${state.trendLabel} ｜ RSI14 ${state.rsiLabel} ｜ ${state.breadthLabel}<br>系統結論：<b>${state.label}</b> ｜ 動態乖離上限 <b>${state.maxDev}%</b>`;
 }
 function isLockedStock(r){
   const maxDev = getMaxDev();
@@ -998,8 +1016,8 @@ function classifyMode(r){
   }
   if((r.rsi ?? 0) >= 75 && (r.relVol ?? 0) >= 2.5){
     return {
-      mode: market.key === 'strong' ? '強勢追擊' : '強勢',
-      label: market.key === 'strong' ? '🔥 強勢追擊' : '🔥 強勢',
+      mode: market.key === 'strong' ? '強勢追擊' : market.key === 'hot' ? '過熱強勢' : '強勢',
+      label: market.key === 'strong' ? '🔥 強勢追擊' : market.key === 'hot' ? '🚨 過熱強勢' : '🔥 強勢',
       stop: Math.max(5, 9 + market.slBoost),
       tp1: Math.max(8, 15 + market.tpBoost),
       tp2: Math.max(12, 20 + market.tpBoost),
@@ -1019,8 +1037,8 @@ function classifyMode(r){
     };
   }
   return {
-    mode: market.key === 'strong' ? '進攻' : market.key === 'weak' ? '收斂' : '標準',
-    label: market.key === 'strong' ? '🚀 進攻' : market.key === 'weak' ? '🧊 收斂' : '⚡ 標準',
+    mode: market.key === 'strong' ? '進攻' : market.key === 'weak' ? '收斂' : market.key === 'hot' ? '防追' : '標準',
+    label: market.key === 'strong' ? '🚀 進攻' : market.key === 'weak' ? '🧊 收斂' : market.key === 'hot' ? '🚨 防追' : '⚡ 標準',
     stop: Math.max(4, 7 + market.slBoost),
     tp1: Math.max(7, 10 + market.tpBoost),
     tp2: Math.max(11, 15 + market.tpBoost),
@@ -1066,12 +1084,14 @@ function applySettingsToUI(settings){
   if(settings.allocMain !== undefined) $('allocSlider').value = settings.allocMain;
   if(settings.warChestPct !== undefined) $('warChestSlider').value = settings.warChestPct;
   if(settings.capital !== undefined) $('capitalSlider').value = Math.round(Number(settings.capital || 0) / 10000) || 20;
+  if(settings.marketForm) applyMarketForm(settings.marketForm);
 }
 function buildCloudSettingsPayload(){
   const cfg = getCfg();
   return {
     stopPct: cfg.stopPct, tp1Pct: cfg.tp1Pct, tp2Pct: cfg.tp2Pct, trailPct: cfg.trailPct,
-    allocMain: cfg.allocMain, warChestPct: cfg.warChestPct, capital: cfg.capital
+    allocMain: cfg.allocMain, warChestPct: cfg.warChestPct, capital: cfg.capital,
+    marketForm: getMarketForm()
   };
 }
 function buildCloudPickPayload(){
@@ -1159,6 +1179,7 @@ async function loadCloud(){
   const payload = await apiGet('getAll');
   applyCloudData(payload);
   refreshSliders(false);
+  updateMarketPanelSummary();
   updateSystemTable();
   updateFinalCards();
   updateHoldings();
@@ -1194,13 +1215,7 @@ function saveLocal(){
       warChest:$('warChestSlider').value,
       capital:$('capitalSlider').value
     },
-    market:{
-      indexName:$('marketIndexName')?.value || 'TWII / OTC',
-      pricePos:$('marketPricePos')?.value || 'near',
-      rsiState:$('marketRsiState')?.value || 'neutral',
-      breadthState:$('marketBreadthState')?.value || 'mixed',
-      override:$('marketModeOverride')?.value || 'auto'
-    },
+    marketForm:getMarketForm(),
     localPicks, aiCodes, finalPicks, holdings, decisionSource, flowState
   };
   localStorage.setItem(STORE, JSON.stringify(data));
@@ -1220,13 +1235,7 @@ function loadLocal(){
       $('warChestSlider').value = data.sliders.warChest || 20;
       $('capitalSlider').value = data.sliders.capital || 20;
     }
-    if(data.market){
-      if($('marketIndexName')) $('marketIndexName').value = data.market.indexName || 'TWII / OTC';
-      if($('marketPricePos')) $('marketPricePos').value = data.market.pricePos || 'near';
-      if($('marketRsiState')) $('marketRsiState').value = data.market.rsiState || 'neutral';
-      if($('marketBreadthState')) $('marketBreadthState').value = data.market.breadthState || 'mixed';
-      if($('marketModeOverride')) $('marketModeOverride').value = data.market.override || 'auto';
-    }
+    if(data.marketForm) applyMarketForm(data.marketForm);
     localPicks = Array.isArray(data.localPicks) ? data.localPicks : [];
     aiCodes = Array.isArray(data.aiCodes) ? data.aiCodes : [];
     finalPicks = Array.isArray(data.finalPicks) ? data.finalPicks : [];
@@ -1274,8 +1283,6 @@ function refreshSliders(shouldSave=true){
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
-  updateMarketBadge();
-  updateMarketJudgeBox();
   if(shouldSave) saveLocal();
 }
 ['stopSlider','tp1Slider','tp2Slider','trailSlider','allocSlider','warChestSlider','capitalSlider'].forEach(id=>$(id).addEventListener('input', ()=>refreshSliders(true)));
@@ -2295,10 +2302,12 @@ function clearAll(){
   $('mAi').textContent = '—';
   $('mFinal').textContent = '—';
   $('mAlert').textContent = '待命';
+  applyMarketForm(DEFAULT_MARKET_FORM);
   setCloudStatus('尚未同步', 'idle');
   setFlowMessage('系統已清空，重新開始。');
   updateFinalCards();
   updateHoldings();
+  updateMarketPanelSummary();
   updateSystemTable();
   updateCommandCenter();
   updateLocks();
@@ -2315,6 +2324,7 @@ function clearAll(){
 async function initApp(){
   loadLocal();
   refreshSliders(false);
+  updateMarketPanelSummary();
   updateSystemTable();
   updateFinalCards();
   updateHoldings();
@@ -2362,11 +2372,14 @@ $('holdSymbol').addEventListener('input', updateEntryDriftGuide);
 $('holdBuy').addEventListener('input', updateEntryDriftGuide);
 $('applyMainSuggestBtn').addEventListener('click', applyMainSuggestedMode);
 $('applyMarketBtn').addEventListener('click', ()=>{
+  updateMarketPanelSummary();
   updateMarketBadge();
-  updateMarketJudgeBox();
   updateFinalCards();
+  updateHoldings();
   updateCommandCenter();
+  updateLocks();
   updateConfidence();
+  updateMarketPanelSummary();
   renderRankTable();
   updateHud();
   updateTacticGrid();
@@ -2374,12 +2387,10 @@ $('applyMarketBtn').addEventListener('click', ()=>{
   updateHeatMap();
   updatePressurePanel();
   saveLocal();
-  setFlowMessage('✅ 已套用市場面板，市場模式與主副攻建議已重新計算。');
+  setFlowMessage(`✅ 已套用市場判斷：${getMarketState().label}。`);
 });
-['marketIndexName','marketPricePos','marketRsiState','marketBreadthState','marketModeOverride'].forEach(id=>{
-  const el = $(id);
-  if(el) el.addEventListener('change', ()=>{ updateMarketBadge(); updateMarketJudgeBox(); saveLocal(); });
-});
+['marketBasis','marketTrend','marketRsiBand','marketRiseCount','marketFallCount'].forEach(id=>$(id).addEventListener('change', updateMarketPanelSummary));
+['marketRiseCount','marketFallCount'].forEach(id=>$(id).addEventListener('input', updateMarketPanelSummary));
 
 initApp();
 </script>
