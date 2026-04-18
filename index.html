@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max v5｜自適應市場版</title>
+<title>AI 戰艦 Pro Max v6｜市場真實感知版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -122,11 +122,11 @@ body:before{
 .bar>div{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:999px}
 
 label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-input,textarea{
+input,textarea,select{
   width:100%;background:#09111f;color:var(--text);
   border:1px solid rgba(160,200,255,.12);border-radius:14px;padding:12px 13px;font:inherit;outline:none;
 }
-input:focus,textarea:focus{
+input:focus,textarea:focus,select:focus{
   border-color:rgba(103,232,249,.42);
   box-shadow:0 0 0 3px rgba(103,232,249,.10);
 }
@@ -329,8 +329,8 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v5｜自適應市場版</div>
-        <div class="brandSub">S+ 共振優先、自適應市場判斷、動態乖離門檻、AI 代碼過濾、TP/SL 自動建議、戰場視覺與雲端同步整合。</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6｜市場真實感知版</div>
+        <div class="brandSub">獨立市場面板、手動大盤判斷、自適應乖離門檻、S+ 共振優先、AI 代碼過濾、動態 TP/SL 與分段移動停利整合。</div>
       </div>
       <div class="quickBadges">
         <div class="badge">⭐ S+ 共振</div>
@@ -348,6 +348,7 @@ th{color:var(--muted)}
         <div class="centerCommand">
           <div class="commandBoard">
             <div class="title">Tactical Center</div>
+            <div style="margin-top:10px"><div id="marketBadge" class="trailBadge"><span class="dot dot-yellow"></span><span>🌡 市場模式：標準</span></div></div>
             <div id="todayCommandHeadline" class="headline">等待資料進站</div>
             <div id="todayCommandDesc" class="desc">先分析 CSV，再導入 AI，最後同步與監控持倉。這裡會直接告訴你今天最該做什麼。</div>
           </div>
@@ -395,6 +396,54 @@ th{color:var(--muted)}
         <div class="tacticGrid" id="tacticGrid">
           <div class="tacticCard"><div class="small">尚未產生戰術卡。</div></div>
         </div>
+      </section>
+
+      <section class="panel" style="margin-top:16px">
+        <div class="sectionTitle">🌡 市場環境面板</div>
+        <div class="sub">不自動抓值。你晚上手動看大盤後，只要填這 4 格，系統就會獨立判斷目前市場熱度，不再用強勢股樣本反推市場。</div>
+        <div class="grid cols5" style="margin-top:14px">
+          <div>
+            <label for="marketIndexName">市場基準</label>
+            <input id="marketIndexName" value="TWII / OTC" placeholder="例如 TWII / OTC">
+          </div>
+          <div>
+            <label for="marketPricePos">指數相對 20MA</label>
+            <select id="marketPricePos">
+              <option value="above">站上 20MA</option>
+              <option value="near" selected>貼近 20MA</option>
+              <option value="below">跌破 20MA</option>
+            </select>
+          </div>
+          <div>
+            <label for="marketRsiState">大盤 RSI 區間</label>
+            <select id="marketRsiState">
+              <option value="strong">> 60</option>
+              <option value="neutral" selected>50 ~ 60</option>
+              <option value="weak">&lt; 50</option>
+            </select>
+          </div>
+          <div>
+            <label for="marketBreadthState">漲跌家數</label>
+            <select id="marketBreadthState">
+              <option value="up">上漲家數明顯較多</option>
+              <option value="mixed" selected>差不多 / 混合</option>
+              <option value="down">下跌家數明顯較多</option>
+            </select>
+          </div>
+          <div>
+            <label for="marketModeOverride">市場模式</label>
+            <select id="marketModeOverride">
+              <option value="auto" selected>自動判斷</option>
+              <option value="strong">手動改成 強勢</option>
+              <option value="neutral">手動改成 標準</option>
+              <option value="weak">手動改成 保守</option>
+            </select>
+          </div>
+        </div>
+        <div class="toolbar" style="margin-top:12px">
+          <button id="applyMarketBtn" class="secondary">套用市場判斷</button>
+        </div>
+        <div id="marketJudgeBox" class="reason">尚未特別調整，預設以中性市場處理。</div>
       </section>
 
       <section class="panel" style="margin-top:16px">
@@ -631,7 +680,7 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">v5 自適應市場版：S+ 共振、AI 過濾、動態乖離門檻、戰備資金、智能模式與 TP/SL 建議全部整合完成。</div>
+      <div class="footer">v6 市場真實感知版：保留重裝甲戰情室 UI，加入獨立市場面板、手動大盤判斷、自適應乖離、S+ 共振、智慧帶入、動態 TP/SL 與分段移動停利。</div>
     </div>
   </div>
 </div>
@@ -873,25 +922,59 @@ function getWarChestCapital(){
   const cfg = getCfg();
   return Math.round(cfg.capital * (cfg.warChestPct / 100));
 }
+function getMarketInputs(){
+  return {
+    indexName: $('marketIndexName')?.value?.trim() || 'TWII / OTC',
+    pricePos: $('marketPricePos')?.value || 'near',
+    rsiState: $('marketRsiState')?.value || 'neutral',
+    breadthState: $('marketBreadthState')?.value || 'mixed',
+    override: $('marketModeOverride')?.value || 'auto'
+  };
+}
+function buildMarketState(key, source='auto', inputs=null){
+  const map = {
+    strong: { key:'strong', label:'🔥 強勢', badge:'🌡 市場模式：強勢', maxDev:22, tpBoost:2, slBoost:1, trailBoost:1 },
+    neutral: { key:'neutral', label:'⚖️ 標準', badge:'🌡 市場模式：標準', maxDev:15, tpBoost:0, slBoost:0, trailBoost:0 },
+    weak: { key:'weak', label:'🛡 保守', badge:'🌡 市場模式：保守', maxDev:10, tpBoost:-2, slBoost:-1, trailBoost:-1 }
+  };
+  const base = { ...(map[key] || map.neutral) };
+  base.source = source;
+  base.indexName = inputs?.indexName || 'TWII / OTC';
+  return base;
+}
+function describeMarketState(state, inputs){
+  const posText = { above:'站上 20MA', near:'貼近 20MA', below:'跌破 20MA' }[inputs.pricePos] || '貼近 20MA';
+  const rsiText = { strong:'RSI > 60', neutral:'RSI 50~60', weak:'RSI < 50' }[inputs.rsiState] || 'RSI 50~60';
+  const breadthText = { up:'上漲家數偏多', mixed:'漲跌家數混合', down:'下跌家數偏多' }[inputs.breadthState] || '漲跌家數混合';
+  const sourceText = state.source === 'override' ? '目前是手動覆蓋模式。' : '目前是依市場面板自動判斷。';
+  return `${sourceText}<br><b>${inputs.indexName}</b>：${posText} ｜ ${rsiText} ｜ ${breadthText}<br><b>系統結論：</b>${state.label} ｜ 動態乖離上限 ${state.maxDev}%`;
+}
+function updateMarketJudgeBox(){
+  const el = $('marketJudgeBox');
+  if(!el) return;
+  const inputs = getMarketInputs();
+  const state = getMarketState();
+  el.innerHTML = describeMarketState(state, inputs);
+}
 function getMarketState(){
-  if(!localPicks.length){
-    return { key:'neutral', label:'⚖️ 標準', badge:'🌡 市場模式：標準', maxDev:15, tpBoost:0, slBoost:0, trailBoost:0 };
-  }
-  const sample = localPicks.slice(0, Math.min(8, localPicks.length));
-  const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0) / arr.length : 0;
-  const avgRsi = avg(sample.map(x=>Number.isFinite(x.rsi) ? x.rsi : 0));
-  const avgVol = avg(sample.map(x=>Number.isFinite(x.relVol) ? x.relVol : 0));
-  const avgChange = avg(sample.map(x=>Number.isFinite(x.change) ? x.change : 0));
-  const hotCount = sample.filter(x => (x.change ?? 0) >= 6 && (x.relVol ?? 0) >= 1.8).length;
-  const weakCount = sample.filter(x => (x.change ?? 0) <= 0 || (x.rsi ?? 0) < 58).length;
+  const inputs = getMarketInputs();
+  if(inputs.override === 'strong') return buildMarketState('strong', 'override', inputs);
+  if(inputs.override === 'neutral') return buildMarketState('neutral', 'override', inputs);
+  if(inputs.override === 'weak') return buildMarketState('weak', 'override', inputs);
 
-  if(avgRsi >= 68 && avgVol >= 1.9 && avgChange >= 4 && hotCount >= Math.max(2, Math.floor(sample.length*0.3))){
-    return { key:'strong', label:'🔥 強勢', badge:'🌡 市場模式：強勢', maxDev:22, tpBoost:2, slBoost:1, trailBoost:1 };
-  }
-  if(avgRsi < 60 || avgChange < 1.5 || weakCount >= Math.max(3, Math.floor(sample.length*0.45))){
-    return { key:'weak', label:'🛡 保守', badge:'🌡 市場模式：保守', maxDev:12, tpBoost:-2, slBoost:-1, trailBoost:-1 };
-  }
-  return { key:'neutral', label:'⚖️ 標準', badge:'🌡 市場模式：標準', maxDev:15, tpBoost:0, slBoost:0, trailBoost:0 };
+  let score = 0;
+  if(inputs.pricePos === 'above') score += 1;
+  else if(inputs.pricePos === 'below') score -= 1;
+
+  if(inputs.rsiState === 'strong') score += 1;
+  else if(inputs.rsiState === 'weak') score -= 1;
+
+  if(inputs.breadthState === 'up') score += 1;
+  else if(inputs.breadthState === 'down') score -= 1;
+
+  if(score >= 2) return buildMarketState('strong', 'manual-input', inputs);
+  if(score <= -2) return buildMarketState('weak', 'manual-input', inputs);
+  return buildMarketState('neutral', 'manual-input', inputs);
 }
 function getMaxDev(){
   return getMarketState().maxDev;
@@ -900,7 +983,8 @@ function updateMarketBadge(){
   const el = $('marketBadge');
   if(!el) return;
   const state = getMarketState();
-  el.textContent = state.badge;
+  const dot = state.key === 'strong' ? 'dot-green' : state.key === 'weak' ? 'dot-red' : 'dot-yellow';
+  el.innerHTML = `<span class="dot ${dot}"></span><span>${state.badge}</span>`;
 }
 function isLockedStock(r){
   const maxDev = getMaxDev();
@@ -1110,6 +1194,13 @@ function saveLocal(){
       warChest:$('warChestSlider').value,
       capital:$('capitalSlider').value
     },
+    market:{
+      indexName:$('marketIndexName')?.value || 'TWII / OTC',
+      pricePos:$('marketPricePos')?.value || 'near',
+      rsiState:$('marketRsiState')?.value || 'neutral',
+      breadthState:$('marketBreadthState')?.value || 'mixed',
+      override:$('marketModeOverride')?.value || 'auto'
+    },
     localPicks, aiCodes, finalPicks, holdings, decisionSource, flowState
   };
   localStorage.setItem(STORE, JSON.stringify(data));
@@ -1128,6 +1219,13 @@ function loadLocal(){
       $('allocSlider').value = data.sliders.alloc || 60;
       $('warChestSlider').value = data.sliders.warChest || 20;
       $('capitalSlider').value = data.sliders.capital || 20;
+    }
+    if(data.market){
+      if($('marketIndexName')) $('marketIndexName').value = data.market.indexName || 'TWII / OTC';
+      if($('marketPricePos')) $('marketPricePos').value = data.market.pricePos || 'near';
+      if($('marketRsiState')) $('marketRsiState').value = data.market.rsiState || 'neutral';
+      if($('marketBreadthState')) $('marketBreadthState').value = data.market.breadthState || 'mixed';
+      if($('marketModeOverride')) $('marketModeOverride').value = data.market.override || 'auto';
     }
     localPicks = Array.isArray(data.localPicks) ? data.localPicks : [];
     aiCodes = Array.isArray(data.aiCodes) ? data.aiCodes : [];
@@ -1176,6 +1274,8 @@ function refreshSliders(shouldSave=true){
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
+  updateMarketBadge();
+  updateMarketJudgeBox();
   if(shouldSave) saveLocal();
 }
 ['stopSlider','tp1Slider','tp2Slider','trailSlider','allocSlider','warChestSlider','capitalSlider'].forEach(id=>$(id).addEventListener('input', ()=>refreshSliders(true)));
@@ -2261,6 +2361,25 @@ $('clearHoldBtn').addEventListener('click', clearHoldForm);
 $('holdSymbol').addEventListener('input', updateEntryDriftGuide);
 $('holdBuy').addEventListener('input', updateEntryDriftGuide);
 $('applyMainSuggestBtn').addEventListener('click', applyMainSuggestedMode);
+$('applyMarketBtn').addEventListener('click', ()=>{
+  updateMarketBadge();
+  updateMarketJudgeBox();
+  updateFinalCards();
+  updateCommandCenter();
+  updateConfidence();
+  renderRankTable();
+  updateHud();
+  updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
+  saveLocal();
+  setFlowMessage('✅ 已套用市場面板，市場模式與主副攻建議已重新計算。');
+});
+['marketIndexName','marketPricePos','marketRsiState','marketBreadthState','marketModeOverride'].forEach(id=>{
+  const el = $(id);
+  if(el) el.addEventListener('change', ()=>{ updateMarketBadge(); updateMarketJudgeBox(); saveLocal(); });
+});
 
 initApp();
 </script>
