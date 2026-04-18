@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max v6.4｜AI 強化戰情室版</title>
+<title>AI 戰艦 Pro Max v6.7｜主攻修正版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -356,7 +356,7 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6.4｜AI 強化戰情室版</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6.7｜主攻修正版</div>
         <div class="brandSub">S+ 共振優先、自適應市場判斷、動態乖離門檻、AI 代碼過濾、TP/SL 自動建議、戰場視覺與雲端同步整合。</div>
       </div>
       <div class="quickBadges"><div class="badge">作者：q7632111@gmail.com</div>
@@ -1300,6 +1300,15 @@ function qualityText(r){
 function selectableLocalPicks(){
   return localPicks.filter(x => !isLockedStock(x));
 }
+function isTradableCandidate(x){
+  if(!x || isLockedStock(x)) return false;
+  const info = getResonanceInfo(x);
+  if(info.grade === 'D') return false;
+  return true;
+}
+function tradableLocalPicks(){
+  return localPicks.filter(isTradableCandidate);
+}
 function applySettingsToUI(settings){
   if(!settings || typeof settings !== 'object') return;
   if(settings.stopPct !== undefined) $('stopSlider').value = settings.stopPct;
@@ -1767,12 +1776,14 @@ function decideFinal(){
     $('aiSummary').innerHTML = '⚪ 未解析 AI，系統已直接改用本地前段班。';
   }
 
-  const candidates = selectableLocalPicks().slice(0,6).map(x=>{
+  const allCandidates = selectableLocalPicks().slice(0,8).map(x=>{
     const resonance = getResonanceInfo(x);
-    return { ...x, resonance, finalScore:(x.score ?? 0) + resonance.weight };
+    const tradable = isTradableCandidate(x);
+    return { ...x, resonance, tradable, finalScore:(x.score ?? 0) + resonance.weight };
   }).sort((a,b)=>b.finalScore-a.finalScore);
 
-  finalPicks = candidates.filter(x=>x.resonance.grade !== 'D').slice(0,2);
+  const tradableCandidates = allCandidates.filter(x=>x.tradable);
+  finalPicks = tradableCandidates.slice(0,2);
 
   const hasSPlus = finalPicks.some(x=>x.resonance?.grade === 'S+');
   const hasAI = aiCodes.length > 0;
@@ -1784,13 +1795,19 @@ function decideFinal(){
 
   flowState.decided = true;
   $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
-  setFlowMessage(hasSPlus
-    ? '✅ 最終決策完成：已啟用 S+ 共振優先，主攻股由本地 + AI 雙重確認選出。'
-    : aiAssistState === 'fallback'
-      ? '✅ 最終決策完成：AI 未提供有效標的，系統已改用本地前段班接管。'
-      : aiAssistState === 'skipped'
-        ? '✅ 最終決策完成：未使用 AI，系統已依本地前段班完成鎖定。'
-        : '✅ 最終決策完成。禁追股已排除，現在可以帶入主攻股或直接加入持倉監控。');
+
+  if(!finalPicks.length){
+    setFlowMessage('⚠️ 本輪本地強股雖有排行，但因乖離/分級限制，目前沒有可交易主副攻。今晚以觀察為主，不新進。', true);
+  }else{
+    setFlowMessage(hasSPlus
+      ? '✅ 最終決策完成：已啟用 S+ 共振優先，主攻股由本地 + AI 雙重確認選出。'
+      : aiAssistState === 'fallback'
+        ? '✅ 最終決策完成：AI 未提供有效標的，系統已改用本地前段班接管。'
+        : aiAssistState === 'skipped'
+          ? '✅ 最終決策完成：未使用 AI，系統已依本地前段班完成鎖定。'
+          : '✅ 最終決策完成。禁止新進與淘汰股已自動排除，現在可以帶入主攻股或直接加入持倉監控。');
+  }
+
   updateLocks();
   updateConfidence();
   updateSystemTable();
@@ -1897,7 +1914,7 @@ function buildFinalCard(r, i){
 function updateFinalCards(){
   const box = $('finalCards');
   if(!finalPicks.length){
-    box.innerHTML = '<div class="stockCard"><div class="small">尚未產生最終標的。</div></div>';
+    box.innerHTML = '<div class="stockCard"><div class="small">本輪前段班已完成，但禁止新進 / 淘汰股已自動排除，目前沒有可交易主副攻。</div></div>';
     updateBridge();
     updateConfidence();
     return;
@@ -2455,22 +2472,24 @@ function confirmClosePosition(){
 function updateSystemTable(){
   const mainInfo = finalPicks[0] ? getResonanceInfo(finalPicks[0]) : null;
   const subInfo = finalPicks[1] ? getResonanceInfo(finalPicks[1]) : null;
+  const blockedTop = selectableLocalPicks().slice(0,3).filter(x=>!isTradableCandidate(x));
   $('systemTable').innerHTML = `
-    <tr><td>決策來源</td><td>${decisionSource}</td><td>${decisionSource==='共振優先' ? '本地前段班與 AI 同時命中，列為最高優先。' : decisionSource==='AI 補強' ? '本地與 AI 有部分差異，採 AI 補強排序。' : decisionSource==='本地優先' ? 'AI 未形成共振，以本地量化排序為主。' : decisionSource==='本地預設' ? '已先用本地前2名作預設。' : '尚未決策'}</td></tr>
-    <tr><td>主攻股</td><td>${finalPicks[0] ? finalPicks[0].symbol : '—'}</td><td>${finalPicks[0] ? `${finalPicks[0].name || '已鎖定'} / ${qualityText(finalPicks[0])} / ${mainInfo?.label || '—'} / ${classifyMode(finalPicks[0]).mode}` : '尚未產生'}</td></tr>
-    <tr><td>副攻股</td><td>${finalPicks[1] ? finalPicks[1].symbol : '—'}</td><td>${finalPicks[1] ? `${finalPicks[1].name || '已鎖定'} / ${qualityText(finalPicks[1])} / ${subInfo?.label || '—'} / ${classifyMode(finalPicks[1]).mode}` : '尚未產生'}</td></tr>
+    <tr><td>決策來源</td><td>${decisionSource}</td><td>${decisionSource==='共振優先' ? '本地前段班與 AI 同時命中，列為最高優先。' : decisionSource==='AI 補強' ? '本地與 AI 有部分差異，採 AI 補強排序。' : decisionSource==='本地優先' ? 'AI 未形成共振，以本地量化排序為主。' : decisionSource==='本地預設' ? '已先用本地前2名作預設。' : decisionSource==='純本地策略' ? '未使用 AI，完全以本地量化排序為主。' : '尚未決策'}</td></tr>
+    <tr><td>主攻股</td><td>${finalPicks[0] ? finalPicks[0].symbol : '—'}</td><td>${finalPicks[0] ? `${finalPicks[0].name || '已鎖定'} / ${qualityText(finalPicks[0])} / ${mainInfo?.label || '—'} / ${classifyMode(finalPicks[0]).mode}` : '目前無可交易主攻（禁止新進 / 淘汰股已排除）'}</td></tr>
+    <tr><td>副攻股</td><td>${finalPicks[1] ? finalPicks[1].symbol : '—'}</td><td>${finalPicks[1] ? `${finalPicks[1].name || '已鎖定'} / ${qualityText(finalPicks[1])} / ${subInfo?.label || '—'} / ${classifyMode(finalPicks[1]).mode}` : (finalPicks[0] ? '目前無第二檔可交易副攻' : '尚未產生')}</td></tr>
+    <tr><td>封鎖說明</td><td>${blockedTop.length}</td><td>${blockedTop.length ? `前段班中有 ${blockedTop.length} 檔屬於禁止新進 / 淘汰，因此不列入主副攻。` : '前段班皆可交易。'}</td></tr>
     <tr><td>總持倉數</td><td>${holdings.length}</td><td>${holdings.length ? '持倉監控已啟動' : '目前無持倉'}</td></tr>
   `;
 }
 
 function updateCommandCenter(){
-  const local2 = selectableLocalPicks().slice(0,2).map(x=>x.symbol);
+  const local2 = tradableLocalPicks().slice(0,2).map(x=>x.symbol);
   const inter = aiCodes.filter(x=>local2.includes(x));
   const consistency = !aiCodes.length ? 55 : inter.length===2 ? 100 : inter.length===1 ? 65 : 25;
   $('consistencyText').textContent = consistency>=80 ? '高一致' : consistency>=50 ? '部分一致' : '分歧';
   $('consistencyBar').style.width = consistency + '%';
 
-  const aggressive = finalPicks.length ? Math.min(100, Math.round(finalPicks[0]?.score || 55)) : 0;
+  const aggressive = finalPicks.length ? Math.min(100, Math.round(finalPicks[0]?.score || 55)) : (tradableLocalPicks().length ? 35 : 0);
   $('aggressiveText').textContent = aggressive>=75 ? '可進攻' : aggressive>=55 ? '偏進攻' : '保守';
   $('aggressiveBar').style.width = aggressive + '%';
 
