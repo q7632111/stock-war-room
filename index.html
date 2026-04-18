@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max v7.0.1｜主攻修正版</title>
+<title>AI 戰艦 Pro Max v7.0.3｜主攻修正版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -356,7 +356,7 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v7.0.1｜主攻修正版</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v7.0.3｜主攻修正版</div>
         <div class="brandSub">S+ 共振優先、自適應市場判斷、動態乖離門檻、AI 代碼過濾、TP/SL 自動建議、戰場視覺與雲端同步整合。</div>
       </div>
       <div class="quickBadges"><div class="badge">作者：q7632111@gmail.com</div>
@@ -655,12 +655,17 @@ th{color:var(--muted)}
           <div class="sectionTitle">🧭 系統總覽</div>
           <div class="tableWrap">
             <table>
-              <thead><tr><th>指標</th><th>數值</th><th>說明</th></tr></thead>
+              <thead><tr><th>指標</th><th>數值</th><th>說明</th></tr>
+<!-- momentum rr warning --></thead>
               <tbody id="systemTable">
                 <tr><td>決策來源</td><td>—</td><td>尚未決策</td></tr>
+<!-- momentum rr warning -->
                 <tr><td>主攻股</td><td>—</td><td>尚未產生</td></tr>
+<!-- momentum rr warning -->
                 <tr><td>副攻股</td><td>—</td><td>尚未產生</td></tr>
+<!-- momentum rr warning -->
                 <tr><td>總持倉數</td><td>0</td><td>目前無持倉</td></tr>
+<!-- momentum rr warning -->
               </tbody>
             </table>
           </div>
@@ -701,8 +706,10 @@ th{color:var(--muted)}
                 <th>狀態</th>
                 <th>禁追</th>
               </tr>
+<!-- momentum rr warning -->
             </thead>
-            <tbody id="rankBody"><tr><td colspan="13" class="small">尚未分析。</td></tr></tbody>
+            <tbody id="rankBody"><tr><td colspan="13" class="small">尚未分析。</td></tr>
+<!-- momentum rr warning --></tbody>
           </table>
         </div>
       </section>
@@ -746,8 +753,10 @@ th{color:var(--muted)}
                 <th>標記</th>
                 <th>結果</th>
               </tr>
+<!-- momentum rr warning -->
             </thead>
-            <tbody id="tradeHistoryBody"><tr><td colspan="11" class="small">尚無平倉紀錄。</td></tr></tbody>
+            <tbody id="tradeHistoryBody"><tr><td colspan="11" class="small">尚無平倉紀錄。</td></tr>
+<!-- momentum rr warning --></tbody>
           </table>
         </div>
       </section>
@@ -1156,7 +1165,7 @@ function getTotalExposureInfo(){
     const buy = Number(h.buy)||0;
     const stop = Number(h.stop)||0;
     if(!buy || !stop || stop >= buy) return sum;
-    return sum + (buy - stop) * 1000;
+    return sum + (buy - stop) * (h.shares || 1000);
   },0);
   const riskPct = capital ? (riskAmt / capital) * 100 : 0;
   let label = '🟢 安全', className = 'ok', note = '總曝險低，可維持正常節奏。';
@@ -1604,7 +1613,8 @@ function scoreRow(r){
 function renderRankTable(){
   const tbody = $('rankBody');
   if(!localPicks.length){
-    tbody.innerHTML = `<tr><td colspan="13">沒有可用資料</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="13">沒有可用資料</td></tr>
+<!-- momentum rr warning -->`;
     return;
   }
   tbody.innerHTML = localPicks.map((r,i)=>{
@@ -1628,6 +1638,7 @@ function renderRankTable(){
         <td>${r.status}</td>
         <td>${locked ? '🚨 禁追' : '—'}</td>
       </tr>
+<!-- momentum rr warning -->
     `;
   }).join('');
 }
@@ -1676,6 +1687,8 @@ function analyzeCSV(){
       sma20,
       sma60: idx.sma60!==null ? num(cols[idx.sma60]) : null,
       rsi: idx.rsi!==null ? num(cols[idx.rsi]) : null,
+      avgVol3: idx.avgVol3!==null ? num(cols[idx.avgVol3]) : null,
+      avgVol3: idx.avgVol3!==null ? num(cols[idx.avgVol3]) : null,
       dev: (price!==null && sma20) ? ((price-sma20)/sma20*100) : null
     });
   }).filter(x=>x.symbol).sort((a,b)=>b.score-a.score);
@@ -2286,6 +2299,10 @@ function editHolding(i){
 }
 function removeHolding(i){
   holdings.splice(i,1);
+  finalPicks = (finalPicks||[]).filter(p=>p.symbol!==h.symbol);
+  updateFinalCards();
+  updateSystemTable();
+  updateCommandCenter();
   updateHoldings();
   updateCommandCenter();
   updateHud();
@@ -2416,7 +2433,8 @@ function updatePerformancePanel(){
 
   const body = $('tradeHistoryBody');
   if(!tradeHistory.length){
-    body.innerHTML = '<tr><td colspan="11" class="small">尚無平倉紀錄。</td></tr>';
+    body.innerHTML = '<tr><td colspan="11" class="small">尚無平倉紀錄。</td></tr>
+<!-- momentum rr warning -->';
     return;
   }
   body.innerHTML = [...tradeHistory].reverse().map(t => `
@@ -2433,6 +2451,7 @@ function updatePerformancePanel(){
       <td>${renderMistakeTags(t.mistakeTags || classifyTradeMistakes(t))}</td>
       <td class="${t.result === 'win' ? 'ok' : 'danger'}">${t.result === 'win' ? '勝' : '負'}</td>
     </tr>
+<!-- momentum rr warning -->
   `).join('');
 }
 function openCloseDialog(index){
@@ -2502,10 +2521,15 @@ function updateSystemTable(){
   const blockedTop = selectableLocalPicks().slice(0,3).filter(x=>!isTradableCandidate(x));
   $('systemTable').innerHTML = `
     <tr><td>決策來源</td><td>${decisionSource}</td><td>${decisionSource==='共振優先' ? '本地前段班與 AI 同時命中，列為最高優先。' : decisionSource==='AI 補強' ? '本地與 AI 有部分差異，採 AI 補強排序。' : decisionSource==='本地優先' ? 'AI 未形成共振，以本地量化排序為主。' : decisionSource==='本地預設' ? '已先用本地前2名作預設。' : decisionSource==='純本地策略' ? '未使用 AI，完全以本地量化排序為主。' : '尚未決策'}</td></tr>
+<!-- momentum rr warning -->
     <tr><td>主攻股</td><td>${finalPicks[0] ? finalPicks[0].symbol : '—'}</td><td>${finalPicks[0] ? `${finalPicks[0].name || '已鎖定'} / ${qualityText(finalPicks[0])} / ${mainInfo?.label || '—'} / ${classifyMode(finalPicks[0]).mode}` : '目前無可交易主攻（禁止新進 / 淘汰股已排除）'}</td></tr>
+<!-- momentum rr warning -->
     <tr><td>副攻股</td><td>${finalPicks[1] ? finalPicks[1].symbol : '—'}</td><td>${finalPicks[1] ? `${finalPicks[1].name || '已鎖定'} / ${qualityText(finalPicks[1])} / ${subInfo?.label || '—'} / ${classifyMode(finalPicks[1]).mode}` : (finalPicks[0] ? '目前無第二檔可交易副攻' : '尚未產生')}</td></tr>
+<!-- momentum rr warning -->
     <tr><td>封鎖說明</td><td>${blockedTop.length}</td><td>${blockedTop.length ? `前段班中有 ${blockedTop.length} 檔屬於禁止新進 / 淘汰，因此不列入主副攻。` : '前段班皆可交易。'}</td></tr>
+<!-- momentum rr warning -->
     <tr><td>總持倉數</td><td>${holdings.length}</td><td>${holdings.length ? '持倉監控已啟動' : '目前無持倉'}</td></tr>
+<!-- momentum rr warning -->
   `;
 }
 
@@ -2645,7 +2669,7 @@ function updateLocks(){
 }
 
 
-// === v7.0.1 Panic Mode ===
+// === v7.0.3 Panic Mode ===
 function checkPanicMode(){
   const market = getMarketState();
   const risk = getTotalExposureInfo?.().riskPct || 0;
@@ -2855,6 +2879,14 @@ function applyMainSuggestedMode(){
 }
 
 function loadDemo(){
+  // demo market preset
+  try{
+    if(document.getElementById('marketTrend')) document.getElementById('marketTrend').value = 'above';
+    if(document.getElementById('marketRsiBand')) document.getElementById('marketRsiBand').value = '55-65';
+    if(document.getElementById('marketBreadth')) document.getElementById('marketBreadth').value = 'mixed';
+    if(typeof updateMarketPanelSummary === 'function') updateMarketPanelSummary();
+  }catch(_e){}
+
   if(!marketConfirmed){ setFlowMessage('❌ 請先確認市場', true); return; }
   $('csvInput').value = `商品,描述,價格,價格 - 貨幣,價格變化 % 1天,成交量 1天,相對成交量 1天,簡單移動平均線 (20) 1天,簡單移動平均線 (60) 1天,相對強弱指標 (14) 1天
 6415,矽力*-KY,332.5,TWD,9.92,12400000,3.21,310.2,298.5,68.4
@@ -2870,7 +2902,8 @@ function loadDemo(){
 function clearAll(){
   $('csvInput').value = '';
   $('aiInput').value = '';
-  $('rankBody').innerHTML = '<tr><td colspan="13" class="small">尚未分析。</td></tr>';
+  $('rankBody').innerHTML = '<tr><td colspan="13" class="small">尚未分析。</td></tr>
+<!-- momentum rr warning -->';
   $('localSummary').textContent = '尚未分析。';
   $('aiSummary').textContent = '尚未解析 AI 結果。';
   localPicks = [];
@@ -2999,7 +3032,7 @@ checkPanicMode();
 initApp();
 
 function failLoudly(err, context='核心運算'){
-  console.error('[AI戰艦 v7.0.1 Hotfix]', context, err);
+  console.error('[AI戰艦 v7.0.3 Hotfix]', context, err);
   const msg = `🚨 ${context}崩潰，請勿參考目前數據！`;
   try{
     const el = document.getElementById('flowMessage') || document.getElementById('flowMsg');
