@@ -306,6 +306,18 @@ th{color:var(--muted)}
 .driftBanner.warn{border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.08);color:#fff3cd}
 .driftBanner.danger{border-color:rgba(248,113,113,.30);background:rgba(248,113,113,.10);color:#ffe2e2}
 .driftBanner.info{border-color:rgba(96,165,250,.28);background:rgba(96,165,250,.08);color:#dceeff}
+
+.sourcePerfGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.errorPerfGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.healthPanel{margin-top:10px;padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.025)}
+.healthTop{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.healthTrack{height:12px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:10px}
+.healthFill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--red),var(--yellow),var(--green))}
+.healthHint{margin-top:8px;font-size:12px;color:var(--muted);line-height:1.7}
+.errorTag{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid var(--line);background:rgba(255,255,255,.04);margin:2px 4px 2px 0}
+.errorTag.bad{border-color:rgba(248,113,113,.25);background:rgba(248,113,113,.08);color:#fecaca}
+.errorTag.warn{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.08);color:#fde68a}
+
 @media (max-width:1200px){
   .hero,.cols2,.cols3,.cols4,.cols5,.metrics,.signalGrid,.bridgeGrid,.stockCards,.holdCards,.hudGrid,.tacticGrid,.centerCommand,.riskGrid,.heatGrid,.recommendGrid{grid-template-columns:1fr}
   .kpis{grid-template-columns:repeat(2,1fr)}
@@ -706,6 +718,18 @@ th{color:var(--muted)}
           <div class="hudCard"><div class="k">平均虧損</div><div class="v" id="perfAvgLoss">—</div><div class="small">只計算虧損單</div></div>
           <div class="hudCard"><div class="k">最大連敗</div><div class="v" id="perfMaxLossStreak">0</div><div class="small">幫你看是否過度硬拗</div></div>
         </div>
+        <div class="sourcePerfGrid">
+          <div class="hudCard"><div class="k">主攻勝率</div><div class="v" id="perfMainWinRate">—</div><div class="small">主攻來源平倉表現</div></div>
+          <div class="hudCard"><div class="k">副攻勝率</div><div class="v" id="perfSubWinRate">—</div><div class="small">副攻來源平倉表現</div></div>
+          <div class="hudCard"><div class="k">AI 共振勝率</div><div class="v" id="perfResonanceWinRate">—</div><div class="small">S+ / 共振股平倉表現</div></div>
+          <div class="hudCard"><div class="k">純本地勝率</div><div class="v" id="perfLocalWinRate">—</div><div class="small">非 AI 共振的本地股</div></div>
+        </div>
+        <div class="errorPerfGrid">
+          <div class="hudCard"><div class="k">追高單</div><div class="v" id="perfMistakeChase">0</div><div class="small">買價偏差過大</div></div>
+          <div class="hudCard"><div class="k">衝動停損</div><div class="v" id="perfMistakeImpulse">0</div><div class="small">3 天內停損出場</div></div>
+          <div class="hudCard"><div class="k">拖延出場</div><div class="v" id="perfMistakeLate">0</div><div class="small">已鎖利卻手動拖出</div></div>
+          <div class="hudCard"><div class="k">手動硬砍</div><div class="v" id="perfMistakeManual">0</div><div class="small">非 TP/SL 的負報酬手動單</div></div>
+        </div>
         <div class="historyTableWrap" style="margin-top:16px">
           <table class="historyTable">
             <thead>
@@ -719,10 +743,11 @@ th{color:var(--muted)}
                 <th>來源</th>
                 <th>市場模式</th>
                 <th>原因</th>
+                <th>標記</th>
                 <th>結果</th>
               </tr>
             </thead>
-            <tbody id="tradeHistoryBody"><tr><td colspan="10" class="small">尚無平倉紀錄。</td></tr></tbody>
+            <tbody id="tradeHistoryBody"><tr><td colspan="11" class="small">尚無平倉紀錄。</td></tr></tbody>
           </table>
         </div>
       </section>
@@ -755,7 +780,7 @@ th{color:var(--muted)}
         </div>
       </div>
 
-      <div class="footer">v6.5 AI 強化戰情室版：OTC / TWII 市場面板、固定 RSI14 / 漲跌家數規則、S+ 共振、動態乖離門檻、雙模式平倉與績效回顧面板整合完成。｜ 作者:q7632111@gmail.com</div>
+      <div class="footer">v6.6 AI 強化戰情室版：OTC / TWII 市場面板、固定 RSI14 / 漲跌家數規則、S+ 共振、持倉健康度、錯誤交易標記、分類勝率卡與雙模式平倉績效面板整合完成.｜ 作者:q7632111@gmail.com</div>
     </div>
   </div>
 </div>
@@ -872,6 +897,7 @@ function normalizeHolding(row){
     refTrailPct: num(row.refTrailPct),
     sourceGrade: String(row.sourceGrade || '').trim(),
     sourceLabel: String(row.sourceLabel || '').trim(),
+    sourceRole: String(row.sourceRole || '').trim(),
     marketLabel: String(row.marketLabel || '').trim(),
     entryDate: row.entryDate || '',
     updatedAt: row.updatedAt || ''
@@ -887,6 +913,7 @@ function normalizeTrade(row){
     pnlPct: num(row.pnlPct),
     holdingDays: num(row.holdingDays),
     sourceLabel: String(row.sourceLabel || '').trim(),
+    sourceRole: String(row.sourceRole || '').trim(),
     marketLabel: String(row.marketLabel || '').trim(),
     closeReason: String(row.closeReason || '').trim(),
     result: String(row.result || '').trim(),
@@ -1075,6 +1102,7 @@ function addHolding(){
     refTrailPct: strategyRef?.refTrailPct ?? null,
     sourceGrade: strategyRef?.sourceGrade ?? '',
     sourceLabel: strategyRef?.sourceLabel ?? '',
+    sourceRole: finalPicks[0]?.symbol === symbol ? 'main' : finalPicks[1]?.symbol === symbol ? 'sub' : 'other',
     marketLabel: strategyRef?.marketLabel ?? getMarketState().label,
     entryDate: getTodayDateString()
   };
@@ -1083,6 +1111,7 @@ function addHolding(){
   if(existing){
     Object.assign(existing, payload, {
       highest: Math.max(existing.highest ?? current, current),
+      sourceRole: existing.sourceRole || payload.sourceRole,
       entryDate: existing.entryDate || payload.entryDate
     });
   }else{
@@ -1317,6 +1346,7 @@ function buildCloudHoldingsPayload(){
     refTrailPct: h.refTrailPct ?? '',
     sourceGrade: h.sourceGrade || '',
     sourceLabel: h.sourceLabel || '',
+    sourceRole: h.sourceRole || '',
     marketLabel: h.marketLabel || '',
     updatedAt: new Date().toISOString().replace('T',' ').slice(0,19)
   }));
@@ -2033,6 +2063,7 @@ function calcHolding(h){
 
   const holdingDays = calcHoldingDays(h.entryDate);
   const swapStatus = getSwapStatus({ ...h, pnl, current: h.current, highest: h.highest ?? h.current, buy: h.buy, entryDate: h.entryDate });
+  const health = getHoldingHealth({ ...h, pnl, distToStop, distToTp1, trailArmed: h.trailArmed, cls });
 
   return {
     ...h, stop, tp1, tp2, trailPrice, pnl, pnlAmt,
@@ -2041,7 +2072,7 @@ function calcHolding(h){
     effectiveTrailPct, trailStage: adaptiveTrail.trailStage, trailHint: adaptiveTrail.trailHint,
     driftPct: dynamicPlan.driftPct, driftText: dynamicPlan.driftText, driftClass: dynamicPlan.driftClass,
     refPrice: dynamicPlan.refPrice,
-    holdingDays, swapStatus
+    holdingDays, swapStatus, health
   };
 }
 function battlePositionPercent(h){
@@ -2133,6 +2164,17 @@ function updateHoldings(){
           <b>${h.driftPct !== null && h.driftPct !== undefined && h.driftPct > 6 ? '🔴 高買風險' : h.driftPct !== null && h.driftPct !== undefined && h.driftPct > 3 ? '🟡 買價偏高' : h.driftPct !== null && h.driftPct !== undefined && h.driftPct < -3 ? '🟢 買價有利' : 'ℹ️ 買價正常'}</b><br>
           ${h.driftText}
         </div>
+        <div class="healthPanel">
+          <div class="healthTop">
+            <div>
+              <div class="small">持倉健康度</div>
+              <div class="tag">${h.health.label}</div>
+            </div>
+            <div class="levelBadge">${pct(h.health.score,0)}</div>
+          </div>
+          <div class="healthTrack"><div class="healthFill" style="width:${h.health.score}%"></div></div>
+          <div class="healthHint">${h.health.note}</div>
+        </div>
       </div>
 
       <div class="kpis">
@@ -2210,6 +2252,68 @@ function removeHolding(i){
 }
 
 
+
+function safeWinRate(list){
+  if(!list.length) return null;
+  const wins = list.filter(t => (Number(t.pnlPct) || 0) > 0).length;
+  return (wins / list.length) * 100;
+}
+function classifyTradeMistakes(t){
+  const tags = [];
+  const drift = Number(t.entryDriftPct);
+  const pnl = Number(t.pnlPct) || 0;
+  const days = Number(t.holdingDays) || 0;
+
+  if(Number.isFinite(drift) && drift >= 3){
+    tags.push('追高單');
+  }
+  if(t.closeReason === 'SL' && days <= 3){
+    tags.push('衝動停損');
+  }
+  if(t.closeReason === 'manual' && pnl < 0){
+    tags.push('手動硬砍');
+  }
+  if(t.closeReason === 'manual' && pnl > 8 && days >= 10){
+    tags.push('拖延出場');
+  }
+  return tags;
+}
+function renderMistakeTags(tags){
+  if(!tags || !tags.length) return '—';
+  return tags.map(tag => {
+    const cls = (tag === '追高單' || tag === '衝動停損' || tag === '手動硬砍') ? 'bad' : 'warn';
+    return `<span class="errorTag ${cls}">${tag}</span>`;
+  }).join('');
+}
+function getHoldingHealth(h){
+  const pnl = Number(h.pnl) || 0;
+  const distToStop = Number(h.distToStop);
+  const distToTp1 = Number(h.distToTp1);
+  let score = 50;
+  let label = '⚖️ 中性';
+  let note = '位置在中間區，續看價格是否往停利區推進。';
+
+  if(Number.isFinite(distToStop)) score += Math.min(20, distToStop * 1.5);
+  if(Number.isFinite(distToTp1)) score += Math.max(-15, (12 - distToTp1) * 1.2);
+  score += pnl * 1.2;
+
+  score = Math.max(5, Math.min(95, score));
+
+  if(pnl >= 8 || (h.trailArmed && h.cls !== 'danger')){
+    label = '🔥 強勢';
+    note = '已接近或進入鎖利區，優先交給移動停利處理。';
+  } else if(pnl >= 0 && Number.isFinite(distToStop) && distToStop > 5){
+    label = '🟢 安全';
+    note = '已脫離成本壓力，先持有觀察。';
+  } else if(h.cls === 'danger' || (Number.isFinite(distToStop) && distToStop < 2)){
+    label = '🔴 危險';
+    note = '已靠近停損帶，今晚必須優先處理。';
+  } else if(pnl > -2){
+    label = '🟡 震盪';
+    note = '仍在成本附近拉扯，留意是否轉弱進入換牌。';
+  }
+  return { score, label, note };
+}
 function getPerformanceStats(){
   const total = tradeHistory.length;
   const wins = tradeHistory.filter(t => (Number(t.pnlPct) || 0) > 0);
@@ -2222,7 +2326,29 @@ function getPerformanceStats(){
     if((Number(t.pnlPct) || 0) <= 0){ streak += 1; maxLossStreak = Math.max(maxLossStreak, streak); }
     else streak = 0;
   });
-  return { total, winRate, avgWin, avgLoss, maxLossStreak };
+
+  const mainTrades = tradeHistory.filter(t => t.sourceRole === 'main');
+  const subTrades = tradeHistory.filter(t => t.sourceRole === 'sub');
+  const resonanceTrades = tradeHistory.filter(t => String(t.sourceGrade || '').includes('S+'));
+  const pureLocalTrades = tradeHistory.filter(t => !String(t.sourceGrade || '').includes('S+') && String(t.sourceLabel || '').includes('本地'));
+
+  const mistakeCounts = { chase:0, impulse:0, late:0, manual:0 };
+  tradeHistory.forEach(t => {
+    const tags = classifyTradeMistakes(t);
+    if(tags.includes('追高單')) mistakeCounts.chase += 1;
+    if(tags.includes('衝動停損')) mistakeCounts.impulse += 1;
+    if(tags.includes('拖延出場')) mistakeCounts.late += 1;
+    if(tags.includes('手動硬砍')) mistakeCounts.manual += 1;
+  });
+
+  return {
+    total, winRate, avgWin, avgLoss, maxLossStreak,
+    mainWinRate: safeWinRate(mainTrades),
+    subWinRate: safeWinRate(subTrades),
+    resonanceWinRate: safeWinRate(resonanceTrades),
+    localWinRate: safeWinRate(pureLocalTrades),
+    mistakeCounts
+  };
 }
 function updatePerformancePanel(){
   const stats = getPerformanceStats();
@@ -2231,10 +2357,18 @@ function updatePerformancePanel(){
   $('perfAvgWin').textContent = stats.avgWin === null ? '—' : '+' + pct(stats.avgWin,2);
   $('perfAvgLoss').textContent = stats.avgLoss === null ? '—' : pct(stats.avgLoss,2);
   $('perfMaxLossStreak').textContent = fmt(stats.maxLossStreak,0);
+  $('perfMainWinRate').textContent = pct(stats.mainWinRate,0);
+  $('perfSubWinRate').textContent = pct(stats.subWinRate,0);
+  $('perfResonanceWinRate').textContent = pct(stats.resonanceWinRate,0);
+  $('perfLocalWinRate').textContent = pct(stats.localWinRate,0);
+  $('perfMistakeChase').textContent = fmt(stats.mistakeCounts.chase,0);
+  $('perfMistakeImpulse').textContent = fmt(stats.mistakeCounts.impulse,0);
+  $('perfMistakeLate').textContent = fmt(stats.mistakeCounts.late,0);
+  $('perfMistakeManual').textContent = fmt(stats.mistakeCounts.manual,0);
 
   const body = $('tradeHistoryBody');
   if(!tradeHistory.length){
-    body.innerHTML = '<tr><td colspan="10" class="small">尚無平倉紀錄。</td></tr>';
+    body.innerHTML = '<tr><td colspan="11" class="small">尚無平倉紀錄。</td></tr>';
     return;
   }
   body.innerHTML = [...tradeHistory].reverse().map(t => `
@@ -2248,6 +2382,7 @@ function updatePerformancePanel(){
       <td>${t.sourceLabel || '—'}</td>
       <td>${t.marketLabel || '—'}</td>
       <td>${getCloseReasonLabel(t.closeReason)}</td>
+      <td>${renderMistakeTags(t.mistakeTags || classifyTradeMistakes(t))}</td>
       <td class="${t.result === 'win' ? 'ok' : 'danger'}">${t.result === 'win' ? '勝' : '負'}</td>
     </tr>
   `).join('');
@@ -2277,7 +2412,8 @@ function confirmClosePosition(){
     return;
   }
   const pnlPct = h.buy ? ((sell - h.buy) / h.buy) * 100 : null;
-  tradeHistory.push({
+  const closeReason = $('closeReason').value;
+  const tradeRecord = {
     symbol: h.symbol,
     name: h.name || '',
     buy: h.buy,
@@ -2285,12 +2421,17 @@ function confirmClosePosition(){
     pnlPct,
     holdingDays: h.holdingDays,
     sourceLabel: h.sourceLabel || h.sourceGrade || '—',
+    sourceGrade: h.sourceGrade || '',
+    sourceRole: h.sourceRole || '',
     marketLabel: h.marketLabel || getMarketState().label,
-    closeReason: $('closeReason').value,
+    closeReason,
     result: (pnlPct || 0) > 0 ? 'win' : 'loss',
     entryDate: h.entryDate || '',
-    exitDate: getTodayDateString()
-  });
+    exitDate: getTodayDateString(),
+    entryDriftPct: h.driftPct ?? null
+  };
+  tradeRecord.mistakeTags = classifyTradeMistakes(tradeRecord);
+  tradeHistory.push(tradeRecord);
   holdings.splice(closeDialogIndex,1);
   closeCloseDialog();
   updateHoldings();
