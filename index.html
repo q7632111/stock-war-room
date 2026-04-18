@@ -322,6 +322,21 @@ th{color:var(--muted)}
   th,td{font-size:12px}
   .heatRow{grid-template-columns:62px 1fr auto}
 }
+
+.close-overlay{position:fixed;inset:0;background:rgba(3,7,18,.72);display:none;align-items:center;justify-content:center;padding:18px;z-index:120}
+.close-overlay.show{display:flex}
+.close-modal{width:min(560px,100%);background:linear-gradient(180deg, rgba(12,23,39,.98), rgba(9,17,31,.98));border:1px solid var(--line2);border-radius:22px;box-shadow:var(--shadow);padding:18px}
+.close-grid{display:grid;gap:12px;margin-top:12px}
+.close-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.close-note{font-size:12px;color:var(--muted);line-height:1.7}
+.historyTableWrap{overflow:auto}
+.historyTable{width:100%;border-collapse:collapse;min-width:1100px}
+.historyTable th,.historyTable td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;text-align:left}
+.historyTable th{color:var(--muted)}
+.perfGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media (max-width:1200px){.perfGrid{grid-template-columns:1fr 1fr}.close-actions button{flex:1 1 calc(50% - 10px)}}
+@media (max-width:780px){.perfGrid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -680,7 +695,67 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">v6.4 AI 強化戰情室版：OTC / TWII 市場面板、固定 RSI14 / 漲跌家數規則、S+ 共振、動態乖離門檻與戰備資金整合完成。</div>
+
+      <section class="panel" style="margin-top:16px">
+        <div class="sectionTitle">📊 績效回顧面板</div>
+        <div class="sub">平倉後會自動寫入戰績。這裡用來檢查主攻 / 副攻 / AI 共振到底有沒有真的幫你賺錢。</div>
+        <div class="perfGrid" style="margin-top:14px">
+          <div class="hudCard"><div class="k">總交易數</div><div class="v" id="perfTotalTrades">0</div><div class="small">已完成平倉筆數</div></div>
+          <div class="hudCard"><div class="k">勝率</div><div class="v" id="perfWinRate">—</div><div class="small">獲利筆數 / 總交易</div></div>
+          <div class="hudCard"><div class="k">平均獲利</div><div class="v" id="perfAvgWin">—</div><div class="small">只計算獲利單</div></div>
+          <div class="hudCard"><div class="k">平均虧損</div><div class="v" id="perfAvgLoss">—</div><div class="small">只計算虧損單</div></div>
+          <div class="hudCard"><div class="k">最大連敗</div><div class="v" id="perfMaxLossStreak">0</div><div class="small">幫你看是否過度硬拗</div></div>
+        </div>
+        <div class="historyTableWrap" style="margin-top:16px">
+          <table class="historyTable">
+            <thead>
+              <tr>
+                <th>平倉日</th>
+                <th>股票</th>
+                <th>買入</th>
+                <th>賣出</th>
+                <th>報酬%</th>
+                <th>持有天數</th>
+                <th>來源</th>
+                <th>市場模式</th>
+                <th>原因</th>
+                <th>結果</th>
+              </tr>
+            </thead>
+            <tbody id="tradeHistoryBody"><tr><td colspan="10" class="small">尚無平倉紀錄。</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="close-overlay" id="closeOverlay">
+        <div class="close-modal">
+          <div class="sectionTitle">📤 雙模式平倉</div>
+          <div class="close-note" id="closeDialogInfo">請選擇平倉方式。</div>
+          <div class="close-grid">
+            <label><input type="radio" name="closeMode" value="current" checked> 使用目前現價平倉</label>
+            <label><input type="radio" name="closeMode" value="manual"> 手動輸入實際賣價</label>
+            <div>
+              <label for="manualClosePrice">實際賣出價</label>
+              <input id="manualClosePrice" type="number" step="0.01" placeholder="例如 123.5">
+            </div>
+            <div>
+              <label for="closeReason">平倉原因</label>
+              <select id="closeReason">
+                <option value="TP">達到 TP / 鎖利</option>
+                <option value="SL">跌破 SL / 風控</option>
+                <option value="rotation">換牌</option>
+                <option value="manual">手動出場</option>
+              </select>
+            </div>
+          </div>
+          <div class="close-actions">
+            <button class="success" id="confirmCloseBtn">確認平倉</button>
+            <button class="secondary" id="cancelCloseBtn">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">v6.5 AI 強化戰情室版：OTC / TWII 市場面板、固定 RSI14 / 漲跌家數規則、S+ 共振、動態乖離門檻、雙模式平倉與績效回顧面板整合完成。｜ 作者:q7632111@gmail.com</div>
     </div>
   </div>
 </div>
@@ -698,6 +773,8 @@ let decisionSource = '—';
 let flowState = { csvAnalyzed:false, promptCopied:false, aiParsed:false, decided:false };
 let marketConfirmed = false;
 let aiAssistState = 'idle';
+let tradeHistory = [];
+let closeDialogIndex = null;
 
 const DEFAULT_MARKET_FORM = {
   marketBasis:'OTC',
@@ -800,6 +877,31 @@ function normalizeHolding(row){
     updatedAt: row.updatedAt || ''
   };
 }
+
+function normalizeTrade(row){
+  return {
+    symbol: String(row.symbol || '').trim(),
+    name: String(row.name || '').trim(),
+    buy: num(row.buy),
+    sell: num(row.sell),
+    pnlPct: num(row.pnlPct),
+    holdingDays: num(row.holdingDays),
+    sourceLabel: String(row.sourceLabel || '').trim(),
+    marketLabel: String(row.marketLabel || '').trim(),
+    closeReason: String(row.closeReason || '').trim(),
+    result: String(row.result || '').trim(),
+    exitDate: row.exitDate || '',
+    entryDate: row.entryDate || ''
+  };
+}
+function getCloseReasonLabel(v){
+  if(v === 'TP') return 'TP / 鎖利';
+  if(v === 'SL') return 'SL / 風控';
+  if(v === 'rotation') return '換牌';
+  if(v === 'manual') return '手動出場';
+  return '—';
+}
+
 function getTodayDateString(){
   const d = new Date();
   const y = d.getFullYear();
@@ -994,6 +1096,7 @@ function addHolding(){
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
+  updatePerformancePanel();
   saveLocal();
   setFlowMessage(`✅ 已加入持倉監控：${symbol}${stockName ? ' ' + stockName : ''}`);
 }
@@ -1309,7 +1412,7 @@ function saveLocal(){
       capital:$('capitalSlider').value
     },
     marketForm:getMarketForm(),
-    localPicks, aiCodes, finalPicks, holdings, decisionSource, flowState, aiAssistState
+    localPicks, aiCodes, finalPicks, holdings, decisionSource, flowState, aiAssistState, tradeHistory
   };
   localStorage.setItem(STORE, JSON.stringify(data));
 }
@@ -1549,6 +1652,7 @@ function analyzeCSV(){
   updateHeatMap();
   updatePressurePanel();
   updateMarketBadge();
+  updatePerformancePanel();
   saveLocal();
   return true;
 }
@@ -1665,6 +1769,7 @@ function decideFinal(){
   updateHeatMap();
   updatePressurePanel();
   updateMarketBadge();
+  updatePerformancePanel();
   saveLocal();
   return true;
 }
@@ -2062,6 +2167,7 @@ function updateHoldings(){
 
       <div class="toolbar" style="margin-top:10px">
         <button class="secondary" onclick="editHolding(${i})">載入修改</button>
+        <button class="success" onclick="openCloseDialog(${i})">平倉</button>
         <button class="danger" onclick="removeHolding(${i})">刪除</button>
       </div>
     </div>
@@ -2078,7 +2184,9 @@ function updateHoldings(){
   updateHeatMap();
   updatePressurePanel();
   updateMarketBadge();
+  updatePerformancePanel();
 }
+
 
 function editHolding(i){
   const h = holdings[i];
@@ -2097,7 +2205,105 @@ function removeHolding(i){
   updateHeatMap();
   updatePressurePanel();
   updateMarketBadge();
+  updatePerformancePanel();
   saveLocal();
+}
+
+
+function getPerformanceStats(){
+  const total = tradeHistory.length;
+  const wins = tradeHistory.filter(t => (Number(t.pnlPct) || 0) > 0);
+  const losses = tradeHistory.filter(t => (Number(t.pnlPct) || 0) <= 0);
+  const winRate = total ? (wins.length / total) * 100 : null;
+  const avgWin = wins.length ? wins.reduce((a,t)=>a + (Number(t.pnlPct)||0),0) / wins.length : null;
+  const avgLoss = losses.length ? losses.reduce((a,t)=>a + (Number(t.pnlPct)||0),0) / losses.length : null;
+  let maxLossStreak = 0, streak = 0;
+  tradeHistory.forEach(t => {
+    if((Number(t.pnlPct) || 0) <= 0){ streak += 1; maxLossStreak = Math.max(maxLossStreak, streak); }
+    else streak = 0;
+  });
+  return { total, winRate, avgWin, avgLoss, maxLossStreak };
+}
+function updatePerformancePanel(){
+  const stats = getPerformanceStats();
+  $('perfTotalTrades').textContent = fmt(stats.total,0);
+  $('perfWinRate').textContent = pct(stats.winRate,0);
+  $('perfAvgWin').textContent = stats.avgWin === null ? '—' : '+' + pct(stats.avgWin,2);
+  $('perfAvgLoss').textContent = stats.avgLoss === null ? '—' : pct(stats.avgLoss,2);
+  $('perfMaxLossStreak').textContent = fmt(stats.maxLossStreak,0);
+
+  const body = $('tradeHistoryBody');
+  if(!tradeHistory.length){
+    body.innerHTML = '<tr><td colspan="10" class="small">尚無平倉紀錄。</td></tr>';
+    return;
+  }
+  body.innerHTML = [...tradeHistory].reverse().map(t => `
+    <tr>
+      <td>${t.exitDate || '—'}</td>
+      <td>${t.symbol} ${t.name || ''}</td>
+      <td>${fmt(t.buy,2)}</td>
+      <td>${fmt(t.sell,2)}</td>
+      <td class="${(Number(t.pnlPct)||0) >= 0 ? 'ok' : 'danger'}">${pct(t.pnlPct,2)}</td>
+      <td>${t.holdingDays ?? '—'}</td>
+      <td>${t.sourceLabel || '—'}</td>
+      <td>${t.marketLabel || '—'}</td>
+      <td>${getCloseReasonLabel(t.closeReason)}</td>
+      <td class="${t.result === 'win' ? 'ok' : 'danger'}">${t.result === 'win' ? '勝' : '負'}</td>
+    </tr>
+  `).join('');
+}
+function openCloseDialog(index){
+  closeDialogIndex = index;
+  const h = holdings[index];
+  if(!h) return;
+  $('closeDialogInfo').innerHTML = `<b>${h.symbol} ${h.name || ''}</b><br>目前現價：${fmt(h.current,2)} ｜ 買入價：${fmt(h.buy,2)} ｜ 預設將以目前現價平倉。`;
+  $('manualClosePrice').value = h.current ?? '';
+  $('closeReason').value = h.cls === 'danger' ? 'SL' : h.action.includes('停利') ? 'TP' : 'manual';
+  document.querySelectorAll('input[name="closeMode"]').forEach(r => r.checked = r.value === 'current');
+  $('closeOverlay').classList.add('show');
+}
+function closeCloseDialog(){
+  closeDialogIndex = null;
+  $('closeOverlay').classList.remove('show');
+}
+function confirmClosePosition(){
+  if(closeDialogIndex === null) return;
+  const h = holdings[closeDialogIndex];
+  if(!h) return;
+  const mode = document.querySelector('input[name="closeMode"]:checked')?.value || 'current';
+  let sell = mode === 'manual' ? num($('manualClosePrice').value) : num(h.current);
+  if(sell === null){
+    alert('請輸入有效的賣出價。');
+    return;
+  }
+  const pnlPct = h.buy ? ((sell - h.buy) / h.buy) * 100 : null;
+  tradeHistory.push({
+    symbol: h.symbol,
+    name: h.name || '',
+    buy: h.buy,
+    sell,
+    pnlPct,
+    holdingDays: h.holdingDays,
+    sourceLabel: h.sourceLabel || h.sourceGrade || '—',
+    marketLabel: h.marketLabel || getMarketState().label,
+    closeReason: $('closeReason').value,
+    result: (pnlPct || 0) > 0 ? 'win' : 'loss',
+    entryDate: h.entryDate || '',
+    exitDate: getTodayDateString()
+  });
+  holdings.splice(closeDialogIndex,1);
+  closeCloseDialog();
+  updateHoldings();
+  updateSystemTable();
+  updateCommandCenter();
+  updateHud();
+  updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
+  updatePerformancePanel();
+  saveLocal();
+  setFlowMessage(`✅ 已平倉 ${h.symbol}${h.name ? ' ' + h.name : ''}，並寫入績效回顧。`);
 }
 
 function updateSystemTable(){
@@ -2480,6 +2686,7 @@ function clearAll(){
   updateHeatMap();
   updatePressurePanel();
   updateMarketBadge();
+  updatePerformancePanel();
   saveLocal();
 }
 
@@ -2500,6 +2707,7 @@ async function initApp(){
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
+  updatePerformancePanel();
   updateEntryDriftGuide();
   try{
     await loadCloud();
@@ -2533,6 +2741,9 @@ $('clearHoldBtn').addEventListener('click', clearHoldForm);
 $('holdSymbol').addEventListener('input', updateEntryDriftGuide);
 $('holdBuy').addEventListener('input', updateEntryDriftGuide);
 $('applyMainSuggestBtn').addEventListener('click', applyMainSuggestedMode);
+$('confirmCloseBtn').addEventListener('click', confirmClosePosition);
+$('cancelCloseBtn').addEventListener('click', closeCloseDialog);
+$('closeOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'closeOverlay') closeCloseDialog(); });
 $('applyMarketBtn').addEventListener('click', ()=>{
   marketConfirmed = true;
   updateMarketPanelSummary();
@@ -2549,6 +2760,7 @@ $('applyMarketBtn').addEventListener('click', ()=>{
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
+  updatePerformancePanel();
   saveLocal();
   setFlowMessage(`✅ 已套用市場判斷：${getMarketState().label}。`);
 });
