@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max v6.2｜紀律強化版</title>
+<title>AI 戰艦 Pro Max v6.4｜AI 強化戰情室版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -329,10 +329,10 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6.2｜紀律強化版</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v6.4｜AI 強化戰情室版</div>
         <div class="brandSub">S+ 共振優先、自適應市場判斷、動態乖離門檻、AI 代碼過濾、TP/SL 自動建議、戰場視覺與雲端同步整合。</div>
       </div>
-      <div class="quickBadges">
+      <div class="quickBadges"><div class="badge">作者：q7632111@gmail.com</div>
         <div class="badge">⭐ S+ 共振</div>
         <div class="badge">🚨 鎖單防呆</div>
         <div class="badge">💰 戰備資金</div>
@@ -680,7 +680,7 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">v6.1 市場鎖死版：OTC / TWII 市場面板、固定 RSI14 / 漲跌家數規則、S+ 共振、動態乖離門檻與戰備資金整合完成。</div>
+      <div class="footer">v6.4 AI 強化戰情室版：OTC / TWII 市場面板、固定 RSI14 / 漲跌家數規則、S+ 共振、動態乖離門檻與戰備資金整合完成。</div>
     </div>
   </div>
 </div>
@@ -697,6 +697,7 @@ let holdings = [];
 let decisionSource = '—';
 let flowState = { csvAnalyzed:false, promptCopied:false, aiParsed:false, decided:false };
 let marketConfirmed = false;
+let aiAssistState = 'idle';
 
 const DEFAULT_MARKET_FORM = {
   marketBasis:'OTC',
@@ -1308,7 +1309,7 @@ function saveLocal(){
       capital:$('capitalSlider').value
     },
     marketForm:getMarketForm(),
-    localPicks, aiCodes, finalPicks, holdings, decisionSource, flowState
+    localPicks, aiCodes, finalPicks, holdings, decisionSource, flowState, aiAssistState
   };
   localStorage.setItem(STORE, JSON.stringify(data));
 }
@@ -1334,11 +1335,14 @@ function loadLocal(){
     holdings = Array.isArray(data.holdings) ? data.holdings : [];
     decisionSource = data.decisionSource || '—';
     flowState = data.flowState || flowState;
+    aiAssistState = data.aiAssistState || aiAssistState;
     $('mLocal').textContent = localPicks.length ? localPicks.slice(0,2).map(x=>x.symbol).join(' / ') : '—';
     $('mAi').textContent = aiCodes.length ? aiCodes.join(' / ') : '—';
     $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
     if(localPicks.length) $('localSummary').innerHTML = `本地前段班：<b>${localPicks.slice(0,3).map(x=>`${x.symbol} ${x.name||''}`).join('、')}</b>`;
-    if(aiCodes.length) $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b>`;
+    if(aiAssistState === 'fallback') $('aiSummary').innerHTML = 'AI 未提供有效標的，系統已自動改用本地前段班。';
+    else if(aiAssistState === 'skipped') $('aiSummary').innerHTML = '未使用 AI，系統以本地前段班完成最終決策。';
+    else if(aiCodes.length) $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b>`;
   }catch(err){
     console.warn('loadLocal failed', err);
   }
@@ -1571,8 +1575,16 @@ function parseAI(){
   }
   const txt = $('aiInput').value.trim();
   if(!txt){
-    setFlowMessage('❌ 請先貼上 AI 回覆全文。', true);
-    return false;
+    aiCodes = [];
+    aiAssistState = 'skipped';
+    flowState.aiParsed = true;
+    $('mAi').textContent = '未使用 AI';
+    $('aiSummary').innerHTML = '⚪ 未貼 AI 回覆，系統將直接使用本地前段班進入最終決策。';
+    setFlowMessage('⚪ 未使用 AI，已改為純本地策略模式。你仍可直接做最終決策。');
+    updateLocks();
+    updateCommandCenter();
+    saveLocal();
+    return true;
   }
 
   const rawCodes = txt.match(/\d{4,6}/g) || [];
@@ -1581,13 +1593,20 @@ function parseAI(){
 
   if(!aiCodes.length){
     const possible = [...new Set(rawCodes)].slice(0,5);
-    setFlowMessage('❌ AI 回覆中沒有可用股票代號。可能是抓到年份、非 CSV 代號，或該股已被鎖單。', true);
-    $('aiSummary').innerHTML = `沒有抓到可用股票代號。原始數字：<b>${possible.join('、') || '無'}</b><br>系統只接受：CSV 內存在且未被鎖單的股票。`;
-    return false;
+    aiAssistState = 'fallback';
+    flowState.aiParsed = true;
+    $('mAi').textContent = '本地接管';
+    $('aiSummary').innerHTML = `🟡 AI 有回覆，但沒有可用股票代號。原始數字：<b>${possible.join('、') || '無'}</b><br>系統已自動 fallback，改用本地前段班繼續流程，不再卡住。`;
+    setFlowMessage('🟡 AI 未提供有效標的，系統已自動改用本地前段班。現在可以直接做最終決策。');
+    updateLocks();
+    updateCommandCenter();
+    saveLocal();
+    return true;
   }
 
+  aiAssistState = 'confirmed';
   $('mAi').textContent = aiCodes.join(' / ');
-  $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b><br>已自動過濾掉非 CSV 代號與超過動態乖離上限的禁追股，現在可以做最終決策。`;
+  $('aiSummary').innerHTML = `🟢 AI 解析到：<b>${aiCodes.join('、')}</b><br>已自動過濾掉非 CSV 代號與超過動態乖離上限的禁追股，現在可以做最終決策。`;
   flowState.aiParsed = true;
   setFlowMessage('✅ AI 解析完成，代碼過濾已通過。現在可以做最終決策。');
   updateLocks();
@@ -1602,8 +1621,11 @@ function decideFinal(){
     return false;
   }
   if(!flowState.aiParsed){
-    setFlowMessage('❌ 先解析 AI，才能最終決策。', true);
-    return false;
+    aiAssistState = 'skipped';
+    flowState.aiParsed = true;
+    aiCodes = [];
+    $('mAi').textContent = '未使用 AI';
+    $('aiSummary').innerHTML = '⚪ 未解析 AI，系統已直接改用本地前段班。';
   }
 
   const candidates = selectableLocalPicks().slice(0,6).map(x=>{
@@ -1617,13 +1639,19 @@ function decideFinal(){
   const hasAI = aiCodes.length > 0;
   if(hasSPlus) decisionSource = '共振優先';
   else if(hasAI && finalPicks.some(x=>aiCodes.includes(x.symbol))) decisionSource = 'AI 補強';
+  else if(aiAssistState === 'fallback') decisionSource = 'AI 失效→本地接管';
+  else if(aiAssistState === 'skipped') decisionSource = '純本地策略';
   else decisionSource = '本地優先';
 
   flowState.decided = true;
   $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
   setFlowMessage(hasSPlus
     ? '✅ 最終決策完成：已啟用 S+ 共振優先，主攻股由本地 + AI 雙重確認選出。'
-    : '✅ 最終決策完成。禁追股已排除，現在可以帶入主攻股或直接加入持倉監控。');
+    : aiAssistState === 'fallback'
+      ? '✅ 最終決策完成：AI 未提供有效標的，系統已改用本地前段班接管。'
+      : aiAssistState === 'skipped'
+        ? '✅ 最終決策完成：未使用 AI，系統已依本地前段班完成鎖定。'
+        : '✅ 最終決策完成。禁追股已排除，現在可以帶入主攻股或直接加入持倉監控。');
   updateLocks();
   updateConfidence();
   updateSystemTable();
@@ -1646,7 +1674,7 @@ function runFlow(){
   if(!flowState.promptCopied){ copyPrompt(); return; }
   if(!flowState.aiParsed){
     if(!$('aiInput').value.trim()){
-      setFlowMessage('⚠️ 提示詞已複製，請先去問 AI，拿回回覆後貼進來。', true);
+      setFlowMessage('⚠️ 提示詞已複製。你可以先去問 AI；若今晚不想等，也可直接按「一鍵最終決策」走純本地策略。', true);
       return;
     }
     parseAI(); return;
@@ -2190,7 +2218,7 @@ function updateLocks(){
   $('stepPrompt').textContent = flowState.promptCopied ? '完成' : '待命';
   $('stepPromptSub').textContent = flowState.promptCopied ? '提示詞已複製' : '尚未複製提示詞';
   $('stepAi').textContent = flowState.aiParsed ? '完成' : '待命';
-  $('stepAiSub').textContent = flowState.aiParsed ? 'AI 已完成解析' : '尚未解析 AI';
+  $('stepAiSub').textContent = !flowState.aiParsed ? '尚未解析 AI' : aiAssistState === 'confirmed' ? 'AI 已完成加分解析' : aiAssistState === 'fallback' ? 'AI 無有效標的，已切本地' : '未使用 AI，已切本地';
   $('stepDecision').textContent = flowState.decided ? '完成' : '待命';
   $('stepDecisionSub').textContent = flowState.decided ? '最終標的已鎖定' : '尚未最終決策';
 
@@ -2205,13 +2233,17 @@ function updateLocks(){
     : !flowState.csvAnalyzed
       ? '🔒 尚未分析 CSV，AI 流程鎖定。'
       : !flowState.aiParsed
-        ? '⚠️ 已開放 AI 流程，先貼 AI 回覆並解析。只接受 CSV 存在且未鎖單的代號。'
-        : '✅ AI 已解析，可以做最終決策。';
+        ? '⚠️ 已開放 AI 流程。AI 是大加分層，不是阻塞點；就算沒有有效標的，系統也會自動 fallback 到本地前段班。'
+        : aiAssistState === 'confirmed'
+          ? '🟢 AI 已成功加分，可以做最終決策。'
+          : aiAssistState === 'fallback'
+            ? '🟡 AI 未提供有效標的，已自動切換為本地接管。'
+            : '⚪ 未使用 AI，目前以純本地策略運作。';
   $('globalLockLine').textContent = !marketReady
-    ? '請先完成：市場確認 → CSV 分析 → 複製 AI 提示詞 → 解析 AI → 最終決策。'
+    ? '請先完成：市場確認 → CSV 分析 → 複製 AI 提示詞 → 解析 AI（可 fallback） → 最終決策。'
     : flowState.decided
       ? '✅ 主副攻已鎖定。現在重點是同步資料、監控持倉、依智能建議掛單。'
-      : '會依序執行：市場確認 → CSV 分析 → 複製 AI 提示詞 → 解析 AI → 最終決策。';
+      : '會依序執行：市場確認 → CSV 分析 → 複製 AI 提示詞 → 解析 AI（可 fallback） → 最終決策。';
 }
 
 function updateHud(){
@@ -2425,6 +2457,7 @@ function clearAll(){
   finalPicks = [];
   holdings = [];
   decisionSource = '—';
+  aiAssistState = 'idle';
   flowState = {csvAnalyzed:false,promptCopied:false,aiParsed:false,decided:false};
   $('mLocal').textContent = '—';
   $('mAi').textContent = '—';
