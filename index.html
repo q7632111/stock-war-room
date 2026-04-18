@@ -330,6 +330,7 @@ th{color:var(--muted)}
         <div class="badge">⭐ S+ 共振</div>
         <div class="badge">🚨 鎖單防呆</div>
         <div class="badge">💰 戰備資金</div>
+        <div class="badge">🎯 智慧帶入</div>
       </div>
     </div>
   </div>
@@ -565,7 +566,7 @@ th{color:var(--muted)}
             <button id="loadMainBtn" class="secondary">帶入主攻股</button>
             <button id="clearHoldBtn" class="secondary">清空輸入</button>
           </div>
-          <div id="holdGuide" class="reason">加入持倉時會優先帶入股票名稱。移動停利只有先達停利1後才會啟動。</div>
+          <div id="holdGuide" class="reason">加入持倉時會優先帶入股票名稱與策略參考價。實際買價若偏離參考價，系統會自動調整動態 TP/SL。</div>
         </section>
 
         <section class="panel">
@@ -695,9 +696,169 @@ function normalizeHolding(row){
     current: num(row.current),
     highest: num(row.highest),
     trailArmed: normalizeBool(row.trailArmed),
+    refPrice: num(row.refPrice),
+    refStopPct: num(row.refStopPct),
+    refTp1Pct: num(row.refTp1Pct),
+    refTp2Pct: num(row.refTp2Pct),
+    refTrailPct: num(row.refTrailPct),
+    sourceGrade: String(row.sourceGrade || '').trim(),
+    sourceLabel: String(row.sourceLabel || '').trim(),
+    marketLabel: String(row.marketLabel || '').trim(),
     updatedAt: row.updatedAt || ''
   };
 }
+function clamp(v,min,max){
+  return Math.min(max, Math.max(min, v));
+}
+function getStrategyRefBySymbol(symbol){
+  const ref = findStockRefBySymbol(symbol);
+  if(!ref) return null;
+  const modeInfo = classifyMode(ref);
+  const resonance = getResonanceInfo(ref);
+  return {
+    symbol: ref.symbol,
+    name: ref.name || '',
+    refPrice: num(ref.price),
+    refStopPct: num(modeInfo.stop),
+    refTp1Pct: num(modeInfo.tp1),
+    refTp2Pct: num(modeInfo.tp2),
+    refTrailPct: num(modeInfo.trail),
+    sourceGrade: resonance.grade,
+    sourceLabel: resonance.label,
+    marketLabel: getMarketState().label
+  };
+}
+function computeDynamicPlanFromReference(buy, strategyRef, fallbackCfg){
+  const baseStopPct = strategyRef?.refStopPct ?? fallbackCfg.stopPct;
+  const baseTp1Pct = strategyRef?.refTp1Pct ?? fallbackCfg.tp1Pct;
+  const baseTp2Pct = strategyRef?.refTp2Pct ?? fallbackCfg.tp2Pct;
+  const baseTrailPct = strategyRef?.refTrailPct ?? fallbackCfg.trailPct;
+  const refPrice = strategyRef?.refPrice ?? null;
+
+  let driftPct = null;
+  let driftText = '尚未比對';
+  let stopPct = baseStopPct;
+  let tp1Pct = baseTp1Pct;
+  let tp2Pct = baseTp2Pct;
+  let trailPct = baseTrailPct;
+  let driftClass = 'info';
+
+  if(Number.isFinite(refPrice) && Number.isFinite(buy) && refPrice > 0){
+    driftPct = ((buy - refPrice) / refPrice) * 100;
+
+    stopPct = clamp(baseStopPct - driftPct * 0.35, 3, 12);
+    tp1Pct = clamp(baseTp1Pct - driftPct * 0.40, 4, 25);
+    tp2Pct = clamp(baseTp2Pct - driftPct * 0.50, 8, 35);
+    trailPct = clamp(baseTrailPct - driftPct * 0.20, 2, 10);
+
+    if(driftPct >= 3){
+      driftText = `⚠️ 你比策略參考價買貴 ${pct(driftPct,2)}，系統已自動收緊停損與停利。`;
+      driftClass = 'danger';
+    }else if(driftPct > 0){
+      driftText = `🟡 你比策略參考價高買 ${pct(driftPct,2)}，系統已微幅保守化。`;
+      driftClass = 'warn';
+    }else if(driftPct <= -3){
+      driftText = `🟢 你比策略參考價買低 ${pct(Math.abs(driftPct),2)}，系統已放大獲利空間。`;
+      driftClass = 'ok';
+    }else{
+      driftText = `✅ 實際買價與策略參考價偏差 ${pct(driftPct,2)}，仍在合理範圍。`;
+      driftClass = 'ok';
+    }
+  }
+
+  return { refPrice, driftPct, driftText, driftClass, stopPct, tp1Pct, tp2Pct, trailPct };
+}
+function setHoldGuideMessage(html, isError=false){
+  const el = $('holdGuide');
+  if(!el) return;
+  el.innerHTML = html;
+  el.style.borderColor = isError ? 'rgba(248,113,113,.28)' : 'rgba(160,200,255,.12)';
+}
+function updateEntryDriftGuide(){
+  const symbol = $('holdSymbol').value.trim();
+  const buy = num($('holdBuy').value);
+  const strategyRef = getStrategyRefBySymbol(symbol || finalPicks[0]?.symbol || '');
+  if(!strategyRef){
+    setHoldGuideMessage('加入持倉時會優先帶入股票名稱。移動停利只有先達停利1後才會啟動。');
+    return;
+  }
+  const fallbackCfg = getCfg();
+  const plan = computeDynamicPlanFromReference(buy, strategyRef, fallbackCfg);
+  const grade = strategyRef.sourceGrade ? `${strategyRef.sourceGrade}（${strategyRef.sourceLabel || '策略來源'}）` : '—';
+  const buyText = Number.isFinite(buy) ? fmt(buy,2) : '尚未輸入';
+  setHoldGuideMessage(`
+    <b>智慧帶入：</b>${strategyRef.symbol} ${strategyRef.name || ''} ｜ ${grade} ｜ ${strategyRef.marketLabel || getMarketState().label}<br>
+    <b>策略參考價：</b>${fmt(strategyRef.refPrice,2)} ｜ <b>你的買入價：</b>${buyText}<br>
+    <b>動態停損 / 停利：</b>-${pct(plan.stopPct,1).replace('%','')} / +${pct(plan.tp1Pct,1).replace('%','')} / +${pct(plan.tp2Pct,1).replace('%','')} ｜ 移動停利回撤 ${pct(plan.trailPct,1)}<br>
+    <b>偏差提醒：</b><span class="${plan.driftClass}">${plan.driftText}</span>
+  `);
+}
+function loadMainToForm(){
+  const main = finalPicks && finalPicks.length ? finalPicks[0] : null;
+  if(!main){
+    setFlowMessage('❌ 目前沒有主攻股可帶入。請先完成分析與最終決策。', true);
+    return;
+  }
+  $('holdSymbol').value = main.symbol || '';
+  $('holdBuy').value = main.price ?? '';
+  $('holdCurrent').value = main.price ?? '';
+  updateEntryDriftGuide();
+  setFlowMessage(`✅ 已帶入主攻股：${main.symbol}${main.name ? ' ' + main.name : ''}`);
+}
+function clearHoldForm(){
+  $('holdSymbol').value = '';
+  $('holdBuy').value = '';
+  $('holdCurrent').value = '';
+  setHoldGuideMessage('加入持倉時會優先帶入股票名稱。移動停利只有先達停利1後才會啟動。');
+}
+function addHolding(){
+  const symbol = $('holdSymbol').value.trim();
+  const buy = num($('holdBuy').value);
+  const current = num($('holdCurrent').value);
+
+  if(!symbol || buy===null || current===null){
+    setFlowMessage('❌ 請先填入股票代號、買入價、現價。', true);
+    return;
+  }
+
+  const strategyRef = getStrategyRefBySymbol(symbol);
+  const stockName = strategyRef?.name || findStockRefBySymbol(symbol)?.name || '';
+
+  const payload = {
+    symbol,
+    name: stockName,
+    buy,
+    current,
+    highest: current,
+    trailArmed: false,
+    refPrice: strategyRef?.refPrice ?? null,
+    refStopPct: strategyRef?.refStopPct ?? null,
+    refTp1Pct: strategyRef?.refTp1Pct ?? null,
+    refTp2Pct: strategyRef?.refTp2Pct ?? null,
+    refTrailPct: strategyRef?.refTrailPct ?? null,
+    sourceGrade: strategyRef?.sourceGrade ?? '',
+    sourceLabel: strategyRef?.sourceLabel ?? '',
+    marketLabel: strategyRef?.marketLabel ?? getMarketState().label
+  };
+
+  const existing = holdings.find(h=>h.symbol===symbol);
+  if(existing){
+    Object.assign(existing, payload, { highest: Math.max(existing.highest ?? current, current) });
+  }else{
+    holdings.push(payload);
+  }
+
+  updateHoldings();
+  updateCommandCenter();
+  updateHud();
+  updateTacticGrid();
+  updateRiskAlerts();
+  updateHeatMap();
+  updatePressurePanel();
+  saveLocal();
+  setFlowMessage(`✅ 已加入持倉監控：${symbol}${stockName ? ' ' + stockName : ''}`);
+}
+
 function getActiveCapital(){
   const cfg = getCfg();
   return Math.round(cfg.capital * (1 - cfg.warChestPct / 100));
@@ -843,6 +1004,14 @@ function buildCloudHoldingsPayload(){
     current: h.current ?? '',
     highest: h.highest ?? '',
     trailArmed: !!h.trailArmed,
+    refPrice: h.refPrice ?? '',
+    refStopPct: h.refStopPct ?? '',
+    refTp1Pct: h.refTp1Pct ?? '',
+    refTp2Pct: h.refTp2Pct ?? '',
+    refTrailPct: h.refTrailPct ?? '',
+    sourceGrade: h.sourceGrade || '',
+    sourceLabel: h.sourceLabel || '',
+    marketLabel: h.marketLabel || '',
     updatedAt: new Date().toISOString().replace('T',' ').slice(0,19)
   }));
 }
@@ -1412,15 +1581,29 @@ function calcHolding(h){
   if(h.trailArmed === undefined) h.trailArmed = false;
   if(h.name === undefined) h.name = '';
 
-  const stop = h.buy * (1-cfg.stopPct/100);
-  const tp1 = h.buy * (1+cfg.tp1Pct/100);
-  const tp2 = h.buy * (1+cfg.tp2Pct/100);
+  const strategyRef = {
+    refPrice: h.refPrice,
+    refStopPct: h.refStopPct,
+    refTp1Pct: h.refTp1Pct,
+    refTp2Pct: h.refTp2Pct,
+    refTrailPct: h.refTrailPct
+  };
+  const dynamicPlan = computeDynamicPlanFromReference(h.buy, strategyRef, cfg);
+
+  const stopPct = dynamicPlan.stopPct;
+  const tp1Pct = dynamicPlan.tp1Pct;
+  const tp2Pct = dynamicPlan.tp2Pct;
+  const trailPct = dynamicPlan.trailPct;
+
+  const stop = h.buy * (1-stopPct/100);
+  const tp1 = h.buy * (1+tp1Pct/100);
+  const tp2 = h.buy * (1+tp2Pct/100);
 
   if((h.highest ?? h.current) >= tp1){
     h.trailArmed = true;
   }
 
-  const trailPrice = h.trailArmed ? (h.highest * (1-cfg.trailPct/100)) : null;
+  const trailPrice = h.trailArmed ? (h.highest * (1-trailPct/100)) : null;
   const pnl = ((h.current - h.buy) / h.buy) * 100;
   const pnlAmt = (h.current - h.buy) * 1000;
 
@@ -1444,7 +1627,7 @@ function calcHolding(h){
     action='停損出場';
     cls='danger';
     glow='glow-red';
-    note='已跌破固定停損線，今天先處理風險。';
+    note='已跌破動態停損線，今天先處理風險。';
   }
   else if(h.current >= tp2){
     action='全數停利';
@@ -1483,7 +1666,10 @@ function calcHolding(h){
 
   return {
     ...h, stop, tp1, tp2, trailPrice, pnl, pnlAmt,
-    action, cls, glow, note, trailStatus, trailColor, distToStop, distToTp1
+    action, cls, glow, note, trailStatus, trailColor, distToStop, distToTp1,
+    dynamicStopPct: stopPct, dynamicTp1Pct: tp1Pct, dynamicTp2Pct: tp2Pct, dynamicTrailPct: trailPct,
+    driftPct: dynamicPlan.driftPct, driftText: dynamicPlan.driftText, driftClass: dynamicPlan.driftClass,
+    refPrice: dynamicPlan.refPrice
   };
 }
 function battlePositionPercent(h){
@@ -1578,15 +1764,18 @@ function updateHoldings(){
         <div class="kpi"><div class="k">現價</div><div class="v">${fmt(h.current,2)}</div></div>
         <div class="kpi"><div class="k">報酬率</div><div class="v">${pct(h.pnl,2)}</div></div>
         <div class="kpi"><div class="k">損益</div><div class="v">${fmt(h.pnlAmt,0)}</div></div>
-        <div class="kpi"><div class="k">停損價</div><div class="v">${fmt(h.stop,2)}</div></div>
-        <div class="kpi"><div class="k">停利1</div><div class="v">${fmt(h.tp1,2)}</div></div>
-        <div class="kpi"><div class="k">停利2</div><div class="v">${fmt(h.tp2,2)}</div></div>
-        <div class="kpi"><div class="k">移動停利價</div><div class="v">${h.trailPrice === null ? '未啟動' : fmt(h.trailPrice,2)}</div></div>
+        <div class="kpi"><div class="k">停損價</div><div class="v">${fmt(h.stop,2)}</div><div class="small">-${pct(h.dynamicStopPct,1).replace('%','')}%</div></div>
+        <div class="kpi"><div class="k">停利1</div><div class="v">${fmt(h.tp1,2)}</div><div class="small">+${pct(h.dynamicTp1Pct,1).replace('%','')}%</div></div>
+        <div class="kpi"><div class="k">停利2</div><div class="v">${fmt(h.tp2,2)}</div><div class="small">+${pct(h.dynamicTp2Pct,1).replace('%','')}%</div></div>
+        <div class="kpi"><div class="k">移動停利價</div><div class="v">${h.trailPrice === null ? '未啟動' : fmt(h.trailPrice,2)}</div><div class="small">回撤 ${pct(h.dynamicTrailPct,1)}</div></div>
       </div>
 
       <div class="reason">
         <b>今日指令：</b>${h.action}<br>
         ${h.note}<br>
+        <b>策略參考價：</b>${h.refPrice !== null && h.refPrice !== undefined ? fmt(h.refPrice,2) : '—'}｜
+        <b>買價偏差：</b><span class="${h.driftClass}">${h.driftPct === null || h.driftPct === undefined ? '尚未比對' : pct(h.driftPct,2)}</span><br>
+        <b>偏差提醒：</b><span class="${h.driftClass}">${h.driftText}</span><br>
         <b>最高價：</b>${fmt(h.highest,2)}｜
         <b>移動停利：</b>${h.trailPrice === null ? '未啟動（尚未達停利1）' : fmt(h.trailPrice,2)}<br>
         <b>距離停損：</b>${pct(h.distToStop,2)}｜
@@ -1618,6 +1807,7 @@ function editHolding(i){
   $('holdSymbol').value = h.symbol;
   $('holdBuy').value = h.buy;
   $('holdCurrent').value = h.current;
+  updateEntryDriftGuide();
 }
 function removeHolding(i){
   holdings.splice(i,1);
@@ -1997,6 +2187,7 @@ async function initApp(){
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
+  updateEntryDriftGuide();
   try{
     await loadCloud();
   }catch(err){
@@ -2026,6 +2217,8 @@ $('reloadCloudBtn').addEventListener('click', async ()=>{
 $('addHoldBtn').addEventListener('click', addHolding);
 $('loadMainBtn').addEventListener('click', loadMainToForm);
 $('clearHoldBtn').addEventListener('click', clearHoldForm);
+$('holdSymbol').addEventListener('input', updateEntryDriftGuide);
+$('holdBuy').addEventListener('input', updateEntryDriftGuide);
 $('applyMainSuggestBtn').addEventListener('click', applyMainSuggestedMode);
 
 initApp();
