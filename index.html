@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#050a12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AI 戰艦 Pro Max v4.9｜共振最終版</title>
+<title>AI 戰艦 Pro Max v5｜自適應市場版</title>
 <style>
 :root{
   --bg:#050a12;
@@ -323,8 +323,8 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topbarInner">
       <div>
-        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v4.9｜共振最終版</div>
-        <div class="brandSub">S+ 共振優先、AI 代碼過濾、乖離紅燈鎖單、戰備資金警報、智能模式分類、TP/SL 自動建議、戰場視覺與雲端同步整合。</div>
+        <div class="brandTitle">🛡️ AI 戰艦 Pro Max v5｜自適應市場版</div>
+        <div class="brandSub">S+ 共振優先、自適應市場判斷、動態乖離門檻、AI 代碼過濾、TP/SL 自動建議、戰場視覺與雲端同步整合。</div>
       </div>
       <div class="quickBadges">
         <div class="badge">⭐ S+ 共振</div>
@@ -624,7 +624,7 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">v4.9 共振最終版：S+ 共振、AI 過濾、乖離鎖單、戰備資金、智能模式與 TP/SL 建議全部整合完成。</div>
+      <div class="footer">v5 自適應市場版：S+ 共振、AI 過濾、動態乖離門檻、戰備資金、智能模式與 TP/SL 建議全部整合完成。</div>
     </div>
   </div>
 </div>
@@ -706,21 +706,76 @@ function getWarChestCapital(){
   const cfg = getCfg();
   return Math.round(cfg.capital * (cfg.warChestPct / 100));
 }
+function getMarketState(){
+  if(!localPicks.length){
+    return { key:'neutral', label:'⚖️ 標準', badge:'🌡 市場模式：標準', maxDev:15, tpBoost:0, slBoost:0, trailBoost:0 };
+  }
+  const sample = localPicks.slice(0, Math.min(8, localPicks.length));
+  const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0) / arr.length : 0;
+  const avgRsi = avg(sample.map(x=>Number.isFinite(x.rsi) ? x.rsi : 0));
+  const avgVol = avg(sample.map(x=>Number.isFinite(x.relVol) ? x.relVol : 0));
+  const avgChange = avg(sample.map(x=>Number.isFinite(x.change) ? x.change : 0));
+  const hotCount = sample.filter(x => (x.change ?? 0) >= 6 && (x.relVol ?? 0) >= 1.8).length;
+  const weakCount = sample.filter(x => (x.change ?? 0) <= 0 || (x.rsi ?? 0) < 58).length;
+
+  if(avgRsi >= 68 && avgVol >= 1.9 && avgChange >= 4 && hotCount >= Math.max(2, Math.floor(sample.length*0.3))){
+    return { key:'strong', label:'🔥 強勢', badge:'🌡 市場模式：強勢', maxDev:22, tpBoost:2, slBoost:1, trailBoost:1 };
+  }
+  if(avgRsi < 60 || avgChange < 1.5 || weakCount >= Math.max(3, Math.floor(sample.length*0.45))){
+    return { key:'weak', label:'🛡 保守', badge:'🌡 市場模式：保守', maxDev:12, tpBoost:-2, slBoost:-1, trailBoost:-1 };
+  }
+  return { key:'neutral', label:'⚖️ 標準', badge:'🌡 市場模式：標準', maxDev:15, tpBoost:0, slBoost:0, trailBoost:0 };
+}
+function getMaxDev(){
+  return getMarketState().maxDev;
+}
+function updateMarketBadge(){
+  const el = $('marketBadge');
+  if(!el) return;
+  const state = getMarketState();
+  el.textContent = state.badge;
+}
 function isLockedStock(r){
-  return r && Number.isFinite(r.dev) && r.dev > 15;
+  const maxDev = getMaxDev();
+  return r && Number.isFinite(r.dev) && r.dev > maxDev;
 }
 function classifyMode(r){
+  const market = getMarketState();
   if(!r) return { mode:'未知', label:'—', stop:7, tp1:10, tp2:15, trail:4, className:'purple' };
   if(isLockedStock(r)){
-    return { mode:'禁追', label:'🚨 禁追', stop:null, tp1:null, tp2:null, trail:null, className:'danger' };
+    return { mode:'禁追', label:`🚨 禁追（>${market.maxDev}%）`, stop:null, tp1:null, tp2:null, trail:null, className:'danger' };
   }
   if((r.rsi ?? 0) >= 75 && (r.relVol ?? 0) >= 2.5){
-    return { mode:'強勢', label:'🔥 強勢', stop:9, tp1:15, tp2:20, trail:5, className:'warn' };
+    return {
+      mode: market.key === 'strong' ? '強勢追擊' : '強勢',
+      label: market.key === 'strong' ? '🔥 強勢追擊' : '🔥 強勢',
+      stop: Math.max(5, 9 + market.slBoost),
+      tp1: Math.max(8, 15 + market.tpBoost),
+      tp2: Math.max(12, 20 + market.tpBoost),
+      trail: Math.max(3, 5 + market.trailBoost),
+      className:'warn'
+    };
   }
   if((r.rsi ?? 999) < 65){
-    return { mode:'保守', label:'🛡 保守', stop:5, tp1:8, tp2:12, trail:3, className:'ok' };
+    return {
+      mode: market.key === 'weak' ? '防守' : '保守',
+      label: market.key === 'weak' ? '🛡 防守' : '🛡 保守',
+      stop: Math.max(4, 5 + market.slBoost),
+      tp1: Math.max(6, 8 + market.tpBoost),
+      tp2: Math.max(10, 12 + market.tpBoost),
+      trail: Math.max(2, 3 + market.trailBoost),
+      className:'ok'
+    };
   }
-  return { mode:'標準', label:'⚡ 標準', stop:7, tp1:10, tp2:15, trail:4, className:'info' };
+  return {
+    mode: market.key === 'strong' ? '進攻' : market.key === 'weak' ? '收斂' : '標準',
+    label: market.key === 'strong' ? '🚀 進攻' : market.key === 'weak' ? '🧊 收斂' : '⚡ 標準',
+    stop: Math.max(4, 7 + market.slBoost),
+    tp1: Math.max(7, 10 + market.tpBoost),
+    tp2: Math.max(11, 15 + market.tpBoost),
+    trail: Math.max(2, 4 + market.trailBoost),
+    className:'info'
+  };
 }
 
 function getLocalTopSymbols(limit=2){
@@ -728,7 +783,7 @@ function getLocalTopSymbols(limit=2){
 }
 function getResonanceInfo(r){
   if(!r) return { grade:'—', label:'資料不足', className:'purple', weight:0 };
-  if(isLockedStock(r)) return { grade:'D', label:'🚨 禁追', className:'danger', weight:-999 };
+  if(isLockedStock(r)) return { grade:'D', label:`🚨 禁追（>${getMaxDev()}%）`, className:'danger', weight:-999 };
   const top2 = getLocalTopSymbols(2);
   const inTop2 = top2.includes(r.symbol);
   const inAI = aiCodes.includes(r.symbol);
@@ -852,11 +907,13 @@ async function loadCloud(){
   updateLocks();
   updateConfidence();
   renderRankTable();
+  updateMarketBadge();
   updateHud();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
+  updateMarketBadge();
   setCloudStatus('已從雲端載入', 'ok');
   setFlowMessage('☁️ 已從雲端載入資料。');
 }
@@ -1001,8 +1058,10 @@ function scoreRow(r){
     else if(r.rsi>80){ score -= 8; why.push('RSI過熱'); }
   }
   if(r.dev !== null){
-    if(r.dev>=0 && r.dev<=15){ score += 10; why.push('乖離健康'); }
-    else if(r.dev>15){ score -= 18; why.push('乖離過大'); }
+    const maxDev = getMaxDev();
+    if(r.dev>=0 && r.dev<=10){ score += 12; why.push('乖離甜蜜區'); }
+    else if(r.dev>10 && r.dev<=maxDev){ score += 4; why.push('乖離可接受'); }
+    else if(r.dev>maxDev){ score -= 26; why.push(`乖離超標（>${maxDev}%）`); }
     else { score -= 6; why.push('價格在20MA下'); }
   }
   const s = Math.max(0, Math.min(100, Math.round(score)));
@@ -1021,7 +1080,7 @@ function renderRankTable(){
     const modeInfo = classifyMode(r);
     const locked = isLockedStock(r);
     const resonance = getResonanceInfo(r);
-    const suggest = locked ? '禁止追高' : `TP ${modeInfo.tp1}% / ${modeInfo.tp2}% ｜ SL -${modeInfo.stop}%`;
+    const suggest = locked ? `禁止追高（>${getMaxDev()}%）` : `TP ${modeInfo.tp1}% / ${modeInfo.tp2}% ｜ SL -${modeInfo.stop}%`;
     return `
       <tr style="${locked ? 'background:rgba(248,113,113,.06)' : ''}">
         <td>${i+1}</td>
@@ -1090,7 +1149,7 @@ function analyzeCSV(){
   $('mLocal').textContent = selectable.length ? selectable.slice(0,2).map(x=>x.symbol).join(' / ') : '—';
   const lockedCount = localPicks.filter(isLockedStock).length;
   $('localSummary').innerHTML = localPicks.length
-    ? `本地前段班：<b>${localPicks.slice(0,3).map(x=>`${x.symbol} ${x.name||''}`).join('、')}</b><br>鎖單數：<b>${lockedCount}</b> 檔｜首位原因：${localPicks[0].why.slice(0,4).join('、')}`
+    ? `本地前段班：<b>${localPicks.slice(0,3).map(x=>`${x.symbol} ${x.name||''}`).join('、')}</b><br>市場模式：<b>${getMarketState().label}</b>｜動態上限：<b>${getMaxDev()}%</b>｜鎖單數：<b>${lockedCount}</b> 檔｜首位原因：${localPicks[0].why.slice(0,4).join('、')}`
     : '沒有抓到資料。';
 
   flowState.csvAnalyzed = true;
@@ -1100,7 +1159,7 @@ function analyzeCSV(){
   }
   $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
 
-  setFlowMessage('✅ CSV 分析完成，已自動排除乖離過大標的。現在可以複製 AI 提示詞。');
+  setFlowMessage('✅ CSV 分析完成，已依市場模式自動套用乖離門檻與排序。現在可以複製 AI 提示詞。');
   updateLocks();
   updateSystemTable();
   updateFinalCards();
@@ -1111,6 +1170,7 @@ function analyzeCSV(){
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
+  updateMarketBadge();
   saveLocal();
   return true;
 }
@@ -1121,7 +1181,7 @@ function copyPrompt(){
     return false;
   }
   const top = selectableLocalPicks().slice(0,6).map(r=>`${r.symbol} ${r.name||''}`).join('、');
-  const prompt = `你現在是一位頂尖台股短線交易員，請根據以下候選股做最後的菁英遴選。\n\n【候選股】${top || '尚未有候選股'}\n【目標】1個月內 10%~15% 波段利潤\n【限制】請排除 20MA 乖離過大的標的，不要推薦追高股。\n\n請針對這些股票：\n1. 查近一週新聞、法人動向與題材熱度。\n2. 精選 1~2 檔最適合短線操作的股票。\n3. 避開乖離過大、已過熱或利多出盡的標的。\n4. 用表格輸出：進場區間、停損點、+10% / +15% 停利規劃。\n5. 最後用一句話提醒未來一週最重要風險。`;
+  const prompt = `你現在是一位頂尖台股短線交易員，請根據以下候選股做最後的菁英遴選。\n\n【候選股】${top || '尚未有候選股'}\n【目標】1個月內 10%~15% 波段利潤\n【限制】請優先挑選 20MA 乖離仍在合理範圍內的標的，避免追高；目前系統市場模式為 ${getMarketState().label}，動態乖離上限為 ${getMaxDev()}%。\n\n請針對這些股票：\n1. 查近一週新聞、法人動向與題材熱度。\n2. 精選 1~2 檔最適合短線操作的股票。\n3. 避開乖離過大、已過熱或利多出盡的標的。\n4. 用表格輸出：進場區間、停損點、+10% / +15% 停利規劃。\n5. 最後用一句話提醒未來一週最重要風險。`;
   navigator.clipboard.writeText(prompt);
   flowState.promptCopied = true;
   setFlowMessage('✅ 已複製 AI 提示詞。去問 AI，拿到回覆後貼回來。');
@@ -1153,7 +1213,7 @@ function parseAI(){
   }
 
   $('mAi').textContent = aiCodes.join(' / ');
-  $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b><br>已自動過濾掉非 CSV 代號與禁追股，現在可以做最終決策。`;
+  $('aiSummary').innerHTML = `AI 解析到：<b>${aiCodes.join('、')}</b><br>已自動過濾掉非 CSV 代號與超過動態乖離上限的禁追股，現在可以做最終決策。`;
   flowState.aiParsed = true;
   setFlowMessage('✅ AI 解析完成，代碼過濾已通過。現在可以做最終決策。');
   updateLocks();
@@ -1196,11 +1256,13 @@ function decideFinal(){
   updateFinalCards();
   updateCommandCenter();
   renderRankTable();
+  updateMarketBadge();
   updateHud();
   updateTacticGrid();
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
+  updateMarketBadge();
   saveLocal();
   return true;
 }
@@ -1250,7 +1312,7 @@ function buildFinalCard(r, i){
           <div class="levelBadge">${resonance.grade}</div>
           <div class="tag">${resonance.label}</div>
           <div class="tag">${decisionSource}</div>
-          ${locked ? '<div class="tag danger">🚨 禁追</div>' : ''}
+          ${locked ? `<div class="tag danger">🚨 禁追（>${getMaxDev()}%）</div>` : ''}
         </div>
       </div>
 
@@ -1262,9 +1324,9 @@ function buildFinalCard(r, i){
       </div>
 
       <div class="recommendBox">
-        <div class="recommendTitle">智能建議（你只要照做）</div>
+        <div class="recommendTitle">智能建議（自適應市場模式）</div>
         <div class="recommendGrid">
-          <div class="recommendItem"><div class="small">模式</div><div><b>${modeInfo.mode}</b></div></div>
+          <div class="recommendItem"><div class="small">模式</div><div><b>${modeInfo.mode}</b></div></div><div class="recommendItem"><div class="small">市場</div><div><b>${getMarketState().label}</b></div></div>
           <div class="recommendItem"><div class="small">停損</div><div><b>${locked ? '禁追' : `-${useStop}%`}</b></div></div>
           <div class="recommendItem"><div class="small">停利1</div><div><b>${locked ? '禁追' : `+${useTp1}%`}</b></div></div>
           <div class="recommendItem"><div class="small">停利2</div><div><b>${locked ? '禁追' : `+${useTp2}%`}</b></div></div>
@@ -1285,7 +1347,7 @@ function buildFinalCard(r, i){
       <div class="reason">
         <b>今日該看什麼：</b>${(r.why || ['等待更多資料']).slice(0,4).join('、')}<br>
         <b>作戰指令：</b>${locked ? '這檔直接放棄，不要追高。' : resonance.grade==='S+' ? '本地與 AI 雙重共振，列為最優先。' : i===0 ? '優先盯盤，只做最強表態。' : '主攻艦沒異常時，副攻艦再跟進。'}<br>
-        <b>說明：</b>${locked ? '乖離 > 15%，系統已鎖單。' : `這檔建議採用 ${modeInfo.mode} 模式。`}
+        <b>說明：</b>${locked ? `乖離超過動態上限 ${getMaxDev()}%，系統已鎖單。` : `這檔建議採用 ${modeInfo.mode} 模式；目前市場為 ${getMarketState().label}。`}
       </div>
     </div>
   `;
@@ -1482,6 +1544,7 @@ function updateHoldings(){
     updateRiskAlerts();
     updateHeatMap();
     updatePressurePanel();
+    updateMarketBadge();
     return;
   }
 
@@ -1547,6 +1610,7 @@ function updateHoldings(){
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
+  updateMarketBadge();
 }
 
 function editHolding(i){
@@ -1564,6 +1628,7 @@ function removeHolding(i){
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
+  updateMarketBadge();
   saveLocal();
 }
 
@@ -1623,11 +1688,11 @@ function updateCommandCenter(){
   if(flowState.decided){
     const resonance = finalPicks[0] ? getResonanceInfo(finalPicks[0]) : null;
     cmd = resonance?.grade==='S+' ? `S+ 共振主攻 ${finalPicks[0]?.symbol || '—'}` : `主攻 ${finalPicks[0]?.symbol || '—'}，副攻 ${finalPicks[1]?.symbol || '—'}`;
-    sub = resonance?.grade==='S+' ? `主攻同時被本地與 AI 命中，今晚列為最高優先。` : `主攻採 ${classifyMode(finalPicks[0]).mode || '—'} 模式。今晚重點是依建議掛好價位，不是追盤。`;
-    mode = decisionSource;
+    sub = resonance?.grade==='S+' ? `主攻同時被本地與 AI 命中，今晚列為最高優先。市場模式：${getMarketState().label}。` : `主攻採 ${classifyMode(finalPicks[0]).mode || '—'} 模式。市場模式：${getMarketState().label}，今晚重點是依建議掛好價位，不是追盤。`;
+    mode = `${decisionSource}｜${getMarketState().label}`;
     modeClass = 'ok';
     headline = resonance?.grade==='S+' ? `鎖定 S+ 共振主攻 ${finalPicks[0]?.symbol || '—'}` : `鎖定主攻 ${finalPicks[0]?.symbol || '—'}`;
-    headlineDesc = resonance?.grade==='S+' ? `目前主攻 ${finalPicks[0]?.symbol || '—'} 同時被本地與 AI 選中，為今晚最優先。` : `目前主攻是 ${finalPicks[0]?.symbol || '—'}，副攻是 ${finalPicks[1]?.symbol || '—'}。系統已自動給 TP/SL 建議。`;
+    headlineDesc = resonance?.grade==='S+' ? `目前主攻 ${finalPicks[0]?.symbol || '—'} 同時被本地與 AI 選中，為今晚最優先。動態乖離上限 ${getMaxDev()}%。` : `目前主攻是 ${finalPicks[0]?.symbol || '—'}，副攻是 ${finalPicks[1]?.symbol || '—'}。市場模式為 ${getMarketState().label}，系統已自動給 TP/SL 建議。`;
   }
   if(holdings.length){
     const dangerCount = holdings.filter(h=>h.cls==='danger').length;
@@ -1697,8 +1762,9 @@ function updateHud(){
   const cfg = getCfg();
   $('hudWarChest').textContent = fmt(warChest,0);
   const warPct = cfg.warChestPct;
+  const market = getMarketState();
   const subText = warPct < 20 ? '⚠️ 低於 20%，建議保守' : '戰備水位正常';
-  $('hudWarChestSub').textContent = `${warPct}% ｜ ${subText}`;
+  $('hudWarChestSub').textContent = `${warPct}% ｜ ${subText} ｜ ${market.label}`;
 
   if(!holdings.length){
     $('hudTotalPnl').textContent = '—';
@@ -1781,6 +1847,7 @@ function updateRiskAlerts(){
   const avgPnl = holdings.length ? holdings.reduce((a,h)=>a + (Number(h.pnl)||0), 0) / holdings.length : 0;
   const lockedCount = localPicks.filter(isLockedStock).length;
   const warPct = getCfg().warChestPct;
+  const market = getMarketState();
 
   if(dangerList.length){
     alerts.push({ type:'red', text:`🔴 高風險：目前有 ${dangerList.length} 檔進入紅色警戒，優先處理 ${dangerList.map(x=>x.symbol).join('、')}。` });
@@ -1789,7 +1856,7 @@ function updateRiskAlerts(){
     alerts.push({ type:'yellow', text:`🟡 注意：有 ${warnList.length} 檔接近停利或停損，今晚掛單要特別檢查 ${warnList.map(x=>x.symbol).join('、')}。` });
   }
   if(lockedCount){
-    alerts.push({ type:'yellow', text:`🚨 鎖單提醒：本輪有 ${lockedCount} 檔 20MA 乖離過大，系統已禁止追高。` });
+    alerts.push({ type:'yellow', text:`🚨 鎖單提醒：本輪有 ${lockedCount} 檔超過動態乖離上限 ${market.maxDev}% ，系統已禁止追高。` });
   }
   if(warPct < 20){
     alerts.push({ type:'yellow', text:`💰 戰備資金偏低：目前只保留 ${warPct}% 戰備資金，低於建議的 20%。` });
@@ -1800,6 +1867,7 @@ function updateRiskAlerts(){
   if(holdings.length && avgPnl > 4 && dangerList.length===0){
     alerts.push({ type:'green', text:`🟢 戰況穩定：目前平均報酬 ${pct(avgPnl,2)}，可以持有續強，但仍要守紀律。` });
   }
+  alerts.unshift({ type: market.key==='strong' ? 'green' : market.key==='weak' ? 'yellow' : 'green', text:`🌡 目前市場模式：${market.label}｜動態乖離上限 ${market.maxDev}% 。` });
   if(!alerts.length){
     alerts.push({ type:'green', text:'🟢 目前沒有重大風險警告，今天以巡航監控為主。' });
   }
@@ -1909,6 +1977,7 @@ function clearAll(){
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
+  updateMarketBadge();
   saveLocal();
 }
 
@@ -1922,6 +1991,7 @@ async function initApp(){
   updateLocks();
   updateConfidence();
   renderRankTable();
+  updateMarketBadge();
   updateHud();
   updateTacticGrid();
   updateRiskAlerts();
