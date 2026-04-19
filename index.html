@@ -349,6 +349,49 @@ th{color:var(--muted)}
 @media (max-width:1200px){.perfGrid{grid-template-columns:1fr 1fr}.close-actions button{flex:1 1 calc(50% - 10px)}}
 @media (max-width:780px){.perfGrid{grid-template-columns:1fr}}
 
+
+.uniqueCommandPanel{
+  margin-top:16px;
+  border:1px solid rgba(103,232,249,.22);
+  background:linear-gradient(180deg, rgba(103,232,249,.06), rgba(255,255,255,.02));
+}
+.uniqueActionBox{
+  margin-top:12px;padding:18px;border-radius:18px;border:1px solid var(--line2);
+  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+}
+.uniqueActionTitle{font-size:12px;color:var(--cyan);font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.uniqueActionMain{margin-top:8px;font-size:34px;font-weight:900;line-height:1.15}
+.uniqueActionSub{margin-top:10px;font-size:14px;color:var(--muted);line-height:1.8}
+.uniqueActionGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.uniqueActionItem{padding:12px;border-radius:16px;background:#091323;border:1px solid var(--line)}
+.uniqueActionItem .k{font-size:12px;color:var(--muted)}
+.uniqueActionItem .v{font-size:22px;font-weight:900;margin-top:6px}
+.actionBadgeGreen,.actionBadgeYellow,.actionBadgeRed,.actionBadgeGray{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid var(--line);
+}
+.actionBadgeGreen{background:rgba(52,211,153,.10);color:#bbf7d0;border-color:rgba(52,211,153,.25)}
+.actionBadgeYellow{background:rgba(251,191,36,.10);color:#fde68a;border-color:rgba(251,191,36,.25)}
+.actionBadgeRed{background:rgba(248,113,113,.10);color:#fecaca;border-color:rgba(248,113,113,.25)}
+.actionBadgeGray{background:rgba(255,255,255,.05);color:#cbd5e1;border-color:rgba(255,255,255,.12)}
+@media (max-width:1200px){.uniqueActionGrid{grid-template-columns:1fr 1fr}}
+@media (max-width:780px){.uniqueActionGrid{grid-template-columns:1fr}.uniqueActionMain{font-size:28px}}
+
+
+.dataValidationPanel{margin-top:16px;border:1px solid rgba(251,191,36,.18);background:linear-gradient(180deg, rgba(251,191,36,.05), rgba(255,255,255,.02))}
+.validationGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+.validationItem{padding:12px;border-radius:16px;background:#091323;border:1px solid var(--line)}
+.validationItem .k{font-size:12px;color:var(--muted)}
+.validationItem .v{font-size:18px;font-weight:900;margin-top:6px}
+.validationPill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid var(--line)}
+.validationPill.ok{background:rgba(52,211,153,.10);border-color:rgba(52,211,153,.24);color:#bbf7d0}
+.validationPill.warn{background:rgba(251,191,36,.10);border-color:rgba(251,191,36,.24);color:#fde68a}
+.validationPill.danger{background:rgba(248,113,113,.10);border-color:rgba(248,113,113,.24);color:#fecaca}
+.validationPill.gray{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);color:#cbd5e1}
+.validationList{margin-top:12px;padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.025);font-size:13px;line-height:1.8}
+.validationStamp{font-size:11px;color:var(--muted);margin-top:6px}
+@media (max-width:1200px){.validationGrid{grid-template-columns:1fr 1fr}}
+@media (max-width:780px){.validationGrid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -630,6 +673,40 @@ th{color:var(--muted)}
           <div class="bridge"><div class="k">主攻股推算停利一價</div><div id="bridgeTp1" class="v">—</div></div>
           <div class="bridge"><div class="k">主攻股推算停利二價</div><div id="bridgeTp2" class="v">—</div></div>
           <div class="bridge"><div class="k">移動停利啟動價</div><div id="bridgeTrail" class="v">—</div></div>
+        </div>
+      </section>
+
+      <section class="panel uniqueCommandPanel">
+        <div class="sectionTitle">🧠 唯一指令中心</div>
+        <div class="sub">你只需要看這裡。系統會把當前策略、雙窗口滾動期望值、降權狀態與當下允許動作整合成一個唯一指令。</div>
+        <div class="uniqueActionBox">
+          <div class="uniqueActionTitle">One Clear Action</div>
+          <div id="uniqueActionMain" class="uniqueActionMain">等待資料</div>
+          <div id="uniqueActionSub" class="uniqueActionSub">先完成市場確認與 CSV 分析，系統才會告訴你今天唯一能做的事。</div>
+          <div style="margin-top:12px">
+            <span id="uniqueActionBadge" class="actionBadgeGray">待機</span>
+          </div>
+          <div class="uniqueActionGrid">
+            <div class="uniqueActionItem"><div class="k">當前策略</div><div id="uniqueStrategy" class="v">—</div></div>
+            <div class="uniqueActionItem"><div class="k">E30 / 長期</div><div id="uniqueE30" class="v">—</div></div>
+            <div class="uniqueActionItem"><div class="k">E10 / 近期</div><div id="uniqueE10" class="v">—</div></div>
+            <div class="uniqueActionItem"><div class="k">建議部位</div><div id="uniquePosition" class="v">—</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel dataValidationPanel">
+        <div class="sectionTitle">🧪 資料驗證中心</div>
+        <div class="sub">這裡只做一件事：確認你現在看到的唯一指令，是建立在完整、未過期、可執行的資料上。</div>
+        <div class="validationGrid">
+          <div class="validationItem"><div class="k">市場資料</div><div id="validationMarket" class="v">—</div><div id="validationMarketStamp" class="validationStamp">尚未更新</div></div>
+          <div class="validationItem"><div class="k">CSV 候選</div><div id="validationCsv" class="v">—</div><div id="validationCsvStamp" class="validationStamp">尚未更新</div></div>
+          <div class="validationItem"><div class="k">AI / 決策</div><div id="validationDecision" class="v">—</div><div id="validationDecisionStamp" class="validationStamp">尚未更新</div></div>
+          <div class="validationItem"><div class="k">持倉資料</div><div id="validationHoldings" class="v">—</div><div id="validationHoldingsStamp" class="validationStamp">尚未更新</div></div>
+        </div>
+        <div class="validationList">
+          <div><span id="validationSummaryPill" class="validationPill gray">待檢查</span></div>
+          <div id="validationSummaryText" style="margin-top:10px">系統尚未完成資料驗證。</div>
         </div>
       </section>
 
@@ -1240,8 +1317,12 @@ function addHolding(){
     holdings.push(payload);
   }
 
+  touchClock('holdingsAt');
   updateHoldings();
   updateCommandCenter();
+  renderValidationPanel();
+  renderValidationPanel();
+  renderUniqueAction();
   updateHud();
   checkPanicMode();
   updateTacticGrid();
@@ -1249,6 +1330,8 @@ function addHolding(){
   updateHeatMap();
   updatePressurePanel();
   updatePerformancePanel();
+  renderUniqueAction();
+  renderStabilityRiskLayer();
   saveLocal();
   setFlowMessage(`✅ 已加入持倉監控：${symbol}${stockName ? ' ' + stockName : ''}${regimeCut.shouldCut ? '｜當前策略負期望，部位已自動減半' : ''}`);
 }
@@ -1502,17 +1585,17 @@ function buildCloudHoldingsPayload(){
     updatedAt: new Date().toISOString().replace('T',' ').slice(0,19)
   }));
 }
-async async async function safeJson(res){
+async async async async function safeJson(res){
   const text = await res.text();
   try{ return JSON.parse(text); }
   catch{ throw new Error('後端回傳不是 JSON：' + text); }
 }
-async async async function apiGet(action){
+async async function apiGet(action){
   const res = await fetch(`${API_BASE}?action=${encodeURIComponent(action)}`, { method:'GET' });
   if(!res.ok) throw new Error(`API GET 失敗：${res.status}`);
   return await safeJson(res);
 }
-async async async function apiPost(action, data){
+async async function apiPost(action, data){
   const res = await fetch(API_BASE, {
     method:'POST',
     headers:{ 'Content-Type':'text/plain;charset=utf-8' },
@@ -1551,7 +1634,7 @@ function applyCloudData(payload){
 
   $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
 }
-async async async function loadCloud(){
+async async function loadCloud(){
   setCloudStatus('讀取雲端中...', 'idle');
   const payload = await apiGet('getAll');
   applyCloudData(payload);
@@ -1562,6 +1645,7 @@ async async async function loadCloud(){
   updateFinalCards();
   updateHoldings();
   updateCommandCenter();
+  renderUniqueAction();
   updateLocks();
   updateConfidence();
   renderRankTable();
@@ -1576,7 +1660,7 @@ async async async function loadCloud(){
   setCloudStatus('已從雲端載入', 'ok');
   setFlowMessage('☁️ 已從雲端載入資料。');
 }
-async async async function saveCloud(){
+async async function saveCloud(){
   await apiPost('saveSettings', buildCloudSettingsPayload());
   if(finalPicks.length) await apiPost('savePick', buildCloudPickPayload());
   await apiPost('saveHoldings', buildCloudHoldingsPayload());
@@ -1596,7 +1680,9 @@ function saveLocal(){
     },
     marketForm:getMarketForm(),
     strategyMode:getStrategyMode(),
-    localPicks, aiCodes, finalPicks, holdings, decisionSource, flowState, aiAssistState, tradeHistory
+    dataClock,
+    localPicks, aiCodes, finalPicks, holdings, decisionSource, flowState, aiAssistState,
+    tradeHistory: (Array.isArray(tradeHistory) ? tradeHistory.slice(-100) : [])
   };
   localStorage.setItem(STORE, JSON.stringify(data));
 }
@@ -1636,7 +1722,7 @@ function loadLocal(){
     console.warn('loadLocal failed', err);
   }
 }
-async async async function saveAll(){
+async async function saveAll(){
   saveLocal();
   setCloudStatus('同步中...', 'idle');
   try{
@@ -1669,9 +1755,8 @@ function refreshSliders(shouldSave=true){
   updateRiskAlerts();
   updateHeatMap();
   updatePressurePanel();
-  if(shouldSave) saveLocal();
+  if(shouldSave) debouncedSaveLocal();
 }
-['stopSlider','tp1Slider','tp2Slider','trailSlider','allocSlider','warChestSlider','capitalSlider'].forEach(id=>$(id).addEventListener('input', ()=>refreshSliders(true)));
 
 function parseCSV(text){
   const rows=[]; let row=[], cur='', q=false;
@@ -1841,6 +1926,7 @@ function analyzeCSV(){
   updateSystemTable();
   updateFinalCards();
   updateCommandCenter();
+  renderUniqueAction();
   updateConfidence();
   updateHud();
   checkPanicMode();
@@ -1850,6 +1936,8 @@ function analyzeCSV(){
   updatePressurePanel();
   updateMarketBadge();
   updatePerformancePanel();
+  renderStabilityRiskLayer();
+  renderValidationPanel();
   saveLocal();
   return true;
 }
@@ -1879,6 +1967,7 @@ function parseAI(){
   if(!txt){
     aiCodes = [];
     aiAssistState = 'skipped';
+    touchClock('aiAt');
     flowState.aiParsed = true;
     $('mAi').textContent = '未使用 AI';
     $('aiSummary').innerHTML = '⚪ 未貼 AI 回覆，系統將直接使用本地前段班進入最終決策。';
@@ -1896,6 +1985,7 @@ function parseAI(){
   if(!aiCodes.length){
     const possible = [...new Set(rawCodes)].slice(0,5);
     aiAssistState = 'fallback';
+    touchClock('aiAt');
     flowState.aiParsed = true;
     $('mAi').textContent = '本地接管';
     $('aiSummary').innerHTML = `🟡 AI 有回覆，但沒有可用股票代號。原始數字：<b>${possible.join('、') || '無'}</b><br>系統已自動 fallback，改用本地前段班繼續流程，不再卡住。`;
@@ -1907,6 +1997,7 @@ function parseAI(){
   }
 
   aiAssistState = 'confirmed';
+  touchClock('aiAt');
   $('mAi').textContent = aiCodes.join(' / ');
   $('aiSummary').innerHTML = `🟢 AI 解析到：<b>${aiCodes.join('、')}</b><br>已自動過濾掉非 CSV 代號與超過動態乖離上限的禁追股，現在可以做最終決策。`;
   flowState.aiParsed = true;
@@ -1970,6 +2061,7 @@ function decideFinal(){
   else decisionSource = '本地優先';
 
   flowState.decided = true;
+  touchClock('decisionAt');
   $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
 
   if(!finalPicks.length){
@@ -1988,6 +2080,7 @@ function decideFinal(){
   updateSystemTable();
   updateFinalCards();
   updateCommandCenter();
+  renderUniqueAction();
   renderRankTable();
   updateMarketBadge();
   updateHud();
@@ -1998,6 +2091,7 @@ function decideFinal(){
   updatePressurePanel();
   updateMarketBadge();
   updatePerformancePanel();
+  renderStabilityRiskLayer();
   saveLocal();
   return true;
 }
@@ -2039,9 +2133,12 @@ function loadDemo(){
 
 function applyMarketDecision(){
   marketConfirmed = true;
+  touchClock('marketAt');
   updateMarketPanelSummary();
   updateCommandCenter();
+  renderUniqueAction();
   updateLocks();
+  renderValidationPanel();
   setFlowMessage(`✅ 市場確認完成：${getMarketState().label}`);
   saveLocal();
 }
@@ -2055,17 +2152,21 @@ function clearAllData(){
   holdings = [];
   decisionSource = '—';
   flowState = { csvAnalyzed:false, promptCopied:false, aiParsed:false, decided:false };
+  dataClock = { marketAt:'', csvAt:'', aiAt:'', decisionAt:'', holdingsAt:'' };
   marketConfirmed = false;
   aiAssistState = 'idle';
   applyMarketForm(DEFAULT_MARKET_FORM);
   updateStrategyHint();
   refreshSliders(false);
   updateMarketPanelSummary();
+  touchClock('csvAt');
   renderRankTable();
   updateFinalCards();
   updateHoldings();
   updateSystemTable();
   updateCommandCenter();
+  renderUniqueAction();
+  renderUniqueAction();
   updateLocks();
   updateHud();
   updatePerformancePanel();
@@ -2518,6 +2619,7 @@ function updateHoldings(){
   updatePressurePanel();
   updateMarketBadge();
   updatePerformancePanel();
+  renderStabilityRiskLayer();
 }
 
 
@@ -2535,6 +2637,7 @@ function removeHolding(i){
   updateFinalCards();
   updateSystemTable();
   updateCommandCenter();
+  renderUniqueAction();
   updateHoldings();
   updateHud();
   checkPanicMode();
@@ -2544,6 +2647,7 @@ function removeHolding(i){
   updatePressurePanel();
   updateMarketBadge();
   updatePerformancePanel();
+  renderStabilityRiskLayer();
   saveLocal();
 }
 
@@ -2813,6 +2917,7 @@ function confirmClosePosition(){
   };
   tradeRecord.mistakeTags = classifyTradeMistakes(tradeRecord);
   tradeHistory.push(tradeRecord);
+  tradeHistory = tradeHistory.slice(-100);
   holdings.splice(closeDialogIndex,1);
   finalPicks = (finalPicks || []).filter(p => p && p.symbol !== h.symbol);
   
@@ -2821,6 +2926,8 @@ function confirmClosePosition(){
   updateFinalCards();
   updateSystemTable();
   updateCommandCenter();
+  renderUniqueAction();
+  renderUniqueAction();
   updateHud();
   checkPanicMode();
   updateTacticGrid();
@@ -2828,6 +2935,7 @@ function confirmClosePosition(){
   updateHeatMap();
   updatePressurePanel();
   updatePerformancePanel();
+  renderStabilityRiskLayer();
   saveLocal();
   setFlowMessage(`✅ 已平倉 ${h.symbol}${h.name ? ' ' + h.name : ''}，並寫入績效回顧。`);
 }
@@ -2844,6 +2952,238 @@ function updateSystemTable(){
     <tr><td>封鎖說明</td><td>${blockedTop.length}</td><td>${blockedTop.length ? `前段班中有 ${blockedTop.length} 檔屬於禁止新進 / 淘汰，因此不列入主副攻。` : '前段班皆可交易。'}</td></tr>
     <tr><td>總持倉數</td><td>${holdings.length}</td><td>${holdings.length ? '持倉監控已啟動' : '目前無持倉'}</td></tr>
   `;
+}
+
+
+
+const DATA_STALE_HOURS = 18;
+let dataClock = {
+  marketAt:'',
+  csvAt:'',
+  aiAt:'',
+  decisionAt:'',
+  holdingsAt:''
+};
+
+function nowIso(){ return new Date().toISOString(); }
+function fmtStamp(iso){
+  if(!iso) return '尚未更新';
+  const d = new Date(iso);
+  if(Number.isNaN(d.getTime())) return '時間格式錯誤';
+  return `更新於 ${d.toLocaleString('zh-TW',{hour12:false})}`;
+}
+function hoursSince(iso){
+  if(!iso) return null;
+  const d = new Date(iso);
+  if(Number.isNaN(d.getTime())) return null;
+  return (Date.now() - d.getTime()) / 36e5;
+}
+function touchClock(key){
+  if(dataClock[key] !== undefined) dataClock[key] = nowIso();
+}
+function validateRowsFinite(rows, keys){
+  return (rows || []).every(r => keys.every(k => r[k] === null || r[k] === undefined || Number.isFinite(Number(r[k]))));
+}
+function getValidationState(){
+  const issues = [];
+  const marketAge = hoursSince(dataClock.marketAt);
+  const csvAge = hoursSince(dataClock.csvAt);
+  const decisionAge = hoursSince(dataClock.decisionAt);
+  const holdingAge = hoursSince(dataClock.holdingsAt);
+
+  const marketValid = marketConfirmed && Number.isFinite(num($('marketRiseCount')?.value)) && Number.isFinite(num($('marketFallCount')?.value));
+  if(!marketValid) issues.push('市場面板尚未完整確認。');
+  else if(marketAge !== null && marketAge > DATA_STALE_HOURS) issues.push(`市場資料已超過 ${DATA_STALE_HOURS} 小時。`);
+
+  const csvValid = flowState.csvAnalyzed && localPicks.length > 0 && validateRowsFinite(localPicks, ['price','change','relVol','dev','rsi']);
+  if(!csvValid) issues.push('CSV 候選資料無效或缺漏。');
+  else if(csvAge !== null && csvAge > DATA_STALE_HOURS) issues.push(`CSV 候選已超過 ${DATA_STALE_HOURS} 小時。`);
+
+  const decisionValid = (!flowState.decided && finalPicks.length === 0) || (flowState.decided && finalPicks.length > 0 && finalPicks.every(x => localPicks.some(lp => lp.symbol === x.symbol)));
+  if(!decisionValid) issues.push('最終決策與候選資料不同步。');
+  else if(flowState.decided && decisionAge !== null && decisionAge > DATA_STALE_HOURS) issues.push(`最終決策已超過 ${DATA_STALE_HOURS} 小時。`);
+
+  const holdingsValid = holdings.every(h =>
+    h.symbol &&
+    Number.isFinite(Number(h.buy)) &&
+    Number.isFinite(Number(h.current)) &&
+    Number.isFinite(Number(h.shares || 0)) &&
+    Number(h.buy) > 0 &&
+    Number(h.current) > 0
+  );
+  if(!holdingsValid) issues.push('持倉資料缺少 buy/current/shares 或有非法數值。');
+  else if(holdings.length && holdingAge !== null && holdingAge > DATA_STALE_HOURS) issues.push(`持倉價格已超過 ${DATA_STALE_HOURS} 小時未更新。`);
+
+  const stats = getPerformanceStats().strategyBuckets?.[getStrategyMode()];
+  const expectancyValid = !flowState.decided || !finalPicks.length || (stats && (stats.e30 === null || Number.isFinite(Number(stats.e30))) && (stats.e10 === null || Number.isFinite(Number(stats.e10))));
+  if(!expectancyValid) issues.push('E10 / E30 計算結果異常。');
+
+  let level = 'ok';
+  if(issues.length >= 2) level = 'danger';
+  else if(issues.length === 1) level = 'warn';
+  if(!marketConfirmed && !flowState.csvAnalyzed) level = 'gray';
+
+  return {
+    level,
+    marketValid, csvValid, decisionValid, holdingsValid, expectancyValid,
+    marketAge, csvAge, decisionAge, holdingAge,
+    issues
+  };
+}
+function renderValidationPanel(){
+  const s = getValidationState();
+  function stamp(el, iso){ const x = $(el); if(x) x.textContent = fmtStamp(iso); }
+  function item(el, ok, warnOld=false){
+    const node = $(el);
+    if(!node) return;
+    node.className = ok ? (warnOld ? 'v warn' : 'v ok') : 'v danger';
+    node.textContent = ok ? (warnOld ? '需更新' : '有效') : '異常';
+  }
+  item('validationMarket', s.marketValid, s.marketAge !== null && s.marketAge > DATA_STALE_HOURS);
+  item('validationCsv', s.csvValid, s.csvAge !== null && s.csvAge > DATA_STALE_HOURS);
+  item('validationDecision', s.decisionValid, s.decisionAge !== null && s.decisionAge > DATA_STALE_HOURS);
+  item('validationHoldings', s.holdingsValid, s.holdingAge !== null && s.holdingAge > DATA_STALE_HOURS);
+  stamp('validationMarketStamp', dataClock.marketAt);
+  stamp('validationCsvStamp', dataClock.csvAt);
+  stamp('validationDecisionStamp', dataClock.decisionAt || dataClock.aiAt);
+  stamp('validationHoldingsStamp', dataClock.holdingsAt);
+
+  const pill = $('validationSummaryPill');
+  const txt = $('validationSummaryText');
+  if(pill){
+    pill.className = 'validationPill ' + s.level;
+    pill.textContent = s.level === 'danger' ? '🔴 資料不可用' : s.level === 'warn' ? '🟡 需更新後再執行' : s.level === 'ok' ? '🟢 資料可用' : '⚪ 待檢查';
+  }
+  if(txt){
+    txt.innerHTML = s.issues.length ? s.issues.map(x => `• ${x}`).join('<br>') : '所有關鍵資料欄位完整，唯一指令可視為可信輸出。';
+  }
+}
+
+function getUniqueActionState(){
+  const mode = getStrategyMode();
+  const stats = getPerformanceStats().strategyBuckets?.[mode] || {};
+  const regime = getStrategyRegimeDeweightInfo(mode);
+  const haveData = flowState.csvAnalyzed;
+  const haveDecision = flowState.decided && finalPicks.length;
+  const marketReady = marketConfirmed;
+  const validation = getValidationState();
+
+  let level = 'gray';
+  let action = '等待資料';
+  let sub = '先完成市場確認與 CSV 分析，系統才會輸出唯一指令。';
+  let position = '0%';
+
+  if(!marketReady){
+    return {
+      level:'gray',
+      action:'先確認市場',
+      sub:'今天尚未鎖定市場狀態。先填市場面板並按「套用市場判斷」，其他動作全部延後。',
+      position:'0%',
+      e30: stats.e30,
+      e10: stats.e10,
+      modeLabel:getStrategyModeLabel(mode)
+    };
+  }
+
+  if(!haveData){
+    return {
+      level:'gray',
+      action:'先分析 CSV',
+      sub:'目前沒有本地候選股資料。先貼上 CSV 並分析，再來談進場與風控。',
+      position:'0%',
+      e30: stats.e30,
+      e10: stats.e10,
+      modeLabel:getStrategyModeLabel(mode)
+    };
+  }
+
+  if(!haveDecision){
+    return {
+      level:'gray',
+      action:'先完成最終決策',
+      sub:'候選股尚未收斂成主副攻。先解析 AI 或直接一鍵最終決策。',
+      position:'0%',
+      e30: stats.e30,
+      e10: stats.e10,
+      modeLabel:getStrategyModeLabel(mode)
+    };
+  }
+
+  if(validation.level === 'danger'){
+    return {
+      level:'gray',
+      action:'先修正資料，不要交易',
+      sub:'唯一指令已被資料驗證中心駁回。先修正缺漏欄位、過期資料或異常數值，再重新執行。',
+      position:'0%',
+      e30: stats.e30,
+      e10: stats.e10,
+      modeLabel:getStrategyModeLabel(mode)
+    };
+  }
+
+  if(validation.level === 'warn'){
+    return {
+      level:'gray',
+      action:'先更新資料，再決定',
+      sub:'目前至少有一項關鍵資料已過期或不同步。先更新再依唯一指令執行。',
+      position:'0%',
+      e30: stats.e30,
+      e10: stats.e10,
+      modeLabel:getStrategyModeLabel(mode)
+    };
+  }
+
+  if(regime.level === 'red'){
+    level = 'red';
+    action = '停止新進，只允許平倉';
+    sub = `${getStrategyModeLabel(mode)} 的長期滾動 E30 已轉負。今天不開新倉，若要動作，只能處理既有持倉。`;
+    position = '50%';
+  } else if(regime.level === 'yellow'){
+    level = 'yellow';
+    action = '允許進場，但必須降載';
+    sub = `${getStrategyModeLabel(mode)} 的近期滾動 E10 轉弱。今天可以進，但只能縮倉執行，避免用滿火力追價。`;
+    position = '75%';
+  } else {
+    level = 'green';
+    action = '依策略正常執行';
+    sub = `${getStrategyModeLabel(mode)} 的雙窗口期望值目前正常。若標的未被禁追，可依主副攻規則正常出手。`;
+    position = '100%';
+  }
+
+  return {
+    level,
+    action,
+    sub,
+    position,
+    e30: stats.e30,
+    e10: stats.e10,
+    modeLabel:getStrategyModeLabel(mode)
+  };
+}
+
+function renderUniqueAction(){
+  const state = getUniqueActionState();
+  const badge = $('uniqueActionBadge');
+  const cls = state.level === 'red' ? 'actionBadgeRed' : state.level === 'yellow' ? 'actionBadgeYellow' : state.level === 'green' ? 'actionBadgeGreen' : 'actionBadgeGray';
+  const text = state.level === 'red' ? '🔴 停止新進' : state.level === 'yellow' ? '🟡 縮倉執行' : state.level === 'green' ? '🟢 正常執行' : '⚪ 待機';
+  if($('uniqueActionMain')) $('uniqueActionMain').textContent = state.action;
+  if($('uniqueActionSub')) $('uniqueActionSub').textContent = state.sub;
+  if(badge){ badge.className = cls; badge.textContent = text; }
+  if($('uniqueStrategy')) $('uniqueStrategy').textContent = state.modeLabel || '—';
+  if($('uniqueE30')) $('uniqueE30').textContent = state.e30 === null || state.e30 === undefined ? '—' : pct(state.e30,2);
+  if($('uniqueE10')) $('uniqueE10').textContent = state.e10 === null || state.e10 === undefined ? '—' : pct(state.e10,2);
+  if($('uniquePosition')) $('uniquePosition').textContent = state.position;
+
+  if($('todayCommandHeadline')) $('todayCommandHeadline').textContent = state.action;
+  if($('todayCommandDesc')) $('todayCommandDesc').textContent = state.sub;
+  if($('todayCommand')) $('todayCommand').textContent = state.action;
+  if($('todaySub')) $('todaySub').textContent = state.sub;
+
+  const battle = $('battleMode');
+  if(battle){
+    battle.className = 'modeBadge ' + (state.level === 'red' ? 'danger' : state.level === 'yellow' ? 'warn' : state.level === 'green' ? 'ok' : 'info');
+    battle.textContent = state.level === 'red' ? '紅燈防守' : state.level === 'yellow' ? '黃燈降載' : state.level === 'green' ? '綠燈執行' : '待機模式';
+  }
 }
 
 function updateCommandCenter(){
@@ -2864,6 +3204,7 @@ function updateCommandCenter(){
   const pressure = holdings.length ? Math.min(100, holdings.reduce((a,h)=> a + (h.cls==='danger' ? 35 : h.cls==='warn' ? 18 : 6), 0)) : 10;
   $('pressureText').textContent = pressure>=70 ? '高壓' : pressure>=35 ? '中壓' : '低壓';
   $('pressureBar').style.width = pressure + '%';
+  renderUniqueAction();
 
   let cmd = '等待資料';
   let sub = '請先完成今日市場確認，再分析 CSV、導入 AI，最後監控持倉。';
@@ -3031,8 +3372,64 @@ document.addEventListener('change', function(e){
   updateSystemTable();
   updateFinalCards();
   updateCommandCenter();
+  renderUniqueAction();
 });
 
+
+
+function debounce(fn, wait=400){
+  let t = null;
+  return function(...args){
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+const debouncedSaveLocal = debounce(() => {
+  try{ saveLocal(); }catch(err){ console.warn('debouncedSaveLocal failed', err); }
+}, 500);
+
+function getUnrealizedPnlInfo(){
+  const cfg = getCfg();
+  const capital = cfg.capital || 0;
+  const totalPnlAmt = (holdings || []).reduce((sum,h) => {
+    const buy = Number(h.buy) || 0;
+    const current = Number(h.current) || 0;
+    const shares = Number(h.shares) || 0;
+    if(!buy || !current || !shares) return sum;
+    return sum + (current - buy) * shares;
+  }, 0);
+  const lossOnlyAmt = (holdings || []).reduce((sum,h) => {
+    const buy = Number(h.buy) || 0;
+    const current = Number(h.current) || 0;
+    const shares = Number(h.shares) || 0;
+    if(!buy || !current || !shares || current >= buy) return sum;
+    return sum + (current - buy) * shares;
+  }, 0);
+  return {
+    totalPnlAmt,
+    lossOnlyAmt,
+    lossOnlyPct: capital ? (Math.abs(lossOnlyAmt) / capital) * 100 : 0
+  };
+}
+
+function renderStabilityRiskLayer(){
+  const info = getUnrealizedPnlInfo();
+  const riskBox = $('riskAlerts');
+  if(!riskBox) return;
+  const items = [];
+  if(info.lossOnlyPct >= 8){
+    items.push(`<div class="riskAlert red">🚨 未實現虧損過高：目前持倉浮虧約 ${pct(info.lossOnlyPct,2)}，今晚應停止擴張、優先降風險。</div>`);
+  }else if(info.lossOnlyPct >= 4){
+    items.push(`<div class="riskAlert yellow">⚠️ 未實現虧損偏高：目前持倉浮虧約 ${pct(info.lossOnlyPct,2)}，新倉應保守。</div>`);
+  }
+  if(items.length){
+    riskBox.innerHTML = items.join('') + riskBox.innerHTML;
+  }
+  const riskSub = $('hudTotalRiskSub');
+  if(riskSub && info.lossOnlyPct > 0){
+    riskSub.textContent += `｜浮虧 ${pct(info.lossOnlyPct,2)}`;
+  }
+}
 
 function bindUiActions(){
   const pairs = [
@@ -3084,10 +3481,13 @@ function initApp(){
   updateFinalCards();
   updateHoldings();
   updateCommandCenter();
+  renderUniqueAction();
   updateLocks();
   updateHud();
   updatePerformancePanel();
+  renderStabilityRiskLayer();
   checkPanicMode();
+  renderStabilityRiskLayer();
   bindUiActions();
 }
 
