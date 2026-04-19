@@ -812,6 +812,8 @@ th{color:var(--muted)}
 const $ = id => document.getElementById(id);
 const STORE = 'ai_battleship_pro_max_v4_6_cloud';
 const API_BASE = 'https://script.google.com/macros/s/AKfycbxfVr0JFYPDMOmCUz_X1fJ_DZmYujauwhvCXpd8MlvC3udAQNwWc0Cr69oo5IXz6e-d/exec';
+const MIN_SAMPLE = 30;
+const FAST_SAMPLE = 10;
 
 let localPicks = [];
 let aiCodes = [];
@@ -1192,6 +1194,10 @@ function addHolding(){
   if(isMom){
     budget = Math.round(budget * 0.5);
   }
+  const regimeCut = getStrategyRegimeDeweightInfo(getStrategyMode());
+  if(regimeCut.shouldCut){
+    budget = Math.round(budget * regimeCut.multiplier);
+  }
   const shares = buy ? Math.max(1, Math.floor(budget / buy)) : 0;
   const entryAmt = buy * shares;
 
@@ -1201,6 +1207,7 @@ function addHolding(){
   }
 
   const payload = {
+    strategyCutApplied: regimeCut.shouldCut,
     symbol,
     name: stockName,
     buy,
@@ -1243,7 +1250,7 @@ function addHolding(){
   updatePressurePanel();
   updatePerformancePanel();
   saveLocal();
-  setFlowMessage(`✅ 已加入持倉監控：${symbol}${stockName ? ' ' + stockName : ''}`);
+  setFlowMessage(`✅ 已加入持倉監控：${symbol}${stockName ? ' ' + stockName : ''}${regimeCut.shouldCut ? '｜當前策略負期望，部位已自動減半' : ''}`);
 }
 
 function getActiveCapital(){
@@ -1495,17 +1502,17 @@ function buildCloudHoldingsPayload(){
     updatedAt: new Date().toISOString().replace('T',' ').slice(0,19)
   }));
 }
-async function safeJson(res){
+async async async function safeJson(res){
   const text = await res.text();
   try{ return JSON.parse(text); }
   catch{ throw new Error('後端回傳不是 JSON：' + text); }
 }
-async function apiGet(action){
+async async async function apiGet(action){
   const res = await fetch(`${API_BASE}?action=${encodeURIComponent(action)}`, { method:'GET' });
   if(!res.ok) throw new Error(`API GET 失敗：${res.status}`);
   return await safeJson(res);
 }
-async function apiPost(action, data){
+async async async function apiPost(action, data){
   const res = await fetch(API_BASE, {
     method:'POST',
     headers:{ 'Content-Type':'text/plain;charset=utf-8' },
@@ -1544,7 +1551,7 @@ function applyCloudData(payload){
 
   $('mFinal').textContent = finalPicks.length ? finalPicks.map(x=>x.symbol).join(' / ') : '—';
 }
-async function loadCloud(){
+async async async function loadCloud(){
   setCloudStatus('讀取雲端中...', 'idle');
   const payload = await apiGet('getAll');
   applyCloudData(payload);
@@ -1569,7 +1576,7 @@ async function loadCloud(){
   setCloudStatus('已從雲端載入', 'ok');
   setFlowMessage('☁️ 已從雲端載入資料。');
 }
-async function saveCloud(){
+async async async function saveCloud(){
   await apiPost('saveSettings', buildCloudSettingsPayload());
   if(finalPicks.length) await apiPost('savePick', buildCloudPickPayload());
   await apiPost('saveHoldings', buildCloudHoldingsPayload());
@@ -1629,7 +1636,7 @@ function loadLocal(){
     console.warn('loadLocal failed', err);
   }
 }
-async function saveAll(){
+async async async function saveAll(){
   saveLocal();
   setCloudStatus('同步中...', 'idle');
   try{
@@ -1995,6 +2002,78 @@ function decideFinal(){
   return true;
 }
 
+
+
+function getStrategyRegimeDeweightInfo(mode = getStrategyMode()){
+  const stats = getPerformanceStats().strategyBuckets?.[mode];
+  if(!stats || !stats.isValid){
+    return { shouldCut:false, level:'green', multiplier:1, label:'', reason:'樣本不足，不啟用自動降權' };
+  }
+  if((stats.e30 ?? 0) < 0){
+    return { shouldCut:true, level:'red', multiplier:0.5, label:'🚨 核心回撤 / 部位砍半', reason:`${getStrategyModeLabel(mode)} 長期(${MIN_SAMPLE}筆) E 為負，資金強制減半。` };
+  }
+  if((stats.e10 ?? 0) < 0 && (stats.trades10 ?? 0) >= FAST_SAMPLE){
+    return { shouldCut:true, level:'yellow', multiplier:0.75, label:'⚠️ 近期逆風 / 部位降載', reason:`${getStrategyModeLabel(mode)} 近期(${FAST_SAMPLE}筆) E 轉負，啟動防禦降載 25%。` };
+  }
+  return { shouldCut:false, level:'green', multiplier:1, label:'', reason:'策略滾動 E 正常' };
+}
+
+function loadDemo(){
+  try{
+    if($('marketTrend')) $('marketTrend').value = 'above';
+    if($('marketRsiBand')) $('marketRsiBand').value = '55_65';
+    updateMarketPanelSummary();
+  }catch(_e){}
+  if(!marketConfirmed){ setFlowMessage('❌ 請先確認市場', true); return; }
+  $('csvInput').value = `商品,描述,價格,價格變化 % 1天,相對成交量 1天,SMA20,SMA60,平均相對成交量3天,RSI14
+6415,矽力*-KY,332.5,9.92,3.21,310.2,298.5,1.55,68.4
+8261,富鼎,127.5,9.91,4.26,118.8,106.2,2.10,71.0
+6187,萬潤,1215,9.95,2.49,1160.0,1085.0,1.32,73.2
+6205,詮欣,75,9.97,2.98,71.2,66.5,1.64,69.5
+4979,華星光,280,9.80,3.40,190.0,150.0,2.58,79.0`;
+  $('aiInput').value = `主攻股：8261 富鼎
+副攻股：4979 華星光
+2026年的主流是AI伺服器`;
+  setFlowMessage('已載入範例資料。');
+}
+
+function applyMarketDecision(){
+  marketConfirmed = true;
+  updateMarketPanelSummary();
+  updateCommandCenter();
+  updateLocks();
+  setFlowMessage(`✅ 市場確認完成：${getMarketState().label}`);
+  saveLocal();
+}
+
+function clearAllData(){
+  $('csvInput').value = '';
+  $('aiInput').value = '';
+  localPicks = [];
+  aiCodes = [];
+  finalPicks = [];
+  holdings = [];
+  decisionSource = '—';
+  flowState = { csvAnalyzed:false, promptCopied:false, aiParsed:false, decided:false };
+  marketConfirmed = false;
+  aiAssistState = 'idle';
+  applyMarketForm(DEFAULT_MARKET_FORM);
+  updateStrategyHint();
+  refreshSliders(false);
+  updateMarketPanelSummary();
+  renderRankTable();
+  updateFinalCards();
+  updateHoldings();
+  updateSystemTable();
+  updateCommandCenter();
+  updateLocks();
+  updateHud();
+  updatePerformancePanel();
+  clearHoldForm();
+  saveLocal();
+  setFlowMessage('已清空本輪作戰資料。');
+}
+
 function runFlow(){
   if(!flowState.csvAnalyzed){ analyzeCSV(); return; }
   if(!flowState.promptCopied){ copyPrompt(); return; }
@@ -2015,12 +2094,15 @@ function buildFinalCard(r, i){
   const momentum = isMomentumException(r);
   const role = i===0 ? '主攻艦' : (momentum ? '動能副攻' : '副攻艦');
   const allocPct = i===0 ? cfg.allocMain : (100 - cfg.allocMain);
-  
+
   let multiplier = momentum ? 0.5 : 1;
   if (momentum && getMarketState().key === 'strong') multiplier += 0.2;
   if (momentum && cfg.warChestPct > 30) multiplier += 0.1;
-  const budget = Math.round((activeCapital * allocPct / 100) * multiplier);
 
+  const regimeCut = getStrategyRegimeDeweightInfo(getStrategyMode());
+  if(regimeCut.shouldCut) multiplier *= regimeCut.multiplier;
+
+  const budget = Math.round((activeCapital * allocPct / 100) * multiplier);
   const shares = r.price ? Math.floor(budget / r.price) : 0;
   const modeInfo = classifyMode(r);
   const useStop = modeInfo.stop ?? cfg.stopPct;
@@ -2033,8 +2115,8 @@ function buildFinalCard(r, i){
   const trailArmPrice = tp1 ? tp1 * (1-useTrail/100) : null;
   const locked = isLockedStock(r);
   const resonance = getResonanceInfo(r);
-  const glow = locked ? 'locked' : momentum ? 'glow-red' : resonance.grade==='S+' ? 'glow-green' : resonance.grade==='A' ? 'glow-yellow' : 'glow-purple';
-  
+  const glow = locked ? 'locked' : regimeCut.level==='red' ? 'glow-red' : momentum ? 'glow-red' : resonance.grade==='S+' ? 'glow-green' : resonance.grade==='A' ? 'glow-yellow' : 'glow-purple';
+
   const rr = (useTp1 / (useStop||1)).toFixed(2);
   const rrClass = rr < 1.5 ? 'danger' : 'ok';
 
@@ -2049,7 +2131,7 @@ function buildFinalCard(r, i){
           <div class="levelBadge">${resonance.grade}</div>
           <div class="tag">${resonance.label}</div>
           <div class="tag">${decisionSource}</div>
-          ${momentum ? `<div class="tag warn">🔥 動能半倉</div>` : ''}${locked ? `<div class="tag danger">🚨 禁追（>${getMaxDev()}%）</div>` : ''}
+          ${momentum ? `<div class="tag warn">🔥 動能半倉</div>` : ''}${locked ? `<div class="tag danger">🚨 禁追（>${getMaxDev()}%）</div>` : ''}${regimeCut.shouldCut ? `<div class="tag ${regimeCut.level==='red' ? 'danger' : 'warn'}">${regimeCut.label}</div>` : ''}
         </div>
       </div>
 
@@ -2057,7 +2139,7 @@ function buildFinalCard(r, i){
         <span>${qualityText(r)}</span>
         <span>${resonance.label}</span>
         <span>${modeInfo.label}</span>
-        ${momentum ? '<span class="warn">高波動低勝率型，僅限半倉</span>' : ''}${locked ? '<span class="danger">20MA 乖離過大</span>' : ''}
+        ${momentum ? '<span class="warn">高波動低勝率型，僅限半倉</span>' : ''}${locked ? '<span class="danger">20MA 乖離過大</span>' : ''}${regimeCut.shouldCut ? `<span class="${regimeCut.level==='red' ? 'danger' : 'warn'}">${regimeCut.reason}</span>` : ''}
       </div>
 
       <div class="recommendBox">
@@ -2067,6 +2149,7 @@ function buildFinalCard(r, i){
           <div class="recommendItem"><div class="small">停損</div><div><b>${locked ? '禁追' : `-${useStop}%`}</b></div></div>
           <div class="recommendItem"><div class="small">停利1</div><div><b>${locked ? '禁追' : `+${useTp1}%`}</b></div></div>
           <div class="recommendItem"><div class="small">停利2</div><div><b>${locked ? '禁追' : `+${useTp2}%`}</b></div></div><div class="recommendItem"><div class="small">名目R/R</div><div class="${locked ? '' : rrClass}"><b>${locked ? '—' : rr}</b></div></div>
+          <div class="recommendItem"><div class="small">風控狀態</div><div><b class="${regimeCut.shouldCut ? (regimeCut.level==='red' ? 'danger' : 'warn') : 'ok'}">${regimeCut.shouldCut ? (regimeCut.level==='red' ? '減半' : '降載') : '正常'}</b></div></div>
         </div>
       </div>
 
@@ -2084,7 +2167,7 @@ function buildFinalCard(r, i){
       <div class="reason">
         <b>今日該看什麼：</b>${(r.why || ['等待更多資料']).slice(0,4).join('、')}<br>
         <b>作戰指令：</b>${locked ? '這檔直接放棄，不要追高。' : resonance.grade==='S+' ? '本地與 AI 雙重共振，列為最優先。' : i===0 ? '優先盯盤，只做最強表態。' : '主攻艦沒異常時，副攻艦再跟進。'}<br>
-        <b>說明：</b>${locked ? `乖離超過動態上限 ${getMaxDev()}%，系統已鎖單。` : `這檔建議採用 ${modeInfo.mode} 模式；目前市場為 ${getMarketState().label}。${momentum ? '動能股的高盈虧比伴隨低勝率，請嚴守半倉紀律。' : ''}`}
+        <b>說明：</b>${locked ? `乖離超過動態上限 ${getMaxDev()}%，系統已鎖單。` : `這檔建議採用 ${modeInfo.mode} 模式；目前市場為 ${getMarketState().label}。${momentum ? '動能股的高盈虧比伴隨低勝率，請嚴守半倉紀律。' : ''}${regimeCut.shouldCut ? ` 另外目前策略訊號為 ${regimeCut.level==='red' ? '紅燈' : '黃燈'}，系統已自動降權。`:''}`}
       </div>
     </div>
   `;
@@ -2526,6 +2609,36 @@ function getHoldingHealth(h){
   return { score, label, note };
 }
 
+function getSystemPhase(strategyBuckets){
+  const maxTrades = Math.max(...Object.values(strategyBuckets).map(x=>x.trades || 0), 0);
+  if(maxTrades < MIN_SAMPLE){
+    return { phase:'CALIBRATING', progress:Math.min(100, (maxTrades / MIN_SAMPLE) * 100), trades:maxTrades };
+  }
+  return { phase:'ACTIVE', progress:100, trades:maxTrades };
+}
+function calcExpectancyMetrics(rows) {
+  const w = rows.filter(t => (Number(t.pnlPct)||0) > 0);
+  const l = rows.filter(t => (Number(t.pnlPct)||0) <= 0);
+  const wr = w.length / (rows.length || 1);
+  const lr = 1 - wr;
+  const aw = w.length ? w.reduce((a,t)=>a+(Number(t.pnlPct)||0),0)/w.length : 0;
+  const al = l.length ? l.reduce((a,t)=>a+Math.abs(Number(t.pnlPct)||0),0)/l.length : 0;
+  return (wr * aw) - (lr * al);
+}
+function calcExpectancy(allRows){
+  if(!allRows.length) return { e30:null, e10:null, trades:0, totalPnl:0, winRate:null, isValid:false, progress:0, trades10:0 };
+  const r30 = allRows.slice(-MIN_SAMPLE);
+  const r10 = allRows.slice(-FAST_SAMPLE);
+  const e30 = calcExpectancyMetrics(r30);
+  const e10 = calcExpectancyMetrics(r10);
+  const w30 = r30.filter(t => (Number(t.pnlPct)||0) > 0);
+  const wr30 = w30.length / (r30.length || 1);
+  const trades = allRows.length;
+  const isValid = trades >= MIN_SAMPLE;
+  const progress = Math.min(100, (trades / MIN_SAMPLE) * 100);
+  const totalPnl = allRows.reduce((a,t)=>a + (Number(t.pnlPct)||0),0);
+  return { e30, e10, trades, totalPnl, winRate: wr30*100, isValid, progress, trades10:r10.length };
+}
 function getPerformanceStats(){
   const total = tradeHistory.length;
   const wins = tradeHistory.filter(t => (Number(t.pnlPct) || 0) > 0);
@@ -2534,16 +2647,12 @@ function getPerformanceStats(){
   const avgWin = wins.length ? wins.reduce((a,t)=>a + (Number(t.pnlPct)||0),0) / wins.length : null;
   const avgLoss = losses.length ? losses.reduce((a,t)=>a + (Number(t.pnlPct)||0),0) / losses.length : null;
   let maxLossStreak = 0, streak = 0;
-  tradeHistory.forEach(t => {
-    if((Number(t.pnlPct) || 0) <= 0){ streak += 1; maxLossStreak = Math.max(maxLossStreak, streak); }
-    else streak = 0;
-  });
+  tradeHistory.forEach(t => { if((Number(t.pnlPct)||0) <= 0){ streak += 1; maxLossStreak = Math.max(maxLossStreak, streak); } else streak = 0; });
 
   const mainTrades = tradeHistory.filter(t => t.sourceRole === 'main');
   const subTrades = tradeHistory.filter(t => t.sourceRole === 'sub');
   const resonanceTrades = tradeHistory.filter(t => String(t.sourceGrade || '').includes('S+'));
   const pureLocalTrades = tradeHistory.filter(t => !String(t.sourceGrade || '').includes('S+') && String(t.sourceLabel || '').includes('本地'));
-
   const mistakeCounts = { chase:0, impulse:0, late:0, manual:0 };
   tradeHistory.forEach(t => {
     const tags = classifyTradeMistakes(t);
@@ -2552,52 +2661,33 @@ function getPerformanceStats(){
     if(tags.includes('拖延出場')) mistakeCounts.late += 1;
     if(tags.includes('手動硬砍')) mistakeCounts.manual += 1;
   });
-
-  function calcWinRate(rows){
-    if(!rows.length) return null;
-    return rows.filter(t => (Number(t.pnlPct)||0) > 0).length / rows.length * 100;
-  }
-  function calcExpectancy(rows){
-    if(!rows.length) return { expectancy:null, avgWin:null, avgLoss:null, trades:0, totalPnl:0, winRate:null };
-    const winners = rows.filter(t => (Number(t.pnlPct)||0) > 0);
-    const losers = rows.filter(t => (Number(t.pnlPct)||0) <= 0);
-    const wr = winners.length / rows.length;
-    const lr = 1 - wr;
-    const aw = winners.length ? winners.reduce((a,t)=>a + (Number(t.pnlPct)||0),0) / winners.length : 0;
-    const al = losers.length ? losers.reduce((a,t)=>a + Math.abs(Number(t.pnlPct)||0),0) / losers.length : 0;
-    const expectancy = (wr * aw) - (lr * al);
-    const totalPnl = rows.reduce((a,t)=>a + (Number(t.pnlPct)||0),0);
-    return { expectancy, avgWin:aw, avgLoss:al, trades:rows.length, totalPnl, winRate: wr*100 };
-  }
+  function calcWinRate(rows){ return rows.length ? rows.filter(t => (Number(t.pnlPct)||0) > 0).length / rows.length * 100 : null; }
 
   const strategyBuckets = {
     main_only: calcExpectancy(tradeHistory.filter(t => t.activeStrategy === 'main_only')),
     main_momentum: calcExpectancy(tradeHistory.filter(t => t.activeStrategy === 'main_momentum')),
     swing: calcExpectancy(tradeHistory.filter(t => t.activeStrategy === 'swing'))
   };
-
-  const momentumRows = tradeHistory.filter(t => t.isMomentum === true);
-  const momentumStats = calcExpectancy(momentumRows);
+  const momentumStats = calcExpectancy(tradeHistory.filter(t => t.isMomentum === true));
 
   function recommendation(){
-    const minSample = 30;
-    const enough = Object.values(strategyBuckets).some(x => (x.trades || 0) >= minSample);
-    if(!enough){
+    const allBuckets = Object.values(strategyBuckets);
+    const validBuckets = Object.entries(strategyBuckets).filter(([,v]) => v.isValid);
+    if(validBuckets.length === 0){
+      const maxProgress = Math.max(0, ...allBuckets.map(x => x.progress || 0));
       return {
-        title:'樣本不足，先觀察不要封印策略',
-        desc:'單一策略模式的平倉樣本未達 30 筆前，績效面板只作觀察，不作重壓或封印。'
+        title:`⚙️ 模型校正中 (最高樣本進度 ${Math.round(maxProgress)}%)`,
+        desc:`請完成 ${MIN_SAMPLE} 筆標準交易。單一策略模式未達門檻前，雙窗口滾動 E 不具統計顯著性，請維持固定部位。`
       };
     }
     const labelMap = { main_only:'只做主攻', main_momentum:'主攻 + 動能', swing:'波段全開' };
-    const sortable = Object.entries(strategyBuckets)
-      .filter(([,v]) => (v.trades || 0) >= minSample)
-      .sort((a,b)=>(b[1].expectancy ?? -999) - (a[1].expectancy ?? -999));
-    const bestKey = sortable[0][0];
-    const bestVal = sortable[0][1];
-    const negative = sortable.filter(([,v]) => (v.expectancy ?? 0) < 0).map(([k]) => labelMap[k]).join('、');
+    const sorted = validBuckets.sort((a,b)=>(b[1].e30 ?? -999) - (a[1].e30 ?? -999));
+    const bestKey = sorted[0][0];
+    const bestVal = sorted[0][1];
+    const negative = sorted.filter(([,v]) => (v.e30 ?? 0) < 0).map(([k]) => labelMap[k]).join('、');
     return {
       title:`建議優先鎖定：${labelMap[bestKey]}`,
-      desc:`目前該模式樣本 ${bestVal.trades} 筆，期望值 ${pct(bestVal.expectancy,2)}。${negative ? `負期望值模式：${negative}，建議降低使用頻率。` : '其餘模式尚未出現明顯負期望值。'}`
+      desc:`目前該模式樣本 ${bestVal.trades} 筆｜E30 ${pct(bestVal.e30,2)}｜E10 ${pct(bestVal.e10,2)}。${negative ? `負期望值模式：${negative}，建議降低使用頻率。` : '其餘模式尚未出現明顯負期望值。'}`
     };
   }
 
@@ -2607,13 +2697,9 @@ function getPerformanceStats(){
     subWinRate: calcWinRate(subTrades),
     resonanceWinRate: calcWinRate(resonanceTrades),
     localWinRate: calcWinRate(pureLocalTrades),
-    mistakeCounts,
-    strategyBuckets,
-    momentumStats,
-    recommendation: recommendation()
+    mistakeCounts, strategyBuckets, momentumStats, recommendation: recommendation()
   };
 }
-
 function updatePerformancePanel(){
   const stats = getPerformanceStats();
   $('perfTotalTrades').textContent = fmt(stats.total,0);
@@ -2630,22 +2716,28 @@ function updatePerformancePanel(){
   $('perfMistakeLate').textContent = fmt(stats.mistakeCounts.late,0);
   $('perfMistakeManual').textContent = fmt(stats.mistakeCounts.manual,0);
 
-  const sMain = stats.strategyBuckets.main_only;
-  const sMom = stats.strategyBuckets.main_momentum;
-  const sSwing = stats.strategyBuckets.swing;
-  const mStats = stats.momentumStats;
+  function renderExpectancy(elId, subId, bucket){
+    const el = $(elId), sub = $(subId);
+    if(!el || !sub) return;
+    if(!bucket.trades){
+      el.textContent = '—'; el.className = 'v'; sub.textContent = '無資料'; return;
+    }
+    if(!bucket.isValid){
+      el.innerHTML = `<span style="opacity:.6;font-size:20px;">${pct(bucket.e30,2)} <span style="font-size:12px;font-weight:normal">(校正中)</span></span>`;
+      el.className = 'v info';
+      sub.innerHTML = `${bucket.trades}/${MIN_SAMPLE} 筆<div class="bar"><div style="width:${bucket.progress}%"></div></div>`;
+      return;
+    }
+    const weakening = (bucket.trades10 >= FAST_SAMPLE && (bucket.e10 ?? 0) < 0);
+    el.innerHTML = `${pct(bucket.e30,2)}${weakening ? ' <span style="color:#fbbf24;font-size:11px;">⚠️ 近期轉弱</span>' : ''}`;
+    el.className = 'v ' + ((bucket.e30 ?? 0) < 0 ? 'danger' : 'ok');
+    sub.textContent = `樣本 ${bucket.trades} 筆｜E10 ${pct(bucket.e10,2)}｜總計 ${pct(bucket.totalPnl,2)}`;
+  }
 
-  $('perfModeMainOnlyE').innerHTML = sMain.expectancy === null ? '—' : `<span class="${sMain.expectancy < 0 ? 'danger' : 'ok'}">${pct(sMain.expectancy,2)}</span>`;
-  $('perfModeMainOnlySub').textContent = `樣本 ${fmt(sMain.trades,0)} 筆｜總計 ${pct(sMain.totalPnl,2)}`;
-  
-  $('perfModeMainMomE').innerHTML = sMom.expectancy === null ? '—' : `<span class="${sMom.expectancy < 0 ? 'danger' : 'ok'}">${pct(sMom.expectancy,2)}</span>`;
-  $('perfModeMainMomSub').textContent = `樣本 ${fmt(sMom.trades,0)} 筆｜總計 ${pct(sMom.totalPnl,2)}`;
-  
-  $('perfModeSwingE').innerHTML = sSwing.expectancy === null ? '—' : `<span class="${sSwing.expectancy < 0 ? 'danger' : 'ok'}">${pct(sSwing.expectancy,2)}</span>`;
-  $('perfModeSwingSub').textContent = `樣本 ${fmt(sSwing.trades,0)} 筆｜總計 ${pct(sSwing.totalPnl,2)}`;
-  
-  $('perfMomentumE').innerHTML = mStats.expectancy === null ? '—' : `<span class="${mStats.expectancy < 0 ? 'danger' : 'ok'}">${pct(mStats.expectancy,2)}</span>`;
-  $('perfMomentumSub').textContent = `勝率 ${pct(mStats.winRate,0)}｜樣本 ${fmt(mStats.trades,0)} 筆`;
+  renderExpectancy('perfModeMainOnlyE', 'perfModeMainOnlySub', stats.strategyBuckets.main_only);
+  renderExpectancy('perfModeMainMomE', 'perfModeMainMomSub', stats.strategyBuckets.main_momentum);
+  renderExpectancy('perfModeSwingE', 'perfModeSwingSub', stats.strategyBuckets.swing);
+  renderExpectancy('perfMomentumE', 'perfMomentumSub', stats.momentumStats);
 
   $('strategyRecommendHeadline').textContent = stats.recommendation.title;
   $('strategyRecommendDesc').textContent = stats.recommendation.desc;
@@ -2671,7 +2763,6 @@ function updatePerformancePanel(){
     </tr>
   `).join('');
 }
-
 function openCloseDialog(index){
   closeDialogIndex = index;
   const h = holdings[index];
@@ -2941,6 +3032,66 @@ document.addEventListener('change', function(e){
   updateFinalCards();
   updateCommandCenter();
 });
+
+
+function bindUiActions(){
+  const pairs = [
+    ['saveBtn', saveAll],
+    ['reloadCloudBtn', loadCloud],
+    ['applyMarketBtn', applyMarketDecision],
+    ['analyzeBtn', analyzeCSV],
+    ['loadDemoBtn', loadDemo],
+    ['clearBtn', clearAllData],
+    ['copyPromptBtn', copyPrompt],
+    ['parseAiBtn', parseAI],
+    ['decideBtn', decideFinal],
+    ['runFlowBtn', runFlow],
+    ['addHoldBtn', addHolding],
+    ['loadMainBtn', loadMainToForm],
+    ['clearHoldBtn', clearHoldForm],
+    ['confirmCloseBtn', confirmClosePosition],
+    ['cancelCloseBtn', closeCloseDialog],
+    ['applyMainSuggestBtn', function(){
+      const main = finalPicks[0];
+      if(!main){ setFlowMessage('❌ 尚未有主攻股可套用。', true); return; }
+      const modeInfo = classifyMode(main);
+      if($('stopSlider')) $('stopSlider').value = String(modeInfo.stop ?? getCfg().stopPct);
+      if($('tp1Slider')) $('tp1Slider').value = String(modeInfo.tp1 ?? getCfg().tp1Pct);
+      if($('tp2Slider')) $('tp2Slider').value = String(modeInfo.tp2 ?? getCfg().tp2Pct);
+      if($('trailSlider')) $('trailSlider').value = String(modeInfo.trail ?? getCfg().trailPct);
+      refreshSliders(true);
+      setFlowMessage('✅ 已套用主攻股建議參數。');
+    }]
+  ];
+  pairs.forEach(([id, fn]) => {
+    const el = $(id);
+    if(el) el.onclick = () => safeRun(() => fn(), id);
+  });
+
+  ['stopSlider','tp1Slider','tp2Slider','trailSlider','allocSlider','warChestSlider','capitalSlider'].forEach(id=>{
+    const el = $(id);
+    if(el) el.addEventListener('input', ()=>refreshSliders(true));
+  });
+}
+
+function initApp(){
+  loadLocal();
+  refreshSliders(false);
+  updateStrategyHint();
+  updateMarketPanelSummary();
+  renderRankTable();
+  updateSystemTable();
+  updateFinalCards();
+  updateHoldings();
+  updateCommandCenter();
+  updateLocks();
+  updateHud();
+  updatePerformancePanel();
+  checkPanicMode();
+  bindUiActions();
+}
+
+initApp();
 
 </script>
 </body>
