@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#050a12" />
-<title>AI 戰艦 Pro Max v7.3.2a｜微修封版</title>
+<title>AI 戰艦 Pro Max v7.4.0｜最終戰情室 UI</title>
 <style>
 :root{
   --bg:#050a12; --bg2:#0a1220; --panel:#0d1727; --line:rgba(160,200,255,0.12);
@@ -36,15 +36,15 @@ body:before{
   position:sticky;top:0;z-index:40;
   padding:calc(env(safe-area-inset-top) + 10px) 16px 12px 16px;
   background:linear-gradient(180deg, rgba(7,12,22,0.97), rgba(10,18,32,0.92));
-  border-bottom:1px solid var(--line); backdrop-filter: blur(12px);
+  border-bottom:1px solid var(--line);backdrop-filter: blur(12px);
   box-shadow:0 10px 40px rgba(0,0,0,0.35);
 }
-.topWrap{max-width:1680px;margin:0 auto;display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.topWrap{max-width:1720px;margin:0 auto;display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
 .main{flex:1;overflow:auto;padding:14px}
-.wrap{max-width:1680px;margin:0 auto}
+.wrap{max-width:1720px;margin:0 auto}
 .panel{
   background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.014));
-  border:1px solid var(--line); border-radius:var(--radius); padding:18px; position:relative; overflow:hidden; margin-bottom:16px;
+  border:1px solid var(--line);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;margin-bottom:16px;
   box-shadow:var(--shadow);
 }
 .panel:before{
@@ -56,13 +56,18 @@ body:before{
 .cols2{grid-template-columns:1fr 1fr}
 .cols3{grid-template-columns:repeat(3,1fr)}
 .cols4{grid-template-columns:repeat(4,1fr)}
-.hero{grid-template-columns:1.2fr 0.8fr}
-@media (max-width:1280px){.cols2,.cols3,.cols4,.hero{grid-template-columns:1fr}}
+.hero{grid-template-columns:1.2fr .8fr}
+.twoMain{grid-template-columns:1fr 1fr}
+@media (max-width:1280px){.cols2,.cols3,.cols4,.hero,.twoMain{grid-template-columns:1fr}}
 .badge{
   display:inline-flex;align-items:center;gap:8px;
   padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800;
   background:rgba(255,255,255,0.05);border:1px solid var(--line)
 }
+.state-green{background:rgba(52,211,153,0.12);color:#bbf7d0;border-color:rgba(52,211,153,0.25)}
+.state-yellow{background:rgba(251,191,36,0.12);color:#fde68a;border-color:rgba(251,191,36,0.25)}
+.state-red{background:rgba(248,113,113,0.12);color:#fecaca;border-color:rgba(248,113,113,0.25)}
+.state-gray{background:rgba(255,255,255,0.06);color:#cbd5e1;border-color:rgba(255,255,255,0.14)}
 input,textarea,select{
   width:100%;background:#09111f;color:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;font:inherit;outline:none;
 }
@@ -76,53 +81,51 @@ button:active{transform:scale(0.98)}
 button.secondary{background:rgba(255,255,255,0.08);color:#fff;border:1px solid var(--line)}
 button.success{background:linear-gradient(135deg,var(--green),#8ff7cb);color:#062919}
 button.danger{background:rgba(248,113,113,0.16);color:#fecaca;border:1px solid rgba(248,113,113,0.2)}
-.commandMain{font-size:36px;font-weight:900;line-height:1.15;color:var(--cyan)}
-.commandSub{margin-top:10px;font-size:14px;line-height:1.7;color:var(--muted)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap}
+.commandMain{font-size:38px;font-weight:900;line-height:1.15;color:var(--cyan)}
+.commandSub{margin-top:10px;font-size:14px;line-height:1.75;color:var(--muted)}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 @media (max-width:1200px){.metrics{grid-template-columns:1fr 1fr}}
 .metric{background:rgba(255,255,255,0.02);border:1px solid var(--line);border-radius:18px;padding:14px}
 .metric .k{font-size:12px;color:var(--muted)}
 .metric .v{font-size:26px;font-weight:900;margin-top:6px;color:var(--cyan)}
-.reason{margin-top:10px;padding:12px;border-radius:14px;background:rgba(255,255,255,0.025);border:1px solid var(--line);font-size:13px;line-height:1.7}
-.pickCard{
-  background:rgba(255,255,255,0.02);border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;gap:10px
-}
-.pickHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.pickName{font-size:24px;font-weight:900;line-height:1.1}
-.pickMeta{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-@media (max-width:900px){.pickMeta{grid-template-columns:1fr 1fr}}
-.mini{background:#091323;border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
-.mini .k{font-size:11px;color:var(--muted)}
-.mini .v{font-size:18px;font-weight:900;margin-top:6px}
-table{width:100%;border-collapse:collapse;min-width:1450px}
-th,td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;text-align:left;vertical-align:middle}
-th{color:var(--muted)}
-.tableWrap{overflow:auto}
-.close-overlay{position:fixed;inset:0;background:rgba(3,7,18,0.85);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
-.close-overlay.show{display:flex}
-.close-modal{width:min(520px, 100%); background:var(--panel); border:1px solid var(--line2); border-radius:22px; padding:20px; box-shadow:var(--shadow);}
-.footer{padding:8px 0 20px;text-align:center;color:var(--muted);font-size:12px}
+.reason{margin-top:10px;padding:12px;border-radius:14px;background:rgba(255,255,255,0.025);border:1px solid var(--line);font-size:13px;line-height:1.75}
+.small{font-size:12px;color:var(--muted)}
 .tag{
   display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;
   background:rgba(255,255,255,0.04);border:1px solid var(--line);font-size:11px;font-weight:800
 }
+.list{display:grid;gap:12px}
+.card{
+  background:rgba(255,255,255,0.02);border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;gap:10px
+}
+.cardHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.cardName{font-size:22px;font-weight:900;line-height:1.1}
+.cardMeta{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:900px){.cardMeta{grid-template-columns:1fr 1fr}}
+.mini{background:#091323;border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.mini .k{font-size:11px;color:var(--muted)}
+.mini .v{font-size:17px;font-weight:900;margin-top:6px}
+.tableWrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:1550px}
+th,td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;text-align:left;vertical-align:middle}
+th{color:var(--muted)}
+.highlight-val{color:var(--cyan);font-weight:900;font-size:16px}
+.risk-red{color:var(--red);font-weight:900;background:rgba(248,113,113,0.1);padding:2px 4px;border-radius:4px}
 .progress{
   width:100%;height:10px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;border:1px solid var(--line);
 }
 .progress > span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan))}
-.action-box{padding:8px 10px; border-radius:10px; font-weight:900; text-align:center;}
-.action-danger{background:rgba(248,113,113,0.18); color:var(--red); border:1px solid rgba(248,113,113,0.35); animation: blink 2s infinite;}
-.action-warn{background:rgba(251,191,36,0.18); color:var(--yellow); border:1px solid rgba(251,191,36,0.35);}
-.action-ok{background:rgba(52,211,153,0.18); color:var(--green); border:1px solid rgba(52,211,153,0.35);}
-.action-info{background:rgba(96,165,250,0.18); color:var(--cyan); border:1px solid rgba(96,165,250,0.35);}
-.highlight-val{color:var(--cyan); font-weight:900; font-size:16px;}
-@keyframes blink { 0% {opacity:1} 50% {opacity:0.6} 100% {opacity:1} }
-.risk-red{color:var(--red); font-weight:900; background:rgba(248,113,113,0.1); padding:2px 4px; border-radius:4px;}
-.small{font-size:12px;color:var(--muted)}
-.state-green{background:rgba(52,211,153,0.12);color:#bbf7d0;border-color:rgba(52,211,153,0.25)}
-.state-yellow{background:rgba(251,191,36,0.12);color:#fde68a;border-color:rgba(251,191,36,0.25)}
-.state-red{background:rgba(248,113,113,0.12);color:#fecaca;border-color:rgba(248,113,113,0.25)}
-.state-gray{background:rgba(255,255,255,0.06);color:#cbd5e1;border-color:rgba(255,255,255,0.14)}
+.action-box{padding:8px 10px;border-radius:10px;font-weight:900;text-align:center}
+.action-danger{background:rgba(248,113,113,0.18);color:var(--red);border:1px solid rgba(248,113,113,0.35);animation:blink 2s infinite}
+.action-warn{background:rgba(251,191,36,0.18);color:var(--yellow);border:1px solid rgba(251,191,36,0.35)}
+.action-ok{background:rgba(52,211,153,0.18);color:var(--green);border:1px solid rgba(52,211,153,0.35)}
+.action-info{background:rgba(96,165,250,0.18);color:var(--cyan);border:1px solid rgba(96,165,250,0.35)}
+.footer{padding:8px 0 20px;text-align:center;color:var(--muted);font-size:12px}
+.close-overlay{position:fixed;inset:0;background:rgba(3,7,18,0.85);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.close-overlay.show{display:flex}
+.close-modal{width:min(560px,100%);background:var(--panel);border:1px solid var(--line2);border-radius:22px;padding:20px;box-shadow:var(--shadow)}
+@keyframes blink{0%{opacity:1}50%{opacity:.6}100%{opacity:1}}
 </style>
 </head>
 <body>
@@ -130,8 +133,8 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topWrap">
       <div>
-        <div style="font-weight:900;font-size:22px;letter-spacing:1px;">🛡️ AI 戰艦 Pro Max <span style="color:var(--cyan)">v7.3.2a</span></div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px">夜間決策微修封版｜CSV 防呆補強｜副標文字完整刷新</div>
+        <div style="font-weight:900;font-size:22px;letter-spacing:1px;">🛡️ AI 戰艦 Pro Max <span style="color:var(--cyan)">v7.4.0</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">最終戰情室 UI｜本地候選池 × AI 最終推薦 × 夜間智慧單</div>
       </div>
       <div class="toolbar">
         <button id="saveBtn" class="success">💾 儲存本地</button>
@@ -147,28 +150,27 @@ th{color:var(--muted)}
         <section class="panel" style="border-left:5px solid var(--cyan)">
           <div class="sectionTitle">🧠 唯一作戰指令</div>
           <div id="mainCommand" class="commandMain">先確認市場</div>
-          <div id="commandSub" class="commandSub">夜間重算、隔日不理。市場決定進場量，個股乖離決定進場價。</div>
+          <div id="commandSub" class="commandSub">你的固定節奏：晚上更新市場 → 貼 CSV → 本地候選池 → AI 最終推薦 → 加入監控 → 設定明日固定智慧單。</div>
           <div style="margin-top:14px"><span id="commandBadge" class="badge state-gray">待機</span></div>
           <div class="metrics" style="margin-top:14px">
             <div class="metric"><div class="k">市場狀態</div><div id="hudMarket" class="v">待確認</div></div>
-            <div class="metric"><div class="k">漲跌比率</div><div id="hudBreadth" class="v">—</div></div>
+            <div class="metric"><div class="k">漲跌家數</div><div id="hudBreadth" class="v">—</div></div>
             <div class="metric"><div class="k">乖離上限</div><div id="hudMaxDev" class="v">—</div></div>
             <div class="metric"><div class="k">建議部位</div><div id="hudPosition" class="v">—</div></div>
           </div>
         </section>
 
         <section class="panel">
-          <div class="sectionTitle">⚠️ 夜間掛單規則 (飛輪核心)</div>
-          <div class="list">
-            <div class="reason"><b>階梯鎖利：</b> 根據「今日最高價」自動上推智慧停損線。</div>
-            <div class="reason"><b>隔日固定：</b> 明日單掛好後，盤中無視任何震盪，晚上再重算。</div>
-            <div id="riskWarning" class="reason" style="border-color:var(--red); color:var(--red); display:none; font-weight:800;">🚨 偵測到極端乖離，請嚴格執行禁追/減碼指令。</div>
-          </div>
+          <div class="sectionTitle">⚠️ 夜間掛單規則</div>
+          <div class="reason"><b>市場先決：</b> 先判斷大盤，決定今晚能不能開新倉。</div>
+          <div class="reason"><b>本地守底線：</b> 先用市場、乖離、量價把危險標的砍掉。</div>
+          <div class="reason"><b>AI 做最後選擇：</b> 最終推薦只顯示 AI 選出的 1~2 檔，不再混淆。</div>
+          <div id="riskWarning" class="reason" style="border-color:var(--red); color:var(--red); display:none; font-weight:800;">🚨 偵測到過熱標的，今晚禁止新追價，只准防守或減碼。</div>
         </section>
       </div>
 
       <section class="panel">
-        <div class="sectionTitle">🌡️ 市場環境鎖定 (OTC00)</div>
+        <div class="sectionTitle">🌡️ 市場環境鎖定</div>
         <div class="grid cols4">
           <div>
             <label class="small">指數相對 20MA</label>
@@ -198,7 +200,7 @@ th{color:var(--muted)}
             <button id="applyMarketBtn" style="width:100%">套用市場判斷</button>
           </div>
         </div>
-        <div id="marketSummary" class="reason">完成市場判斷後，系統將自動調整個股乖離率的容忍上限。</div>
+        <div id="marketSummary" class="reason">市場 RSI 是大盤濾網；TradingView RSI 是個股篩選。兩者不衝突。</div>
       </section>
 
       <div class="grid cols2">
@@ -206,59 +208,68 @@ th{color:var(--muted)}
           <div class="sectionTitle">📊 TradingView CSV</div>
           <textarea id="csvInput" placeholder="在此貼上 TradingView CSV 內容..."></textarea>
           <div class="toolbar" style="margin-top:10px">
-            <button id="analyzeBtn">開始量化分析</button>
+            <button id="analyzeBtn">本地風控初篩</button>
             <button id="copyPromptBtn" class="secondary">複製 AI 提示詞</button>
           </div>
           <div id="csvSummary" class="reason">尚未分析 CSV。</div>
         </section>
 
         <section class="panel">
-          <div class="sectionTitle">🤖 AI 決策覆核</div>
-          <textarea id="aiInput" placeholder="貼入 AI 回覆選出明日標的..."></textarea>
+          <div class="sectionTitle">🤖 AI 最終覆核</div>
+          <textarea id="aiInput" placeholder="貼入 AI 回覆，例如：主攻 5244，副攻 6163"></textarea>
           <div class="toolbar" style="margin-top:10px">
             <button id="parseAiBtn" class="secondary">解析 AI</button>
-            <button id="decideBtn">最終決策鎖定</button>
+            <button id="decideBtn">鎖定最終推薦</button>
           </div>
           <div id="aiSummary" class="reason">等待 AI 回覆解析。</div>
         </section>
       </div>
 
-      <section class="panel">
-        <div class="sectionTitle">🎯 最終推薦標的 (夜間精選)</div>
-        <div id="pickList" class="list">
-          <div class="reason">資料導入後顯示高權重候選股。</div>
-        </div>
-      </section>
+      <div class="grid twoMain">
+        <section class="panel">
+          <div class="sectionTitle">🧩 本地候選池（Top 4）</div>
+          <div id="localPool" class="list">
+            <div class="reason">本地初篩後顯示前 4 名候選。這是安全池，不是最終下單池。</div>
+          </div>
+        </section>
+
+        <section class="panel" style="border-left:5px solid var(--green)">
+          <div class="sectionTitle">🎯 AI 最終推薦（Top 2）</div>
+          <div id="finalPicks" class="list">
+            <div class="reason">AI 鎖定完成後，這裡只顯示真正要考慮掛單的 1~2 檔。</div>
+          </div>
+        </section>
+      </div>
 
       <div class="grid hero">
         <section class="panel">
           <div class="sectionTitle">📈 持倉快速錄入</div>
           <div class="grid cols4">
-            <div><label class="small">代號</label><input id="holdSymbol" placeholder="2330"></div>
+            <div><label class="small">代號</label><input id="holdSymbol" placeholder="例如 5244"></div>
             <div><label class="small">買價</label><input id="holdBuy" type="number" step="0.01"></div>
-            <div><label class="small">現價</label><input id="holdCurrent" type="number" step="0.01"></div>
+            <div><label class="small">收盤現價</label><input id="holdCurrent" type="number" step="0.01"></div>
             <div><label class="small">今日最高價</label><input id="holdHigh" type="number" step="0.01"></div>
           </div>
           <div class="toolbar" style="margin-top:10px">
             <button id="addHoldBtn">加入監控</button>
-            <button id="loadTopBtn" class="secondary">帶入首選</button>
+            <button id="loadTopBtn" class="secondary">帶入主攻</button>
           </div>
-          <div class="reason">晚上重算一次，明天照單執行。</div>
+          <div class="reason">晚上更新 <b>收盤現價</b> 與 <b>今日最高價</b>，系統就會幫你算出明日固定智慧單。</div>
         </section>
 
         <section class="panel">
           <div class="sectionTitle">📋 飛輪統計</div>
           <div class="metrics">
             <div class="metric"><div class="k">持倉數</div><div id="hudHoldCount" class="v">0</div></div>
-            <div class="metric"><div class="k">累積勝率</div><div id="hudWinRate" class="v">—</div></div>
-            <div class="metric"><div class="k">飛輪累積 %</div><div id="hudTotalPnl" class="v">—</div></div>
+            <div class="metric"><div class="k">平倉勝率</div><div id="hudWinRate" class="v">—</div></div>
+            <div class="metric"><div class="k">飛輪累積 %</div><div id="hudFlywheel" class="v">0%</div></div>
             <div class="metric"><div class="k">候選數</div><div id="hudPickCount" class="v">0</div></div>
           </div>
         </section>
       </div>
 
       <section class="panel">
-        <div class="sectionTitle">🛡️ 持倉戰況監控 (明日固定智慧單)</div>
+        <div class="sectionTitle">🛡️ 持倉戰況監控（明日固定智慧單）</div>
         <div class="tableWrap">
           <table>
             <thead>
@@ -297,11 +308,10 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">v7.3.2a｜微修封版：只補 CSV 欄位防呆與唯一指令副標刷新，不動主架構。</div>
+      <div class="footer">v7.4.0｜本地候選池只做風控初篩，AI 最終推薦才是你真正要考慮掛單的標的。</div>
     </div>
   </div>
 
-  <!-- Modal -->
   <div id="closeOverlay" class="close-overlay">
     <div class="close-modal">
       <div class="sectionTitle">📤 執行平倉</div>
@@ -319,7 +329,7 @@ th{color:var(--muted)}
         </select>
       </div>
       <div class="toolbar" style="margin-top:20px">
-        <button id="confirmCloseBtn" class="success" style="flex:1">執行平倉</button>
+        <button id="confirmCloseBtn" class="success" style="flex:1">確認平倉</button>
         <button id="cancelCloseBtn" class="secondary" style="flex:1">取消</button>
       </div>
     </div>
@@ -328,27 +338,30 @@ th{color:var(--muted)}
 
 <script>
 const $ = id => document.getElementById(id);
-const STORE_KEY = 'ai_battleship_v732a_stable';
+const STORE_KEY = 'ai_battleship_v740_warroom';
 
 let state = {
-  marketConfirmed: false,
-  marketMode: '待確認',
-  maxDev: 15,
-  suggestedPosition: '—',
-  localPicks: [],
-  aiCodes: [],
-  finalPicks: [],
-  holdings: [],
-  tradeHistory: []
+  marketConfirmed:false,
+  marketMode:'待確認',
+  maxDev:15,
+  suggestedPosition:'—',
+  localPicks:[],
+  aiCodes:[],
+  finalPicks:[],
+  holdings:[],
+  tradeHistory:[]
 };
 
-const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : null; };
+const num = v => {
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? n : null;
+};
 const pct = (v, d=2) => Number.isFinite(v) ? v.toFixed(d) + '%' : '—';
 
 function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
 function load(){
   const raw = localStorage.getItem(STORE_KEY);
-  if(raw) try { state = { ...state, ...JSON.parse(raw) }; } catch(e) {}
+  if(raw) try { state = {...state, ...JSON.parse(raw)}; } catch(e) {}
 }
 
 function getMarketJudgement(){
@@ -359,24 +372,24 @@ function getMarketJudgement(){
   const total = rise + fall;
   const ratio = total > 0 ? rise / total : 0.5;
 
-  let mode = '中性', cls = 'state-yellow', pos = '50%~75%', maxDev = 12;
+  let mode='中性', pos='50%~75%', maxDev=12;
   if(trend === 'below' || ratio < 0.4 || rsi === 'weak'){
-    mode = '弱勢'; cls = 'state-red'; pos = '0%'; maxDev = 8;
+    mode='弱勢'; pos='0%'; maxDev=8;
   } else if(trend === 'above' && ratio > 0.6 && rsi !== 'hot'){
-    mode = '強勢'; cls = 'state-green'; pos = '100%'; maxDev = 15;
+    mode='強勢'; pos='100%'; maxDev=15;
   } else if(rsi === 'hot'){
-    mode = '過熱'; cls = 'state-yellow'; pos = '25%~50%'; maxDev = 10;
+    mode='過熱'; pos='25%~50%'; maxDev=10;
   }
-  return { mode, cls, pos, maxDev, rise, fall, ratio };
+  return {mode, pos, maxDev, rise, fall, ratio};
 }
 
 function applyMarket(){
   const m = getMarketJudgement();
   state.marketConfirmed = true;
   state.marketMode = m.mode;
-  state.maxDev = m.maxDev;
   state.suggestedPosition = m.pos;
-  $('marketSummary').innerHTML = `✅ 已確認：<b>${m.mode}</b> ｜ 上漲佔比：<b>${(m.ratio*100).toFixed(0)}%</b> ｜ 乖離上限：<b>${m.maxDev}%</b> ｜ 建議倉位：<b>${m.pos}</b>`;
+  state.maxDev = m.maxDev;
+  $('marketSummary').innerHTML = `✅ 已確認：<b>${m.mode}</b> ｜ 上漲佔比：<b>${(m.ratio*100).toFixed(0)}%</b> ｜ 乖離上限：<b>${m.maxDev}%</b> ｜ 建議部位：<b>${m.pos}</b>`;
   updateUI();
   save();
 }
@@ -391,13 +404,13 @@ function analyzeCSV(){
   const headers = lines[0].toLowerCase().split(',');
   const getIdx = keys => headers.findIndex(h => keys.some(k => h.includes(k)));
   const idx = {
-    sym: getIdx(['商品','symbol','代號']),
-    name: getIdx(['描述','name']),
-    price: getIdx(['價格','price','收盤']),
-    chg: getIdx(['變化','change','漲跌','1天']),
-    vol: getIdx(['相對成交量','relvol','volume']),
-    dev: getIdx(['乖離','sma20','20ma']),
-    rsi: getIdx(['rsi'])
+    sym:getIdx(['商品','symbol','代號']),
+    name:getIdx(['描述','name']),
+    price:getIdx(['價格','price','收盤']),
+    chg:getIdx(['變化','change','漲跌','1天']),
+    vol:getIdx(['相對成交量','relvol','volume']),
+    dev:getIdx(['乖離','sma20','20ma']),
+    rsi:getIdx(['rsi'])
   };
 
   const missing = [];
@@ -414,13 +427,13 @@ function analyzeCSV(){
   state.localPicks = lines.slice(1).map(l => {
     const c = l.split(',');
     return {
-      symbol: (c[idx.sym] || '').trim(),
-      name: (c[idx.name] || '').trim(),
-      price: num(c[idx.price]) || 0,
-      change: idx.chg >= 0 ? (num(c[idx.chg]) || 0) : 0,
-      relVol: idx.vol >= 0 ? (num(c[idx.vol]) || 0) : 0,
-      dev: idx.dev >= 0 ? (num(c[idx.dev]) || 0) : 0,
-      rsi: idx.rsi >= 0 ? (num(c[idx.rsi]) || 0) : 0
+      symbol:(c[idx.sym] || '').trim(),
+      name:(c[idx.name] || '').trim(),
+      price:num(c[idx.price]) || 0,
+      change:idx.chg >= 0 ? (num(c[idx.chg]) || 0) : 0,
+      relVol:idx.vol >= 0 ? (num(c[idx.vol]) || 0) : 0,
+      dev:idx.dev >= 0 ? (num(c[idx.dev]) || 0) : 0,
+      rsi:idx.rsi >= 0 ? (num(c[idx.rsi]) || 0) : 0
     };
   }).filter(x => x.symbol);
 
@@ -430,23 +443,31 @@ function analyzeCSV(){
     return sb - sa;
   });
 
-  $('csvSummary').textContent = `量化分析完成，候選數：${state.localPicks.length}`;
+  $('csvSummary').textContent = `本地風控初篩完成，候選數：${state.localPicks.length}。已留下 Top 4 安全池。`;
   updateUI();
   save();
+}
+
+function copyPrompt(){
+  if(!state.localPicks.length) return alert('請先分析 CSV');
+  const top = state.localPicks.slice(0,4).map((x,i) => `${i+1}. ${x.symbol} ${x.name}｜價格 ${x.price}｜漲幅 ${x.change}%｜量能 ${x.relVol}｜乖離 ${x.dev}%｜RSI ${x.rsi || '—'}`).join('\n');
+  const prompt = `你現在是台股短線飆股分析員。以下是經過本地風控初篩後的安全候選池，請從中選出最值得出手的 1~2 檔，並簡短說明理由。\n\n候選池：\n${top}\n\n請用格式回覆：\n主攻：\n副攻：\n理由：`;
+  navigator.clipboard.writeText(prompt);
+  alert('AI 提示詞已複製');
 }
 
 function parseAI(){
   const txt = $('aiInput').value;
   const codes = txt.match(/\b\d{4}\b/g) || [];
   state.aiCodes = [...new Set(codes)];
-  $('aiSummary').textContent = state.aiCodes.length ? `AI 解析到 ${state.aiCodes.join('、')}` : '未抓到代號。';
+  $('aiSummary').textContent = state.aiCodes.length ? `AI 解析到：${state.aiCodes.join('、')}` : '沒有抓到 4 碼股票代號。';
   updateUI();
   save();
 }
 
 function finalizeDecision(){
-  if(!state.localPicks.length) return alert('先分析 CSV');
-  let picks = state.aiCodes.length ? state.localPicks.filter(x => state.aiCodes.includes(x.symbol)) : state.localPicks.slice(0,2);
+  if(!state.localPicks.length) return alert('請先完成本地初篩');
+  let picks = state.aiCodes.length ? state.localPicks.filter(x => state.aiCodes.includes(x.symbol)) : [];
   if(!picks.length) picks = state.localPicks.slice(0,2);
   state.finalPicks = picks.slice(0,2);
   updateUI();
@@ -472,12 +493,18 @@ function getTrailingInfo(h){
     stopPct = Math.min(stopPct, Math.max(-5, stopPct - 2));
     tpTargetPct = Math.min(tpTargetPct, 8);
     lockMode += '｜弱市收緊';
+  } else if(state.marketMode === '過熱'){
+    tpTargetPct = Math.min(tpTargetPct, 12);
+    lockMode += '｜過熱不貪';
+  } else if(state.marketMode === '強勢' && highPnl >= 10){
+    tpTargetPct = Math.max(tpTargetPct, highPnl + 5);
+    lockMode += '｜強市續抱';
   }
 
   const stopPrice = buy * (1 + stopPct / 100);
   const tpPrice = buy * (1 + tpTargetPct / 100);
   const distPct = ((current - stopPrice) / stopPrice) * 100;
-  return { pnl, highPnl, stopPct, stopPrice, tpTargetPct, tpPrice, lockMode, distPct };
+  return {pnl, highPnl, stopPct, stopPrice, tpTargetPct, tpPrice, lockMode, distPct};
 }
 
 function getHoldingAction(h){
@@ -487,91 +514,60 @@ function getHoldingAction(h){
     return {txt:'🟡 明日只防守', cls:'action-warn'};
   }
   if(h.dev > 15 || h.dev > state.maxDev){
-    if(t.pnl > 0) return {txt:'🟡 明日逢高收', cls:'action-warn'};
-    return {txt:'🔴 禁止加碼', cls:'action-danger'};
+    if(t.pnl > 0) return {txt:'🟡 過熱，明日逢高收', cls:'action-warn'};
+    return {txt:'🔴 過熱禁留戀', cls:'action-danger'};
   }
   if(t.distPct <= 0) return {txt:'🔴 明日觸價出場', cls:'action-danger'};
   if(t.distPct <= 2) return {txt:'🟡 明日警戒', cls:'action-warn'};
+  if(t.highPnl >= 10) return {txt:'🟢 續抱，沿智慧單', cls:'action-ok'};
   return {txt:'🔵 正常持有', cls:'action-info'};
 }
 
-function updateUI(){
-  const m = getMarketJudgement();
-  const cmd = $('mainCommand');
-  const badge = $('commandBadge');
-  const sub = $('commandSub');
-  
-  // HUD
-  $('hudMarket').textContent = state.marketMode;
-  $('hudBreadth').textContent = state.marketConfirmed ? `${m.rise} / ${m.fall}` : '—';
-  $('hudMaxDev').textContent = state.marketConfirmed ? `${state.maxDev}%` : '—';
-  $('hudPosition').textContent = state.marketConfirmed ? state.suggestedPosition : '—';
-
-  // 飛輪累積 (複利)
-  const flywheel = state.tradeHistory.reduce((acc, t) => acc * (1 + (t.pnl / 100)), 1);
-  $('hudTotalPnl').textContent = state.tradeHistory.length ? `${((flywheel-1)*100).toFixed(2)}%` : '0%';
-
-  // 唯一指令中心連動
-  if(!state.marketConfirmed){
-    cmd.textContent = '先確認市場';
-    badge.className = 'badge state-gray'; badge.textContent = '待機';
-  } else if(!state.localPicks.length){
-    cmd.textContent = '待導入 CSV';
-    badge.className = 'badge state-gray'; badge.textContent = '待數據';
-  } else {
-    const top = state.finalPicks[0] || state.localPicks[0];
-    const isOverheat = top && (top.dev > 15 || top.dev > state.maxDev);
-    
-    // 警示燈實體連動修復
-    $('riskWarning').style.display = isOverheat ? 'block' : 'none';
-
-    if(state.marketMode === '弱勢'){
-      cmd.textContent = '🚨 不開新倉';
-      badge.className = 'badge state-red'; badge.textContent = '空頭防守';
-    } else if(isOverheat){
-      cmd.textContent = '🚨 嚴禁追價';
-      badge.className = 'badge state-red'; badge.textContent = '過熱警報';
-      sub.textContent = `${top.symbol} 乖離過大，目前僅執行既有持倉。`;
-    } else if(state.finalPicks.length){
-      cmd.textContent = `🟢 今晚鎖定 ${top.symbol}`;
-      badge.className = 'badge state-green'; badge.textContent = '可掛單';
-      sub.textContent = `依據夜間重算結果掛妥智慧單，隔日不動。`;
-    } else {
-      cmd.textContent = '等待決策鎖定';
-      badge.className = 'badge state-yellow'; badge.textContent = '待決策';
-    }
-  }
-
-  $('hudHoldCount').textContent = state.holdings.length;
-  $('hudPickCount').textContent = state.localPicks.length;
-  const wins = state.tradeHistory.filter(t => t.pnl > 0).length;
-  $('hudWinRate').textContent = state.tradeHistory.length ? ((wins/state.tradeHistory.length)*100).toFixed(0)+'%' : '—';
-
-  renderPicks();
-  renderHoldings();
-  renderHistory();
-}
-
-function renderPicks(){
-  const box = $('pickList');
-  if(!state.localPicks.length) {
-    box.innerHTML = '<div class="reason">尚未產生候選股。</div>';
+function renderLocalPool(){
+  const box = $('localPool');
+  if(!state.localPicks.length){
+    box.innerHTML = '<div class="reason">本地初篩後顯示 Top 4 候選池。</div>';
     return;
   }
-  box.innerHTML = state.localPicks.slice(0,4).map((x, i) => `
-    <div class="pickCard">
-      <div class="pickHead">
+  box.innerHTML = state.localPicks.slice(0,4).map((x,i)=>`
+    <div class="card">
+      <div class="cardHead">
         <div>
-          <div class="pickName">${x.symbol} ${x.name}</div>
-          <div class="small">${i===0?'首選':(state.aiCodes.includes(x.symbol)?'AI 命中':'候選')}</div>
+          <div class="cardName">${x.symbol} ${x.name}</div>
+          <div class="small">${i===0 ? '本地第一名' : '本地候選'} ｜ 安全池</div>
         </div>
         <div class="tag">${x.dev > 15 ? '🚫 禁追' : (x.dev > state.maxDev ? '⚠️ 稍熱' : '✅ 安全')}</div>
       </div>
-      <div class="pickMeta">
+      <div class="cardMeta">
+        <div class="mini"><div class="k">價格</div><div class="v">${x.price || '—'}</div></div>
         <div class="mini"><div class="k">漲幅</div><div class="v">${pct(x.change)}</div></div>
-        <div class="mini"><div class="k">乖離</div><div class="v ${x.dev > 15 ? 'risk-red' : ''}">${pct(x.dev,1)}</div></div>
-        <div class="mini"><div class="k">量能</div><div class="v">${x.relVol}</div></div>
-        <div class="mini"><div class="k">RSI</div><div class="v">${x.rsi || '—'}</div></div>
+        <div class="mini"><div class="k">量能</div><div class="v">${x.relVol || '—'}</div></div>
+        <div class="mini"><div class="k">乖離</div><div class="v ${x.dev>15?'risk-red':''}">${pct(x.dev,1)}</div></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderFinalPicks(){
+  const box = $('finalPicks');
+  if(!state.finalPicks.length){
+    box.innerHTML = '<div class="reason">AI 鎖定完成後，這裡只顯示真正要考慮掛單的 1~2 檔。</div>';
+    return;
+  }
+  box.innerHTML = state.finalPicks.map((x,i)=>`
+    <div class="card" style="border-color:${i===0?'rgba(52,211,153,0.35)':'rgba(96,165,250,0.35)'}">
+      <div class="cardHead">
+        <div>
+          <div class="cardName">${i===0?'🔥 主攻股':'🛡 副攻股'}｜${x.symbol} ${x.name}</div>
+          <div class="small">AI 最終推薦｜這裡才是你真正要考慮掛單的標的</div>
+        </div>
+        <div class="tag">${x.dev > 15 ? '🚫 過熱' : '✅ 可評估'}</div>
+      </div>
+      <div class="cardMeta">
+        <div class="mini"><div class="k">價格</div><div class="v">${x.price || '—'}</div></div>
+        <div class="mini"><div class="k">漲幅</div><div class="v">${pct(x.change)}</div></div>
+        <div class="mini"><div class="k">量能</div><div class="v">${x.relVol || '—'}</div></div>
+        <div class="mini"><div class="k">乖離</div><div class="v ${x.dev>15?'risk-red':''}">${pct(x.dev,1)}</div></div>
       </div>
     </div>
   `).join('');
@@ -583,12 +579,12 @@ function renderHoldings(){
     body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted)">目前無持倉</td></tr>';
     return;
   }
-  body.innerHTML = state.holdings.map((h, i) => {
+  body.innerHTML = state.holdings.map((h,i)=>{
     const t = getTrailingInfo(h);
     const act = getHoldingAction(h);
     const bar = Math.max(0, Math.min(100, ((t.pnl + 5) / 30) * 100));
     return `<tr>
-      <td><b>${h.symbol}</b> ${h.name}<div class="small">高點：${h.high || h.current}</div></td>
+      <td><b>${h.symbol}</b> ${h.name || ''}<div class="small">今日高：${h.high || h.current}</div></td>
       <td>${h.buy} / ${h.current}</td>
       <td style="color:${t.pnl>=0?'var(--green)':'var(--red)'}">${pct(t.pnl)}</td>
       <td class="${h.dev > 15 ? 'risk-red' : ''}">${pct(h.dev,1)}</td>
@@ -611,9 +607,100 @@ function renderHoldings(){
 
 function renderHistory(){
   const body = $('histBody');
-  body.innerHTML = state.tradeHistory.length ? [...state.tradeHistory].reverse().slice(0,10).map(t => `
-    <tr><td>${t.date}</td><td>${t.symbol}</td><td>${t.buy}/${t.sell}</td><td style="color:${t.pnl>=0?'var(--green)':'var(--red)'}">${pct(t.pnl)}</td><td>${t.reason}</td></tr>
+  body.innerHTML = state.tradeHistory.length ? [...state.tradeHistory].reverse().slice(0,10).map(t=>`
+    <tr>
+      <td>${t.date}</td>
+      <td>${t.symbol}</td>
+      <td>${t.buy} / ${t.sell}</td>
+      <td style="color:${t.pnl>=0?'var(--green)':'var(--red)'}">${pct(t.pnl)}</td>
+      <td>${t.reason}</td>
+    </tr>
   `).join('') : '<tr><td colspan="5" style="text-align:center">無紀錄</td></tr>';
+}
+
+function updateUI(){
+  const m = getMarketJudgement();
+  const cmd = $('mainCommand');
+  const sub = $('commandSub');
+  const badge = $('commandBadge');
+
+  $('hudMarket').textContent = state.marketMode;
+  $('hudBreadth').textContent = state.marketConfirmed ? `${m.rise} / ${m.fall}` : '—';
+  $('hudMaxDev').textContent = state.marketConfirmed ? `${state.maxDev}%` : '—';
+  $('hudPosition').textContent = state.marketConfirmed ? state.suggestedPosition : '—';
+
+  const flywheel = state.tradeHistory.reduce((acc, t) => acc * (1 + (t.pnl / 100)), 1);
+  $('hudFlywheel').textContent = state.tradeHistory.length ? `${((flywheel - 1) * 100).toFixed(2)}%` : '0%';
+  $('hudHoldCount').textContent = state.holdings.length;
+  $('hudPickCount').textContent = state.localPicks.length;
+  const wins = state.tradeHistory.filter(t => t.pnl > 0).length;
+  $('hudWinRate').textContent = state.tradeHistory.length ? `${((wins/state.tradeHistory.length)*100).toFixed(0)}%` : '—';
+
+  if(!state.marketConfirmed){
+    cmd.textContent = '先確認市場';
+    badge.className = 'badge state-gray';
+    badge.textContent = '待機';
+    sub.textContent = '先完成市場鎖定，今晚所有進攻與防守都以這裡為起點。';
+    $('riskWarning').style.display = 'none';
+  } else if(!state.localPicks.length){
+    cmd.textContent = '待導入 CSV';
+    badge.className = 'badge state-gray';
+    badge.textContent = '待數據';
+    sub.textContent = '貼入 TradingView CSV 後，系統會建立本地候選池。';
+    $('riskWarning').style.display = 'none';
+  } else {
+    const top = state.finalPicks[0] || state.localPicks[0];
+    const isOverheat = top && (top.dev > 15 || top.dev > state.maxDev);
+    $('riskWarning').style.display = isOverheat ? 'block' : 'none';
+
+    if(state.marketMode === '弱勢'){
+      cmd.textContent = '🚨 今晚不開新倉';
+      badge.className = 'badge state-red';
+      badge.textContent = '空頭防守';
+      sub.textContent = '市場偏弱，今晚只允許調整既有智慧單，不新增進攻單。';
+    } else if(isOverheat){
+      cmd.textContent = '🚨 今晚嚴禁追價';
+      badge.className = 'badge state-red';
+      badge.textContent = '過熱警報';
+      sub.textContent = `${top.symbol} 乖離過大，目前僅執行既有持倉。`;
+    } else if(state.finalPicks.length){
+      cmd.textContent = `🟢 今晚鎖定 ${top.symbol}`;
+      badge.className = 'badge state-green';
+      badge.textContent = '可掛單';
+      sub.textContent = 'AI 已完成最後選擇。今晚只看 AI 最終推薦，不看本地候選池其餘標的。';
+    } else {
+      cmd.textContent = '等待 AI 最終推薦';
+      badge.className = 'badge state-yellow';
+      badge.textContent = '待決策';
+      sub.textContent = '本地初篩已完成，現在把安全池交給 AI 做最後 1~2 檔精選。';
+    }
+  }
+
+  renderLocalPool();
+  renderFinalPicks();
+  renderHoldings();
+  renderHistory();
+}
+
+function addHolding(){
+  const sym = $('holdSymbol').value.trim();
+  const buy = num($('holdBuy').value);
+  const cur = num($('holdCurrent').value);
+  const high = num($('holdHigh').value) || cur;
+  if(!sym || !buy || !cur) return alert('資料不全');
+  const ref = state.finalPicks.find(x => x.symbol === sym) || state.localPicks.find(x => x.symbol === sym) || {};
+  state.holdings.push({symbol:sym, name:ref.name||'', buy, current:cur, high, dev:ref.dev||0});
+  save();
+  updateUI();
+  $('holdSymbol').value=''; $('holdBuy').value=''; $('holdCurrent').value=''; $('holdHigh').value='';
+}
+
+function loadTop(){
+  const top = state.finalPicks[0] || state.localPicks[0];
+  if(!top) return alert('目前沒有可帶入的標的');
+  $('holdSymbol').value = top.symbol;
+  $('holdCurrent').value = top.price || '';
+  $('holdHigh').value = top.price || '';
 }
 
 window.updatePrice = idx => {
@@ -621,28 +708,13 @@ window.updatePrice = idx => {
   const p = prompt(`[夜間重算] 更新 ${h.symbol} 今日收盤現價`, h.current);
   if(p === null) return;
   const hp = prompt(`[夜間重算] 更新 ${h.symbol} 今日盤中最高價`, h.high || h.current);
-  const val = num(p); const hi = num(hp);
-  if(!val) return alert('現價輸入錯誤');
-  h.current = val; h.high = Math.max(val, hi || h.high || val);
-  save(); updateUI();
-};
-
-$('addHoldBtn').onclick = () => {
-  const sym = $('holdSymbol').value.trim();
-  const buy = num($('holdBuy').value);
-  const cur = num($('holdCurrent').value);
-  const high = num($('holdHigh').value) || cur;
-  if(!sym || !buy || !cur) return alert('資料不全');
-  const ref = state.localPicks.find(x => x.symbol === sym) || {};
-  state.holdings.push({ symbol: sym, name: ref.name||'', buy, current: cur, high, dev: ref.dev||0 });
-  save(); updateUI();
-  $('holdSymbol').value=''; $('holdBuy').value=''; $('holdCurrent').value=''; $('holdHigh').value='';
-};
-
-$('loadTopBtn').onclick = () => {
-  const top = state.finalPicks[0] || state.localPicks[0];
-  if(!top) return alert('無首選');
-  $('holdSymbol').value = top.symbol; $('holdCurrent').value = top.price; $('holdHigh').value = top.price;
+  const val = num(p);
+  const hi = num(hp);
+  if(!val) return alert('現價格式錯誤');
+  h.current = val;
+  h.high = Number.isFinite(hi) ? Math.max(val, hi) : Math.max(val, h.high || val);
+  save();
+  updateUI();
 };
 
 let closeIdx = null;
@@ -650,36 +722,44 @@ window.openClose = idx => {
   closeIdx = idx;
   const h = state.holdings[idx];
   const t = getTrailingInfo(h);
-  $('closeInfo').textContent = `${h.symbol}｜明日停損價 ${t.stopPrice.toFixed(2)}`;
+  $('closeInfo').textContent = `${h.symbol}｜明日停損價 ${t.stopPrice.toFixed(2)}｜明日停利目標 ${t.tpPrice.toFixed(2)}`;
   $('closePrice').value = h.current;
   $('closeOverlay').classList.add('show');
 };
 
-$('confirmCloseBtn').onclick = () => {
+function confirmClose(){
   const h = state.holdings[closeIdx];
   const sell = num($('closePrice').value);
+  if(!sell) return alert('價格錯誤');
   state.tradeHistory.push({
-    date: new Date().toLocaleDateString(), symbol: h.symbol, buy: h.buy, sell,
-    pnl: ((sell - h.buy) / h.buy * 100), reason: $('closeReason').value
+    date:new Date().toLocaleDateString(),
+    symbol:h.symbol,
+    buy:h.buy,
+    sell:sell,
+    pnl:((sell - h.buy) / h.buy * 100),
+    reason:$('closeReason').value
   });
-  state.holdings.splice(closeIdx, 1);
-  save(); updateUI();
+  state.holdings.splice(closeIdx,1);
+  save();
+  updateUI();
   $('closeOverlay').classList.remove('show');
-};
+}
 
 $('applyMarketBtn').onclick = applyMarket;
 $('analyzeBtn').onclick = analyzeCSV;
-$('copyPromptBtn').onclick = () => {
-  if(!state.localPicks.length) return alert('先分析 CSV');
-  const top = state.localPicks.slice(0,5).map(x => `${x.symbol} ${x.name}`).join('\n');
-  navigator.clipboard.writeText(`台股飆股專家：請覆核標的：\n${top}`);
-  alert('AI 提示詞已複製');
-};
+$('copyPromptBtn').onclick = copyPrompt;
 $('parseAiBtn').onclick = parseAI;
 $('decideBtn').onclick = finalizeDecision;
-$('saveBtn').onclick = () => { save(); alert('💾 存檔成功'); };
-$('resetBtn').onclick = () => { if(confirm('清空？')){ localStorage.removeItem(STORE_KEY); location.reload(); } };
+$('addHoldBtn').onclick = addHolding;
+$('loadTopBtn').onclick = loadTop;
+$('confirmCloseBtn').onclick = confirmClose;
 $('cancelCloseBtn').onclick = () => $('closeOverlay').classList.remove('show');
+$('saveBtn').onclick = () => { save(); alert('✅ 已儲存到本地'); };
+$('resetBtn').onclick = () => {
+  if(!confirm('確定要清空所有資料？')) return;
+  localStorage.removeItem(STORE_KEY);
+  location.reload();
+};
 
 window.onload = () => { load(); updateUI(); };
 </script>
