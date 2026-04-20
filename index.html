@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#050a12" />
-<title>AI 戰艦 Pro Max v7.4.0｜最終戰情室 UI</title>
+<title>AI 戰艦 Pro Max v7.4.1｜市場情緒模組版</title>
 <style>
 :root{
   --bg:#050a12; --bg2:#0a1220; --panel:#0d1727; --line:rgba(160,200,255,0.12);
@@ -56,9 +56,10 @@ body:before{
 .cols2{grid-template-columns:1fr 1fr}
 .cols3{grid-template-columns:repeat(3,1fr)}
 .cols4{grid-template-columns:repeat(4,1fr)}
+.cols5{grid-template-columns:repeat(5,1fr)}
 .hero{grid-template-columns:1.2fr .8fr}
 .twoMain{grid-template-columns:1fr 1fr}
-@media (max-width:1280px){.cols2,.cols3,.cols4,.hero,.twoMain{grid-template-columns:1fr}}
+@media (max-width:1280px){.cols2,.cols3,.cols4,.cols5,.hero,.twoMain{grid-template-columns:1fr}}
 .badge{
   display:inline-flex;align-items:center;gap:8px;
   padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800;
@@ -84,7 +85,7 @@ button.danger{background:rgba(248,113,113,0.16);color:#fecaca;border:1px solid r
 .toolbar{display:flex;gap:10px;flex-wrap:wrap}
 .commandMain{font-size:38px;font-weight:900;line-height:1.15;color:var(--cyan)}
 .commandSub{margin-top:10px;font-size:14px;line-height:1.75;color:var(--muted)}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
 @media (max-width:1200px){.metrics{grid-template-columns:1fr 1fr}}
 .metric{background:rgba(255,255,255,0.02);border:1px solid var(--line);border-radius:18px;padding:14px}
 .metric .k{font-size:12px;color:var(--muted)}
@@ -133,8 +134,8 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topWrap">
       <div>
-        <div style="font-weight:900;font-size:22px;letter-spacing:1px;">🛡️ AI 戰艦 Pro Max <span style="color:var(--cyan)">v7.4.0</span></div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px">最終戰情室 UI｜本地候選池 × AI 最終推薦 × 夜間智慧單</div>
+        <div style="font-weight:900;font-size:22px;letter-spacing:1px;">🛡️ AI 戰艦 Pro Max <span style="color:var(--cyan)">v7.4.1</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">市場情緒模組版｜本地候選池 × AI 最終推薦 × 夜間智慧單</div>
       </div>
       <div class="toolbar">
         <button id="saveBtn" class="success">💾 儲存本地</button>
@@ -154,7 +155,8 @@ th{color:var(--muted)}
           <div style="margin-top:14px"><span id="commandBadge" class="badge state-gray">待機</span></div>
           <div class="metrics" style="margin-top:14px">
             <div class="metric"><div class="k">市場狀態</div><div id="hudMarket" class="v">待確認</div></div>
-            <div class="metric"><div class="k">漲跌家數</div><div id="hudBreadth" class="v">—</div></div>
+            <div class="metric"><div class="k">市場情緒</div><div id="hudEmotion" class="v">—</div></div>
+            <div class="metric"><div class="k">廣度 / 情緒</div><div id="hudBreadth" class="v">—</div></div>
             <div class="metric"><div class="k">乖離上限</div><div id="hudMaxDev" class="v">—</div></div>
             <div class="metric"><div class="k">建議部位</div><div id="hudPosition" class="v">—</div></div>
           </div>
@@ -165,13 +167,13 @@ th{color:var(--muted)}
           <div class="reason"><b>市場先決：</b> 先判斷大盤，決定今晚能不能開新倉。</div>
           <div class="reason"><b>本地守底線：</b> 先用市場、乖離、量價把危險標的砍掉。</div>
           <div class="reason"><b>AI 做最後選擇：</b> 最終推薦只顯示 AI 選出的 1~2 檔，不再混淆。</div>
-          <div id="riskWarning" class="reason" style="border-color:var(--red); color:var(--red); display:none; font-weight:800;">🚨 偵測到過熱標的，今晚禁止新追價，只准防守或減碼。</div>
+          <div id="riskWarning" class="reason" style="border-color:var(--red); color:var(--red); display:none; font-weight:800;">🚨 偵測到過熱標的或過熱市場情緒，今晚禁止新追價，只准防守、減碼或只打最強 1 檔。</div>
         </section>
       </div>
 
       <section class="panel">
         <div class="sectionTitle">🌡️ 市場環境鎖定</div>
-        <div class="grid cols4">
+        <div class="grid cols5">
           <div>
             <label class="small">指數相對 20MA</label>
             <select id="marketTrend">
@@ -196,11 +198,18 @@ th{color:var(--muted)}
               <input id="fallCount" type="number" placeholder="跌">
             </div>
           </div>
+          <div>
+            <label class="small">漲停 / 跌停家數</label>
+            <div class="grid cols2" style="gap:10px">
+              <input id="limitUpCount" type="number" placeholder="漲停">
+              <input id="limitDownCount" type="number" placeholder="跌停">
+            </div>
+          </div>
           <div style="display:flex;align-items:flex-end">
             <button id="applyMarketBtn" style="width:100%">套用市場判斷</button>
           </div>
         </div>
-        <div id="marketSummary" class="reason">市場 RSI 是大盤濾網；TradingView RSI 是個股篩選。兩者不衝突。</div>
+        <div id="marketSummary" class="reason">市場 RSI 看大盤節奏；上漲/下跌看廣度；漲停/跌停看情緒。三者一起判斷今晚是否能開新倉。</div>
       </section>
 
       <div class="grid cols2">
@@ -308,7 +317,7 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">v7.4.0｜本地候選池只做風控初篩，AI 最終推薦才是你真正要考慮掛單的標的。</div>
+      <div class="footer">v7.4.1｜加入市場情緒模組：上漲/下跌看廣度，漲停/跌停看情緒，兩者共同決定今晚能不能打。</div>
     </div>
   </div>
 
@@ -338,7 +347,7 @@ th{color:var(--muted)}
 
 <script>
 const $ = id => document.getElementById(id);
-const STORE_KEY = 'ai_battleship_v740_warroom';
+const STORE_KEY = 'ai_battleship_v741_sentiment';
 
 let state = {
   marketConfirmed:false,
@@ -369,10 +378,12 @@ function getMarketJudgement(){
   const rsi = $('marketRsi').value;
   const rise = num($('riseCount').value) ?? 0;
   const fall = num($('fallCount').value) ?? 0;
+  const limitUp = num($('limitUpCount').value) ?? 0;
+  const limitDown = num($('limitDownCount').value) ?? 0;
   const total = rise + fall;
   const ratio = total > 0 ? rise / total : 0.5;
 
-  let mode='中性', pos='50%~75%', maxDev=12;
+  let mode='中性', pos='50%~75%', maxDev=12, emotion='中性';
   if(trend === 'below' || ratio < 0.4 || rsi === 'weak'){
     mode='弱勢'; pos='0%'; maxDev=8;
   } else if(trend === 'above' && ratio > 0.6 && rsi !== 'hot'){
@@ -380,7 +391,26 @@ function getMarketJudgement(){
   } else if(rsi === 'hot'){
     mode='過熱'; pos='25%~50%'; maxDev=10;
   }
-  return {mode, pos, maxDev, rise, fall, ratio};
+
+  // 市場情緒模組：漲停跌停不取代廣度，而是補充資金情緒
+  if(limitDown >= 10){
+    emotion = '崩盤警戒';
+    mode = '弱勢';
+    pos = '0%';
+    maxDev = Math.min(maxDev, 8);
+  } else if(limitUp >= 30 && rise < fall){
+    emotion = '過熱炒作';
+    pos = mode === '弱勢' ? '0%' : '25%~50%';
+    maxDev = Math.min(maxDev, 10);
+    if(mode === '強勢') mode = '過熱';
+  } else if(limitUp >= 20 && limitDown <= 5){
+    emotion = '強勢擴散';
+  } else if(limitUp <= 5 && ratio > 0.55){
+    emotion = '普漲無主流';
+    maxDev = Math.min(maxDev, 12);
+  }
+
+  return {mode, pos, maxDev, rise, fall, ratio, limitUp, limitDown, emotion};
 }
 
 function applyMarket(){
@@ -389,7 +419,7 @@ function applyMarket(){
   state.marketMode = m.mode;
   state.suggestedPosition = m.pos;
   state.maxDev = m.maxDev;
-  $('marketSummary').innerHTML = `✅ 已確認：<b>${m.mode}</b> ｜ 上漲佔比：<b>${(m.ratio*100).toFixed(0)}%</b> ｜ 乖離上限：<b>${m.maxDev}%</b> ｜ 建議部位：<b>${m.pos}</b>`;
+  $('marketSummary').innerHTML = `✅ 已確認：<b>${m.mode}</b> ｜ 情緒：<b>${m.emotion}</b> ｜ 上漲佔比：<b>${(m.ratio*100).toFixed(0)}%</b> ｜ 漲停/跌停：<b>${m.limitUp}/${m.limitDown}</b> ｜ 乖離上限：<b>${m.maxDev}%</b> ｜ 建議部位：<b>${m.pos}</b>`;
   updateUI();
   save();
 }
@@ -625,7 +655,8 @@ function updateUI(){
   const badge = $('commandBadge');
 
   $('hudMarket').textContent = state.marketMode;
-  $('hudBreadth').textContent = state.marketConfirmed ? `${m.rise} / ${m.fall}` : '—';
+  $('hudEmotion').textContent = state.marketConfirmed ? m.emotion : '—';
+  $('hudBreadth').textContent = state.marketConfirmed ? `${m.rise}/${m.fall}｜${m.limitUp}/${m.limitDown}` : '—';
   $('hudMaxDev').textContent = state.marketConfirmed ? `${state.maxDev}%` : '—';
   $('hudPosition').textContent = state.marketConfirmed ? state.suggestedPosition : '—';
 
@@ -657,7 +688,12 @@ function updateUI(){
       cmd.textContent = '🚨 今晚不開新倉';
       badge.className = 'badge state-red';
       badge.textContent = '空頭防守';
-      sub.textContent = '市場偏弱，今晚只允許調整既有智慧單，不新增進攻單。';
+      sub.textContent = '市場偏弱或跌停擴散，今晚只允許調整既有智慧單，不新增進攻單。';
+    } else if(m.emotion === '過熱炒作'){
+      cmd.textContent = '🟡 今晚只打最強 1 檔';
+      badge.className = 'badge state-yellow';
+      badge.textContent = '過熱縮手';
+      sub.textContent = '雖有漲停家數撐盤，但下跌家數仍較多，屬高風險炒作盤，只允許 AI 最終推薦的主攻股。';
     } else if(isOverheat){
       cmd.textContent = '🚨 今晚嚴禁追價';
       badge.className = 'badge state-red';
