@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#050a12" />
-<title>AI 戰艦 Pro Max v7.4.1｜市場情緒模組版</title>
+<title>AI 戰艦 Pro Max v7.4.2｜戰術燈號版</title>
 <style>
 :root{
   --bg:#050a12; --bg2:#0a1220; --panel:#0d1727; --line:rgba(160,200,255,0.12);
@@ -134,8 +134,8 @@ th{color:var(--muted)}
   <div class="topbar">
     <div class="topWrap">
       <div>
-        <div style="font-weight:900;font-size:22px;letter-spacing:1px;">🛡️ AI 戰艦 Pro Max <span style="color:var(--cyan)">v7.4.1</span></div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px">市場情緒模組版｜本地候選池 × AI 最終推薦 × 夜間智慧單</div>
+        <div style="font-weight:900;font-size:22px;letter-spacing:1px;">🛡️ AI 戰艦 Pro Max <span style="color:var(--cyan)">v7.4.2</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">戰術燈號版｜主攻 / 副攻 / 禁止燈號 × 夜間智慧單</div>
       </div>
       <div class="toolbar">
         <button id="saveBtn" class="success">💾 儲存本地</button>
@@ -317,7 +317,7 @@ th{color:var(--muted)}
         </div>
       </section>
 
-      <div class="footer">v7.4.1｜加入市場情緒模組：上漲/下跌看廣度，漲停/跌停看情緒，兩者共同決定今晚能不能打。</div>
+      <div class="footer">v7.4.2｜加入戰術燈號：AI 選股之後，市場情緒再決定主攻 / 副攻 / 禁止。</div>
     </div>
   </div>
 
@@ -347,7 +347,7 @@ th{color:var(--muted)}
 
 <script>
 const $ = id => document.getElementById(id);
-const STORE_KEY = 'ai_battleship_v741_sentiment';
+const STORE_KEY = 'ai_battleship_v742_tactical_lights';
 
 let state = {
   marketConfirmed:false,
@@ -578,20 +578,70 @@ function renderLocalPool(){
   `).join('');
 }
 
+
+function getTacticalSignal(pick, idx){
+  if(!pick) return {label:'待定', cls:'state-gray'};
+  const overheat = pick.dev > 15 || pick.dev > state.maxDev;
+  const m = getMarketJudgement();
+
+  if(state.marketMode === '弱勢' || m.emotion === '崩盤警戒'){
+    return {label:'🔴 禁止', cls:'state-red'};
+  }
+  if(overheat){
+    return {label:'🔴 禁止', cls:'state-red'};
+  }
+  if(m.emotion === '過熱炒作'){
+    if(idx === 0) return {label:'🟡 主攻 Only', cls:'state-yellow'};
+    return {label:'🔴 副攻禁打', cls:'state-red'};
+  }
+  if(state.marketMode === '過熱'){
+    if(idx === 0) return {label:'🟡 主攻優先', cls:'state-yellow'};
+    return {label:'🟡 副攻保留', cls:'state-yellow'};
+  }
+  if(state.marketMode === '強勢'){
+    if(idx === 0) return {label:'🟢 主攻可打', cls:'state-green'};
+    return {label:'🟢 副攻可打', cls:'state-green'};
+  }
+  if(idx === 0) return {label:'🟢 主攻可打', cls:'state-green'};
+  return {label:'🟡 副攻觀察', cls:'state-yellow'};
+}
+
+function getAllowedFinalPicks(){
+  if(!state.finalPicks.length) return [];
+  const m = getMarketJudgement();
+  if(state.marketMode === '弱勢' || m.emotion === '崩盤警戒'){
+    return [];
+  }
+  if(m.emotion === '過熱炒作' || state.marketMode === '過熱'){
+    return state.finalPicks.slice(0,1);
+  }
+  return state.finalPicks.slice(0,2);
+}
+
 function renderFinalPicks(){
   const box = $('finalPicks');
   if(!state.finalPicks.length){
     box.innerHTML = '<div class="reason">AI 鎖定完成後，這裡只顯示真正要考慮掛單的 1~2 檔。</div>';
     return;
   }
-  box.innerHTML = state.finalPicks.map((x,i)=>`
-    <div class="card" style="border-color:${i===0?'rgba(52,211,153,0.35)':'rgba(96,165,250,0.35)'}">
+
+  const allowed = getAllowedFinalPicks();
+  if(!allowed.length){
+    box.innerHTML = '<div class="reason" style="color:var(--red);font-weight:800;">🔴 目前市場不允許開新倉。AI 有選股，但今晚全部禁止掛進攻單。</div>';
+    return;
+  }
+
+  box.innerHTML = state.finalPicks.map((x,i)=>{
+    const sig = getTacticalSignal(x, i);
+    const dimmed = !allowed.some(a => a.symbol === x.symbol);
+    return `
+    <div class="card" style="border-color:${i===0?'rgba(52,211,153,0.35)':'rgba(96,165,250,0.35)'};opacity:${dimmed ? '0.58' : '1'}">
       <div class="cardHead">
         <div>
           <div class="cardName">${i===0?'🔥 主攻股':'🛡 副攻股'}｜${x.symbol} ${x.name}</div>
-          <div class="small">AI 最終推薦｜這裡才是你真正要考慮掛單的標的</div>
+          <div class="small">AI 最終推薦｜市場情緒將決定這檔今晚能不能打</div>
         </div>
-        <div class="tag">${x.dev > 15 ? '🚫 過熱' : '✅ 可評估'}</div>
+        <div class="badge ${sig.cls}">${sig.label}</div>
       </div>
       <div class="cardMeta">
         <div class="mini"><div class="k">價格</div><div class="v">${x.price || '—'}</div></div>
@@ -599,10 +649,10 @@ function renderFinalPicks(){
         <div class="mini"><div class="k">量能</div><div class="v">${x.relVol || '—'}</div></div>
         <div class="mini"><div class="k">乖離</div><div class="v ${x.dev>15?'risk-red':''}">${pct(x.dev,1)}</div></div>
       </div>
-    </div>
-  `).join('');
+      ${dimmed ? '<div class="reason" style="margin-top:0;color:var(--yellow);">今晚不列入實際掛單名單，只保留觀察。</div>' : ''}
+    </div>`;
+  }).join('');
 }
-
 function renderHoldings(){
   const body = $('holdBody');
   if(!state.holdings.length){
@@ -700,10 +750,23 @@ function updateUI(){
       badge.textContent = '過熱警報';
       sub.textContent = `${top.symbol} 乖離過大，目前僅執行既有持倉。`;
     } else if(state.finalPicks.length){
-      cmd.textContent = `🟢 今晚鎖定 ${top.symbol}`;
-      badge.className = 'badge state-green';
-      badge.textContent = '可掛單';
-      sub.textContent = 'AI 已完成最後選擇。今晚只看 AI 最終推薦，不看本地候選池其餘標的。';
+      const allowed = getAllowedFinalPicks();
+      if(!allowed.length){
+        cmd.textContent = '🔴 今晚全部禁止';
+        badge.className = 'badge state-red';
+        badge.textContent = '禁開新倉';
+        sub.textContent = '雖然 AI 有推薦，但市場情緒不允許今晚掛任何新的進攻單。';
+      } else if(allowed.length === 1){
+        cmd.textContent = `🟡 今晚只打 ${allowed[0].symbol}`;
+        badge.className = 'badge state-yellow';
+        badge.textContent = '主攻 Only';
+        sub.textContent = '市場情緒偏熱或偏亂，今晚只允許主攻股掛單，副攻全部保留觀察。';
+      } else {
+        cmd.textContent = `🟢 今晚鎖定 ${allowed[0].symbol} / ${allowed[1].symbol}`;
+        badge.className = 'badge state-green';
+        badge.textContent = '主副攻可打';
+        sub.textContent = 'AI 已完成最後選擇。今晚可依主攻 / 副攻兩檔分配進攻。';
+      }
     } else {
       cmd.textContent = '等待 AI 最終推薦';
       badge.className = 'badge state-yellow';
