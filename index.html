@@ -414,6 +414,31 @@
       if(totalScore <= 39) return { signal:'red', maxNewPositionsAllowed:0, instruction:'紅燈禁止開倉，只管理舊倉。' };
       return { signal:'yellow', maxNewPositionsAllowed:1, instruction:'黃燈降風險，只打一檔或降低火力。' };
     }
+    function calculateAutoSentimentScore(m){
+      const otc = num(m.otcChange);
+      const taiex = num(m.taiexChange);
+      const up = num(m.limitUp);
+      const down = num(m.limitDown);
+      let score = 50;
+
+      if(taiex > 1.2) score += 15;
+      else if(taiex > 0.5) score += 8;
+      else if(taiex < -1.2) score -= 15;
+      else if(taiex < -0.5) score -= 8;
+
+      if(otc > 1.0) score += 15;
+      else if(otc > 0.4) score += 8;
+      else if(otc < -1.0) score -= 15;
+      else if(otc < -0.4) score -= 8;
+
+      const spread = up - down;
+      if(spread > 30) score += 12;
+      else if(spread > 10) score += 6;
+      else if(spread < -30) score -= 12;
+      else if(spread < -10) score -= 6;
+
+      return Math.max(0, Math.min(100, Math.round(score * 10) / 10));
+    }
     function calculateMarket(){
       const m = state.market;
       const adv = num(m.advancers), dec = num(m.decliners), up = num(m.limitUp), down = num(m.limitDown), otc = num(m.otcChange), taiex = num(m.taiexChange);
@@ -422,12 +447,8 @@
       let breadthScore = advRatio * 60;
       breadthScore += Math.max(-10, Math.min(10, (adv-dec)/50));
       breadthScore += Math.max(-8, Math.min(8, up-down));
-      breadthScore = Math.max(0, Math.min(100, breadthScore));
-      let sentimentScore = 50;
-      sentimentScore += otc * 8;
-      sentimentScore += taiex * 6;
-      sentimentScore += Math.max(-10, Math.min(10, (up-down)*0.8));
-      sentimentScore = Math.max(0, Math.min(100, sentimentScore));
+      breadthScore = Math.max(0, Math.min(100, Math.round(breadthScore * 10) / 10));
+      const sentimentScore = calculateAutoSentimentScore(m);
       const totalScore = Math.round((breadthScore*0.6 + sentimentScore*0.4) * 10) / 10;
       const decision = getMarketDecision(totalScore);
       state.market = { ...state.market, breadthScore, sentimentScore, totalScore, signal:decision.signal, maxNewPositionsAllowed:decision.maxNewPositionsAllowed, instruction:decision.instruction };
@@ -1004,9 +1025,9 @@
     }
     function renderMarket(){
       $('marketSummary').innerHTML = `
-        <div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div></div>
-        <div class="metric"><div class="label">情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div></div>
-        <div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div></div>`;
+        <div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div><div class="footnote">看上漲/下跌家數與漲跌停擴散</div></div>
+        <div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div><div class="footnote">依 OTC%、加權%、漲跌停差自動估算</div></div>
+        <div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div><div class="footnote">總分 = 廣度 60% + 情緒 40%</div></div>`;
     }
     function renderRiskMode(){
       const { lossMode, effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings();
