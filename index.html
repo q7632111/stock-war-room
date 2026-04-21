@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" />
   <meta name="theme-color" content="#050a12" />
-  <title>AI 戰艦 Pro Max v9.2｜實戰定版</title>
+  <title>AI 戰艦 Pro Max v9.3-a｜完整戰情室版（修正版）</title>
   <style>
     :root{
       --bg:#071019;
@@ -26,182 +26,55 @@
       --glow:0 0 0 1px rgba(86,215,255,.18), 0 0 18px rgba(28,183,255,.14);
     }
     *{box-sizing:border-box}
-    html,body{
-      margin:0;padding:0;
-      background:
-        radial-gradient(circle at top left, rgba(28,183,255,.09), transparent 30%),
-        radial-gradient(circle at top right, rgba(52,211,153,.06), transparent 25%),
-        linear-gradient(180deg, #06111b 0%, #08131f 100%);
-      color:var(--text);
-      font-family:"Segoe UI","Noto Sans TC",system-ui,sans-serif;
-    }
+    html,body{margin:0;padding:0;background:radial-gradient(circle at top left, rgba(28,183,255,.09), transparent 30%),radial-gradient(circle at top right, rgba(52,211,153,.06), transparent 25%),linear-gradient(180deg,#06111b 0%,#08131f 100%);color:var(--text);font-family:"Segoe UI","Noto Sans TC",system-ui,sans-serif}
     body{min-height:100vh}
-    .wrap{max-width:1680px;margin:0 auto;padding:14px}
-    .topbar{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-      padding:12px 14px;
-      background:linear-gradient(180deg, rgba(19,34,51,.96), rgba(10,20,31,.96));
-      border:1px solid var(--line2);box-shadow:var(--shadow);border-radius:14px;
-      margin-bottom:14px;position:sticky;top:0;z-index:30;backdrop-filter: blur(8px)
-    }
-    .brand{display:flex;flex-direction:column;gap:2px}
-    .brand h1{margin:0;font-size:22px;letter-spacing:1px;color:#dff6ff;text-shadow:0 0 12px rgba(86,215,255,.2)}
-    .brand .sub{font-size:12px;color:var(--muted)}
+    .wrap{max-width:1760px;margin:0 auto;padding:14px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:linear-gradient(180deg,rgba(19,34,51,.96),rgba(10,20,31,.96));border:1px solid var(--line2);box-shadow:var(--shadow);border-radius:14px;margin-bottom:14px;position:sticky;top:0;z-index:30;backdrop-filter:blur(8px)}
+    .brand{display:flex;flex-direction:column;gap:2px}.brand h1{margin:0;font-size:22px;letter-spacing:1px;color:#dff6ff;text-shadow:0 0 12px rgba(86,215,255,.2)}.brand .sub{font-size:12px;color:var(--muted)}
     .statusbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .pill{
-      padding:8px 12px;border-radius:999px;
-      background:linear-gradient(180deg, rgba(15,28,42,.95), rgba(8,18,28,.95));
-      border:1px solid var(--line);color:#d9edff;font-size:12px;font-weight:700;box-shadow:var(--glow)
-    }
-    .pill.green{color:#d8fff1;border-color:rgba(52,211,153,.45)}
-    .pill.yellow{color:#fff5d6;border-color:rgba(251,191,36,.45)}
-    .pill.red{color:#ffe0e0;border-color:rgba(248,113,113,.45)}
-    .pill.purple{color:#efe8ff;border-color:rgba(167,139,250,.45)}
-    .layout{display:grid;grid-template-columns:1.08fr 1.65fr 1.15fr;gap:14px;align-items:start}
-    .col{display:flex;flex-direction:column;gap:14px}
-    @media (max-width:1380px){.layout{grid-template-columns:1fr}}
-    .panel{background:linear-gradient(180deg, rgba(16,29,42,.98), rgba(9,18,28,.98));border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
-    .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(90deg, rgba(86,215,255,.10), transparent 40%),linear-gradient(180deg, rgba(18,35,52,.95), rgba(11,22,34,.95));border-bottom:1px solid rgba(86,215,255,.12)}
-    .panel-title{margin:0;font-size:15px;font-weight:900;letter-spacing:.5px;color:#dff6ff}
-    .panel-sub{font-size:11px;color:var(--muted)}
-    .panel-body{padding:14px}
-    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-    .grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-    .grid-5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
-    @media (max-width:900px){.grid-2,.grid-3,.grid-4,.grid-5{grid-template-columns:1fr}}
-    .metric{background:linear-gradient(180deg, rgba(14,25,37,.95), rgba(8,16,25,.95));border:1px solid rgba(86,215,255,.10);border-radius:12px;padding:12px}
-    .metric .label{font-size:11px;color:var(--muted);margin-bottom:6px}
-    .metric .value{font-size:22px;font-weight:900;letter-spacing:.3px}
-    .metric .value.small{font-size:16px}
+    .pill{padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,rgba(15,28,42,.95),rgba(8,18,28,.95));border:1px solid var(--line);color:#d9edff;font-size:12px;font-weight:700;box-shadow:var(--glow)}
+    .pill.green{color:#d8fff1;border-color:rgba(52,211,153,.45)}.pill.yellow{color:#fff5d6;border-color:rgba(251,191,36,.45)}.pill.red{color:#ffe0e0;border-color:rgba(248,113,113,.45)}.pill.purple{color:#efe8ff;border-color:rgba(167,139,250,.45)}
+    .layout{display:grid;grid-template-columns:1.05fr 1.7fr 1.15fr;gap:14px;align-items:start}.col{display:flex;flex-direction:column;gap:14px}
+    @media (max-width:1460px){.layout{grid-template-columns:1fr}}
+    .panel{background:linear-gradient(180deg,rgba(16,29,42,.98),rgba(9,18,28,.98));border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(90deg,rgba(86,215,255,.10),transparent 40%),linear-gradient(180deg,rgba(18,35,52,.95),rgba(11,22,34,.95));border-bottom:1px solid rgba(86,215,255,.12)}
+    .panel-title{margin:0;font-size:15px;font-weight:900;letter-spacing:.5px;color:#dff6ff}.panel-sub{font-size:11px;color:var(--muted)}.panel-body{padding:14px}
+    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.grid-5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+    @media (max-width:980px){.grid-2,.grid-3,.grid-4,.grid-5{grid-template-columns:1fr}}
+    .metric{background:linear-gradient(180deg,rgba(14,25,37,.95),rgba(8,16,25,.95));border:1px solid rgba(86,215,255,.10);border-radius:12px;padding:12px}.metric .label{font-size:11px;color:var(--muted);margin-bottom:6px}.metric .value{font-size:22px;font-weight:900;letter-spacing:.3px}.metric .value.small{font-size:16px}
     .muted{color:var(--muted)} .green{color:var(--green)} .yellow{color:var(--yellow)} .red{color:var(--red)} .orange{color:var(--orange)} .cyan{color:var(--cyan)} .purple{color:var(--purple)}
     label{display:block;font-size:12px;color:#cce5fb;margin-bottom:4px;font-weight:700}
-    input,textarea,select{width:100%;background:linear-gradient(180deg, rgba(4,11,18,.95), rgba(8,16,25,.95));color:var(--text);border:1px solid #21405d;border-radius:10px;padding:10px 11px;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
-    textarea{resize:vertical;min-height:130px}
-    input:focus,textarea:focus,select:focus{border-color:var(--cyan2);box-shadow:0 0 0 3px rgba(28,183,255,.12)}
-    .btnrow{display:flex;flex-wrap:wrap;gap:8px}
-    .btn{appearance:none;border:none;cursor:pointer;color:#eaf7ff;font-weight:900;letter-spacing:.3px;padding:10px 14px;border-radius:12px;background:linear-gradient(180deg, #18324a, #0f2335);border:1px solid #315676;box-shadow:var(--glow); transition: 0.2s;}
-    .btn:hover{filter:brightness(1.08)}
-    .btn.secondary{background:linear-gradient(180deg, #162231, #101c29);border-color:#29465f}
-    .btn.green{background:linear-gradient(180deg, #154537, #103226);border-color:#2d7d64}
-    .btn.red{background:linear-gradient(180deg, #4a1b1b, #331212);border-color:#8b3e3e}
-    .btn.purple{background:linear-gradient(180deg, #39245b, #221337);border-color:#6f4fa8}
-    .btn.small{padding:7px 10px;border-radius:10px;font-size:12px}
-    .card{background:linear-gradient(180deg, rgba(15,26,38,.98), rgba(8,15,23,.98));border:1px solid rgba(86,215,255,.12);border-radius:14px;padding:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
-    .card + .card{margin-top:10px}
-    .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
-    .symbol{font-size:20px;font-weight:900;letter-spacing:.5px;color:#eef8ff}
-    .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid transparent;background:rgba(255,255,255,.04)}
-    .badge.green{border-color:rgba(52,211,153,.4);color:#dcfff3}
-    .badge.yellow{border-color:rgba(251,191,36,.4);color:#fff4d2}
-    .badge.red{border-color:rgba(248,113,113,.4);color:#ffe2e2}
-    .badge.cyan{border-color:rgba(86,215,255,.4);color:#def8ff}
-    .badge.purple{border-color:rgba(167,139,250,.4);color:#efe8ff}
-    .mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
-    .mini .cell{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:10px;padding:8px}
-    .cell .k{font-size:10px;color:var(--muted)}
-    .cell .v{font-size:14px;font-weight:800;margin-top:4px}
-    
-    .tableWrap{overflow-x:auto}
-    table{width:100%;border-collapse:collapse;min-width:1360px;font-size:13px}
-    th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;vertical-align:top}
-    th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
-    tr:last-child td{border-bottom:none}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-    .right{text-align:right}
-    .center{text-align:center}
-    .warning-box{border:1px solid rgba(248,113,113,.35);background:linear-gradient(180deg, rgba(80,25,25,.22), rgba(43,14,14,.16));color:#ffd8d8;border-radius:12px;padding:10px 12px;font-size:13px}
-    .ok-box{border:1px solid rgba(52,211,153,.3);background:linear-gradient(180deg, rgba(18,74,54,.18), rgba(12,43,31,.15));color:#d9fff1;border-radius:12px;padding:10px 12px;font-size:13px}
-    .footnote{font-size:11px;color:var(--muted);line-height:1.5}
-    .divider{height:1px;background:linear-gradient(90deg, transparent, rgba(86,215,255,.14), transparent);margin:12px 0}
-    
-    .scoreA{color:var(--green);font-weight:900}
-    .scoreB{color:var(--yellow);font-weight:900}
-    .scoreC{color:var(--red);font-weight:900}
-    .rankTop{font-size:18px;font-weight:900;color:#fff}
-    .rank1{color:#7dd3fc}.rank2{color:#c4b5fd}.rank3{color:#fbbf24}
-    .mainAttackGlow{box-shadow:0 0 0 1px rgba(167,139,250,.3), 0 0 22px rgba(167,139,250,.18), inset 0 1px 0 rgba(255,255,255,.03)}
-
-    .radar-panel{grid-column:1 / -1;border:1px solid rgba(167,139,250,.22);border-radius:14px;padding:12px;background:linear-gradient(180deg, rgba(27,18,49,.55), rgba(10,16,28,.55));box-shadow:0 0 18px rgba(167,139,250,.10)}
-    .radar-grid{display:grid;grid-template-columns:1.2fr .9fr;gap:12px}
-    .radar-shell{position:relative;min-height:240px;border-radius:14px;overflow:hidden;background:radial-gradient(circle at center, rgba(86,215,255,.07), transparent 58%),linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));border:1px solid rgba(86,215,255,.10)}
-    .radar-shell::before,.radar-shell::after{content:"";position:absolute;inset:14px;border:1px solid rgba(86,215,255,.10);border-radius:50%}
-    .radar-shell::after{inset:46px}
-    .radar-cross-x,.radar-cross-y{position:absolute;background:rgba(86,215,255,.10)}
-    .radar-cross-x{left:12px;right:12px;top:50%;height:1px;transform:translateY(-0.5px)}
-    .radar-cross-y{top:12px;bottom:12px;left:50%;width:1px;transform:translateX(-0.5px)}
-    .radar-sweep{position:absolute;left:50%;top:50%;width:46%;height:2px;transform-origin:left center;background:linear-gradient(90deg, rgba(167,139,250,.85), rgba(86,215,255,0));filter:drop-shadow(0 0 10px rgba(167,139,250,.35));animation:radarsweep 4.5s linear infinite}
-    .radar-center{position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:var(--purple);box-shadow:0 0 18px rgba(167,139,250,.35)}
-    .radar-dot{position:absolute;width:14px;height:14px;border-radius:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;box-shadow:0 0 14px rgba(0,0,0,.25)}
-    .radar-dot.green{background:rgba(52,211,153,.95)}
-    .radar-dot.yellow{background:rgba(251,191,36,.95);color:#1b1b1b}
-    .radar-dot.red{background:rgba(248,113,113,.95)}
-    .radar-dot.cyan{background:rgba(86,215,255,.95);color:#062536}
-    .radar-dot.purple{background:rgba(167,139,250,.95)}
-    .radar-legend{display:grid;grid-template-columns:1fr;gap:8px}
-    .radar-row{display:grid;grid-template-columns:92px 1fr 58px;gap:8px;align-items:center}
-    .radar-row .name{font-size:11px;color:var(--muted);font-weight:800}
-    .radar-bar{height:10px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;border:1px solid rgba(255,255,255,.04)}
-    .radar-fill{height:100%;border-radius:999px}
-    .radar-fill.green{background:linear-gradient(90deg, rgba(52,211,153,.35), rgba(52,211,153,.95))}
-    .radar-fill.yellow{background:linear-gradient(90deg, rgba(251,191,36,.35), rgba(251,191,36,.95))}
-    .radar-fill.red{background:linear-gradient(90deg, rgba(248,113,113,.35), rgba(248,113,113,.95))}
-    .radar-fill.cyan{background:linear-gradient(90deg, rgba(86,215,255,.35), rgba(86,215,255,.95))}
-    .radar-fill.purple{background:linear-gradient(90deg, rgba(167,139,250,.35), rgba(167,139,250,.95))}
-    .radar-note{font-size:11px;color:var(--muted);line-height:1.55}
-    @keyframes radarsweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-    
-    .risk-pill{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid var(--line)}
-    .risk-low{background:rgba(52,211,153,0.14);color:#bbf7d0;border-color:rgba(52,211,153,0.3)}
-    .risk-mid{background:rgba(251,191,36,0.14);color:#fde68a;border-color:rgba(251,191,36,0.3)}
-    .risk-high{background:rgba(248,113,113,0.14);color:#fecaca;border-color:rgba(248,113,113,0.3)}
-    .action-box{padding:8px 10px;border-radius:10px;font-weight:900;text-align:center}
-    .action-danger{background:rgba(248,113,113,0.18);color:var(--red);border:1px solid rgba(248,113,113,0.35);animation:blink 2s infinite}
-    .action-warn{background:rgba(251,191,36,0.18);color:var(--yellow);border:1px solid rgba(251,191,36,0.35)}
-    .action-ok{background:rgba(52,211,153,0.18);color:var(--green);border:1px solid rgba(52,211,153,0.35)}
-    .action-info{background:rgba(96,165,250,0.18);color:var(--cyan);border:1px solid rgba(96,165,250,0.35)}
-    .order-btn { padding: 6px 12px; font-size: 12px; border-radius: 8px; border: 1px solid var(--line); background: rgba(255,255,255,0.05); color: #fff; cursor: pointer; transition: 0.2s;}
-    .order-btn.ordered { background: rgba(52,211,153,0.2); border-color: var(--green); color: var(--green); }
-    
-    .close-overlay{position:fixed;inset:0;background:rgba(3,7,18,0.85);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
-    .close-overlay.show{display:flex}
-    .close-modal{width:min(560px,100%);background:var(--panel);border:1px solid var(--line2);border-radius:22px;padding:20px;box-shadow:var(--shadow)}
-    @keyframes blink{0%{opacity:1}50%{opacity:.6}100%{opacity:1}}
-
-    @media (max-width:920px){
-      .tableWrap table{min-width:100%;display:block;border:none}
-      .tableWrap thead{display:none}
-      .tableWrap tbody,.tableWrap tr,.tableWrap td{display:block;width:100%;border:none}
-      .tableWrap tr{margin-bottom:16px;border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.02);box-shadow:var(--shadow)}
-      .tableWrap td{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,.04);padding:10px 0;text-align:right}
-      .tableWrap td:last-child{border-bottom:0}
-      .tableWrap td::before{content:attr(data-label);font-size:12px;color:var(--muted);text-align:left;margin-right:10px;font-weight:800}
-      .tableWrap td > div { text-align: right; width: 100%; display: flex; flex-direction: column; align-items: flex-end; }
-      .action-box { display: inline-block; width: auto; }
-      .rowActions { display: flex; gap: 8px; justify-content: flex-end; width: 100%; }
-    }
+    input,textarea,select{width:100%;background:linear-gradient(180deg,rgba(4,11,18,.95),rgba(8,16,25,.95));color:var(--text);border:1px solid #21405d;border-radius:10px;padding:10px 11px;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
+    textarea{resize:vertical;min-height:130px} input:focus,textarea:focus,select:focus{border-color:var(--cyan2);box-shadow:0 0 0 3px rgba(28,183,255,.12)}
+    .btnrow{display:flex;flex-wrap:wrap;gap:8px}.btn{appearance:none;border:none;cursor:pointer;color:#eaf7ff;font-weight:900;letter-spacing:.3px;padding:10px 14px;border-radius:12px;background:linear-gradient(180deg,#18324a,#0f2335);border:1px solid #315676;box-shadow:var(--glow);transition:.2s}.btn:hover{filter:brightness(1.08)}.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+    .btn.secondary{background:linear-gradient(180deg,#162231,#101c29);border-color:#29465f}.btn.green{background:linear-gradient(180deg,#154537,#103226);border-color:#2d7d64}.btn.red{background:linear-gradient(180deg,#4a1b1b,#331212);border-color:#8b3e3e}.btn.purple{background:linear-gradient(180deg,#39245b,#221337);border-color:#6f4fa8}.btn.small{padding:7px 10px;border-radius:10px;font-size:12px}
+    .card{background:linear-gradient(180deg,rgba(15,26,38,.98),rgba(8,15,23,.98));border:1px solid rgba(86,215,255,.12);border-radius:14px;padding:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}.card+.card{margin-top:10px}.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+    .symbol{font-size:20px;font-weight:900;letter-spacing:.5px;color:#eef8ff}.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid transparent;background:rgba(255,255,255,.04)}.badge.green{border-color:rgba(52,211,153,.4);color:#dcfff3}.badge.yellow{border-color:rgba(251,191,36,.4);color:#fff4d2}.badge.red{border-color:rgba(248,113,113,.4);color:#ffe2e2}.badge.cyan{border-color:rgba(86,215,255,.4);color:#def8ff}.badge.purple{border-color:rgba(167,139,250,.4);color:#efe8ff}
+    .mini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}@media (max-width:1100px){.mini{grid-template-columns:repeat(2,minmax(0,1fr))}} .mini .cell{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:10px;padding:8px}.cell .k{font-size:10px;color:var(--muted)}.cell .v{font-size:14px;font-weight:800;margin-top:4px}
+    .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(86,215,255,.14),transparent);margin:12px 0}.warning-box{border:1px solid rgba(248,113,113,.35);background:linear-gradient(180deg,rgba(80,25,25,.22),rgba(43,14,14,.16));color:#ffd8d8;border-radius:12px;padding:10px 12px;font-size:13px}.ok-box{border:1px solid rgba(52,211,153,.3);background:linear-gradient(180deg,rgba(18,74,54,.18),rgba(12,43,31,.15));color:#d9fff1;border-radius:12px;padding:10px 12px;font-size:13px}.footnote{font-size:11px;color:var(--muted);line-height:1.5}
+    .tableWrap{overflow-x:auto} table{width:100%;border-collapse:collapse;min-width:1550px;font-size:13px} th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;vertical-align:top} th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px} tr:last-child td{border-bottom:none}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.scoreA{color:var(--green);font-weight:900}.scoreB{color:var(--yellow);font-weight:900}.scoreC{color:var(--red);font-weight:900}.rankTop{font-size:18px;font-weight:900;color:#fff}.rank1{color:#7dd3fc}.rank2{color:#c4b5fd}.rank3{color:#fbbf24}.mainAttackGlow{box-shadow:0 0 0 1px rgba(167,139,250,.3),0 0 22px rgba(167,139,250,.18),inset 0 1px 0 rgba(255,255,255,.03)}
+    .close-overlay{position:fixed;inset:0;background:rgba(3,7,18,0.85);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}.close-overlay.show{display:flex}.close-modal{width:min(560px,100%);background:var(--panel);border:1px solid var(--line2);border-radius:22px;padding:20px;box-shadow:var(--shadow)}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap}
+    .radar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.radar-item{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:10px}.radar-title{font-size:11px;color:var(--muted);margin-bottom:8px}.radar-bar{height:10px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden}.radar-fill{height:100%;background:linear-gradient(90deg,var(--cyan2),var(--purple));border-radius:999px}.radar-score{font-size:13px;font-weight:800;margin-top:6px}
+    .explain-list{display:flex;flex-direction:column;gap:8px}.explain-item{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);font-size:13px}
+    .ai-result-grid{display:grid;grid-template-columns:1fr;gap:10px}.ai-box{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:10px}.ai-label{font-size:11px;color:var(--muted);margin-bottom:6px}.ai-value{font-size:14px;font-weight:800}.ai-top{color:#d8fff1}.ai-backup{color:#dbeafe}.ai-avoid{color:#fecaca}.highlight-ai-top{outline:2px solid rgba(52,211,153,.45)}.highlight-ai-avoid{outline:2px solid rgba(248,113,113,.35)}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="topbar">
       <div class="brand">
-        <h1>AI 戰艦 Pro Max v9.2</h1>
-        <div class="sub">實戰定版｜單一真相收斂・全自動量化風控主機</div>
+        <h1>AI 戰艦 Pro Max v9.3-a</h1>
+        <div class="sub">完整戰情室版｜v9.2 完整主機 + AI 二次覆核艙（修正版）</div>
       </div>
       <div class="statusbar" id="topStatusBar"></div>
     </div>
 
     <div class="layout">
-      <!-- 左欄 -->
       <div class="col">
         <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2 class="panel-title">主控總覽列</h2>
-              <div class="panel-sub">晚上打開先看這區，明天能不能打、主攻是誰、風險剩多少</div>
-            </div>
-          </div>
+          <div class="panel-head"><div><h2 class="panel-title">主控總覽列</h2><div class="panel-sub">晚上打開先看這區，明天能不能打、主攻是誰、風險剩多少</div></div></div>
           <div class="panel-body">
             <div class="grid-4" id="heroMetrics"></div>
             <div class="divider"></div>
@@ -215,12 +88,7 @@
         </section>
 
         <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2 class="panel-title">市場戰況艙</h2>
-              <div class="panel-sub">決定明天是否開倉、最多打幾檔、風險放多少</div>
-            </div>
-          </div>
+          <div class="panel-head"><div><h2 class="panel-title">市場戰況雷達</h2><div class="panel-sub">自動情緒 + 燈號 + 原因拆解</div></div></div>
           <div class="panel-body">
             <div class="grid-2">
               <div><label>上漲家數</label><input id="advancersInput" type="number" /></div>
@@ -235,17 +103,16 @@
               <button class="btn secondary" id="saveMarketBtn">儲存市場狀態</button>
             </div>
             <div class="divider"></div>
+            <div class="radar-grid" id="marketRadarGrid"></div>
+            <div class="divider"></div>
             <div class="grid-3" id="marketSummary"></div>
+            <div class="divider"></div>
+            <div class="explain-list" id="marketExplainBox"></div>
           </div>
         </section>
 
         <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2 class="panel-title">火控設定艙</h2>
-              <div class="panel-sub">固定風險部位模型 + 連敗降載 + V轉試單</div>
-            </div>
-          </div>
+          <div class="panel-head"><div><h2 class="panel-title">火控設定艙</h2><div class="panel-sub">固定風險部位模型 + 連敗降載 + V轉試單</div></div></div>
           <div class="panel-body">
             <div class="grid-2">
               <div><label>總資金</label><input id="capitalInput" type="number" step="1" /></div>
@@ -265,20 +132,14 @@
         </section>
       </div>
 
-      <!-- 中欄 -->
       <div class="col">
         <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2 class="panel-title">戰隊決策艙</h2>
-              <div class="panel-sub">TradingView CSV 直讀 → v9.1 權重校準 → 主攻排序 → 戰隊鎖定</div>
-            </div>
-          </div>
+          <div class="panel-head"><div><h2 class="panel-title">戰隊決策艙</h2><div class="panel-sub">CSV 直讀 → 本地評分 → AI 二次覆核 → 決定主攻</div></div></div>
           <div class="panel-body">
             <label>貼上 TradingView CSV（保留標題列）</label>
-            <textarea id="candidateTextarea" placeholder="直接貼上 TradingView CSV，例如：&#10;商品,描述,價格,價格 - 貨幣,價格變化 % 1天,..."></textarea>
+            <textarea id="candidateTextarea" placeholder="直接貼上 TradingView CSV，例如：商品,描述,價格,價格變化 % 1天,相對成交量 1天,..."></textarea>
             <div class="btnrow">
-              <button class="btn" id="parseCandidatesBtn">解析 CSV + v9.1 校準評分</button>
+              <button class="btn" id="parseCandidatesBtn">解析 CSV + 本地評分</button>
               <button class="btn secondary" id="clearCandidatesBtn">清空候選</button>
             </div>
             <div class="divider"></div>
@@ -291,12 +152,25 @@
         </section>
 
         <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2 class="panel-title">智慧單輸出艙</h2>
-              <div class="panel-sub">明天照這裡掛單，不要盤中再改</div>
+          <div class="panel-head"><div><h2 class="panel-title">AI 覆核艙</h2><div class="panel-sub">從本地前 3~5 名產生 Prompt，貼回 AI JSON 做二次覆核</div></div></div>
+          <div class="panel-body">
+            <div class="btnrow">
+              <button class="btn purple" id="genAiPromptBtn">產生 AI Prompt</button>
+              <button class="btn secondary" id="copyAiPromptBtn">複製 Prompt</button>
             </div>
+            <div style="margin-top:10px"><label>AI Prompt</label><textarea id="aiPromptBox" placeholder="系統會自動根據本地前 5 名候選產生 AI 覆核提示詞"></textarea></div>
+            <div style="margin-top:10px"><label>貼上 AI JSON 回答</label><textarea id="aiResultBox" placeholder='例如：{"market_view":"...","top_pick":{"symbol":"...","reason":"..."},"backup_pick":...,"avoid_pick":...,"risk_note":"..."}'></textarea></div>
+            <div class="btnrow" style="margin-top:10px">
+              <button class="btn green" id="parseAiBtn">解析 AI 結果</button>
+              <button class="btn secondary" id="clearAiBtn">清空 AI 結果</button>
+            </div>
+            <div class="divider"></div>
+            <div class="ai-result-grid" id="aiResultPanel"></div>
           </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><div><h2 class="panel-title">智慧單輸出艙</h2><div class="panel-sub">明天照這裡掛單，不要盤中再改</div></div></div>
           <div class="panel-body">
             <div id="orderSummaryBox"></div>
             <div class="divider"></div>
@@ -305,25 +179,20 @@
         </section>
       </div>
 
-      <!-- 右欄 -->
       <div class="col">
         <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2 class="panel-title">持倉指揮艙</h2>
-              <div class="panel-sub">更新高點 / 收盤價 / 狀態，決定明天續抱、防守或撤退</div>
-            </div>
-          </div>
+          <div class="panel-head"><div><h2 class="panel-title">持倉指揮艙</h2><div class="panel-sub">更新高點 / 收盤價 / 狀態，決定明天續抱、防守或撤退</div></div></div>
           <div class="panel-body">
-            <div class="grid-4" style="margin-bottom: 14px;">
-              <div><label class="small">代號</label><input id="holdSymbol" placeholder="例如 5244"></div>
-              <div><label class="small">買入價</label><input id="holdBuy" type="number" step="0.01"></div>
-              <div><label class="small">股數</label><input id="holdShares" type="number" step="1" value="1000" placeholder="1000"></div>
-              <div><label class="small">收盤現價</label><input id="holdCurrent" type="number" step="0.01"></div>
+            <div class="grid-4" style="margin-bottom:14px">
+              <div><label>代號</label><input id="holdSymbol" placeholder="例如 5244"></div>
+              <div><label>買入價</label><input id="holdBuy" type="number" step="0.01"></div>
+              <div><label>股數</label><input id="holdShares" type="number" step="1" value="1000"></div>
+              <div><label>收盤現價</label><input id="holdCurrent" type="number" step="0.01"></div>
             </div>
-            <div class="btnrow" style="margin-bottom: 16px;">
+            <div class="btnrow" style="margin-bottom:16px">
               <button class="btn" id="addHoldBtn">手動加入監控</button>
               <button class="btn secondary" id="loadTopBtn">快速帶入首選</button>
+              <button class="btn purple" id="loadAiTopBtn">快速帶入 AI 主攻</button>
             </div>
             <div class="divider"></div>
             <div id="positionsBox"></div>
@@ -331,12 +200,7 @@
         </section>
 
         <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2 class="panel-title">飛輪戰報艙</h2>
-              <div class="panel-sub">看系統是不是在累積，而不是只看單筆勝負</div>
-            </div>
-          </div>
+          <div class="panel-head"><div><h2 class="panel-title">飛輪戰報艙</h2><div class="panel-sub">看系統是不是在累積，而不是只看單筆勝負</div></div></div>
           <div class="panel-body">
             <div class="grid-5" id="performanceMetrics"></div>
             <div class="divider"></div>
@@ -349,88 +213,39 @@
 
   <div id="closeOverlay" class="close-overlay">
     <div class="close-modal">
-      <div class="panel-title" style="margin-bottom: 10px;">📤 執行平倉</div>
-      <p id="closeInfo" class="small"></p>
-      <div style="margin-bottom:15px">
-        <label class="small">實際賣出成交價</label>
-        <input id="closePrice" type="number" step="0.01">
-      </div>
-      <div>
-        <label class="small">出場原因</label>
-        <select id="closeReason">
-          <option value="TP">💰 達標獲利 (TP)</option>
-          <option value="SL">🛡️ 觸價停損 (SL)</option>
-          <option value="Trim">✂️ 減碼抽回資金</option>
-          <option value="Manual">✋ 系統外手動調節</option>
-        </select>
-      </div>
-      <div class="toolbar" style="margin-top:20px">
-        <button id="confirmCloseBtn" class="btn success" style="flex:1">確認平倉並寫入飛輪</button>
-        <button id="cancelCloseBtn" class="btn secondary" style="flex:1">取消</button>
-      </div>
+      <div class="panel-title" style="margin-bottom:10px">📤 執行平倉</div>
+      <p id="closeInfo" class="muted"></p>
+      <div style="margin-bottom:15px"><label>實際賣出成交價</label><input id="closePrice" type="number" step="0.01"></div>
+      <div><label>出場原因</label><select id="closeReason"><option value="TP">💰 達標獲利 (TP)</option><option value="SL">🛡️ 觸價停損 (SL)</option><option value="Trim">✂️ 減碼抽回資金</option><option value="Manual">✋ 系統外手動調節</option></select></div>
+      <div class="toolbar" style="margin-top:20px"><button id="confirmCloseBtn" class="btn green" style="flex:1">確認平倉並寫入飛輪</button><button id="cancelCloseBtn" class="btn secondary" style="flex:1">取消</button></div>
     </div>
   </div>
 
   <script>
     const $ = id => document.getElementById(id);
-    const STORAGE_KEY = 'warroom_v9_2_ssot_final';
+    const STORAGE_KEY = 'warroom_v9_3a_full_fixed';
 
     const defaultState = {
-      market: {
-        advancers: 0, decliners: 0, limitUp: 0, limitDown: 0,
-        otcChange: 0, taiexChange: 0,
-        breadthScore: 0, sentimentScore: 0, totalScore: 0,
-        signal: 'yellow', maxNewPositionsAllowed: 1,
-        instruction: '等待市場狀態更新'
-      },
-      risk: {
-        capital: 200000,
-        availableCash: 200000,
-        dailyRiskPercent: 1,
-        singlePositionCapitalPercent: 25,
-        maxNewPositions: 2,
-        lossStreak: 0
-      },
-      candidatesRawText: '',
-      candidates: [],
-      positions: [],
-      logs: [],
-      lastSync: '',
-      pendingCloseId: null,
-      maxDev: 10
+      market: { advancers:0, decliners:0, limitUp:0, limitDown:0, otcChange:0, taiexChange:0, breadthScore:0, sentimentScore:0, totalScore:0, signal:'yellow', maxNewPositionsAllowed:1, instruction:'等待市場狀態更新', explainParts:[], radar:{} },
+      risk: { capital:200000, availableCash:200000, dailyRiskPercent:1, singlePositionCapitalPercent:25, maxNewPositions:2, lossStreak:0 },
+      candidatesRawText:'', candidates:[], positions:[], logs:[], lastSync:'', pendingCloseId:null, isClosing:false, pendingAddCandidateId:null,
+      aiReview: { prompt:'', rawResponse:'', parsed:null, mode:'local_only' }
     };
 
     let state = loadState();
 
     function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
-    function loadState(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return clone(defaultState);
-        return deepMerge(clone(defaultState), JSON.parse(raw));
-      }catch(e){ return clone(defaultState); }
-    }
-    function deepMerge(target, source){
-      for(const key in source){
-        if(source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])){
-          if(!target[key]) target[key] = {};
-          deepMerge(target[key], source[key]);
-        }else target[key] = source[key];
-      }
-      return target;
-    }
-    function saveState(){
-      state.lastSync = nowString();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      renderAll();
-    }
-    function nowString(){ const d = new Date(); const p = n => String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
-    function num(v, fallback = 0){ const n = Number(v); return Number.isFinite(n) ? n : fallback; }
-    function fmt(n, digits = 0){ if(n===null||n===undefined||n==='') return '-'; return Number(n).toLocaleString('zh-TW',{minimumFractionDigits:digits,maximumFractionDigits:digits}); }
+    function deepMerge(target, source){ for(const key in source){ if(source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])){ if(!target[key]) target[key]={}; deepMerge(target[key], source[key]); } else target[key]=source[key]; } return target; }
+    function loadState(){ try{ const raw = localStorage.getItem(STORAGE_KEY); if(!raw) return clone(defaultState); return deepMerge(clone(defaultState), JSON.parse(raw)); }catch(e){ return clone(defaultState); } }
+    function nowString(){ const d = new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
+    function saveState(){ state.lastSync = nowString(); localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderAll(); }
+    function num(v, fallback=0){ const n = Number(v); return Number.isFinite(n) ? n : fallback; }
+    function safeNum(v, fallback=0){ return num(v, fallback); }
+    function fmt(n,d=0){ if(n===null||n===undefined||n==='') return '-'; return Number(n).toLocaleString('zh-TW',{minimumFractionDigits:d, maximumFractionDigits:d}); }
     function pct(n,d=2){ return `${fmt(n,d)}%`; }
-    function signalClass(signal){ return signal==='green' ? 'green' : signal==='red' ? 'red' : 'yellow'; }
     function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-    function safeNum(v, fallback = 0){ const n = Number(v); return Number.isFinite(n) ? n : fallback; }
+    function signalClass(signal){ return signal==='green' ? 'green' : signal==='red' ? 'red' : 'yellow'; }
+    function uid(prefix){ return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`; }
 
     function getLossMode(lossStreak){
       if(lossStreak >= 4) return { mode:'冷卻模式', riskMultiplier:0, maxNewPositionsOverride:0, note:'連敗達 4，禁止開新倉，只管理舊倉。' };
@@ -438,986 +253,147 @@
       if(lossStreak >= 2) return { mode:'保守模式', riskMultiplier:0.5, maxNewPositionsOverride:null, note:'連敗達 2，單日風險減半。' };
       return { mode:'正常模式', riskMultiplier:1, maxNewPositionsOverride:null, note:'依市場燈號正常運作。' };
     }
-    function getMarketDecision(totalScore){
-      if(totalScore >= 70) return { signal:'green', maxNewPositionsAllowed:2, instruction:'綠燈正常作戰，可開新倉，最多兩檔。' };
-      if(totalScore <= 39) return { signal:'red', maxNewPositionsAllowed:0, instruction:'紅燈禁止開倉，只管理舊倉。' };
-      return { signal:'yellow', maxNewPositionsAllowed:1, instruction:'黃燈降風險，只打一檔或降低火力。' };
-    }
+    function getMarketDecision(totalScore){ if(totalScore >= 70) return { signal:'green', maxNewPositionsAllowed:2, instruction:'綠燈正常作戰，可開新倉，最多兩檔。' }; if(totalScore <= 39) return { signal:'red', maxNewPositionsAllowed:0, instruction:'紅燈禁止開倉，只管理舊倉。' }; return { signal:'yellow', maxNewPositionsAllowed:1, instruction:'黃燈降風險，只打一檔或降低火力。' }; }
     function calculateAutoSentimentScore(m){
-      const otc = num(m.otcChange);
-      const taiex = num(m.taiexChange);
-      const up = num(m.limitUp);
-      const down = num(m.limitDown);
-      let score = 50;
-
-      if(taiex > 1.2) score += 15;
-      else if(taiex > 0.5) score += 8;
-      else if(taiex < -1.2) score -= 15;
-      else if(taiex < -0.5) score -= 8;
-
-      if(otc > 1.0) score += 15;
-      else if(otc > 0.4) score += 8;
-      else if(otc < -1.0) score -= 15;
-      else if(otc < -0.4) score -= 8;
-
-      const spread = up - down;
-      if(spread > 30) score += 12;
-      else if(spread > 10) score += 6;
-      else if(spread < -30) score -= 12;
-      else if(spread < -10) score -= 6;
-
-      return Math.max(0, Math.min(100, Math.round(score * 10) / 10));
+      let score = 50; const explain = [];
+      if(m.taiexChange > 1.2){ score += 15; explain.push(['加權強勢噴出','+15']); }
+      else if(m.taiexChange > 0.5){ score += 8; explain.push(['加權偏強','+8']); }
+      else if(m.taiexChange < -1.2){ score -= 15; explain.push(['加權重挫','-15']); }
+      else if(m.taiexChange < -0.5){ score -= 8; explain.push(['加權轉弱','-8']); }
+      if(m.otcChange > 1.0){ score += 15; explain.push(['OTC 強勢上漲','+15']); }
+      else if(m.otcChange > 0.4){ score += 8; explain.push(['OTC 偏多','+8']); }
+      else if(m.otcChange < -1.0){ score -= 15; explain.push(['OTC 明顯轉弱','-15']); }
+      else if(m.otcChange < -0.4){ score -= 8; explain.push(['OTC 偏空','-8']); }
+      const spread = num(m.limitUp) - num(m.limitDown);
+      if(spread > 30){ score += 12; explain.push(['漲停大幅優於跌停','+12']); }
+      else if(spread > 10){ score += 6; explain.push(['漲停優於跌停','+6']); }
+      else if(spread < -30){ score -= 12; explain.push(['跌停大幅壓制','-12']); }
+      else if(spread < -10){ score -= 6; explain.push(['跌停壓力偏高','-6']); }
+      return { score: clamp(score,0,100), explain };
     }
-    function getMarketExplainParts(m){
-      const parts = [];
-      const otc = num(m.otcChange);
-      const taiex = num(m.taiexChange);
-      const up = num(m.limitUp);
-      const down = num(m.limitDown);
-      const adv = num(m.advancers);
-      const dec = num(m.decliners);
-      const spread = up - down;
-
-      if(taiex > 1.2) parts.push('加權強勢上漲，加 15 分');
-      else if(taiex > 0.5) parts.push('加權偏強，加 8 分');
-      else if(taiex < -1.2) parts.push('加權大跌，扣 15 分');
-      else if(taiex < -0.5) parts.push('加權轉弱，扣 8 分');
-      else parts.push('加權影響中性');
-
-      if(otc > 1.0) parts.push('OTC 強勢上漲，加 15 分');
-      else if(otc > 0.4) parts.push('OTC 偏強，加 8 分');
-      else if(otc < -1.0) parts.push('OTC 大跌，扣 15 分');
-      else if(otc < -0.4) parts.push('OTC 轉弱，扣 8 分');
-      else parts.push('OTC 影響中性');
-
-      if(spread > 30) parts.push('漲停明顯大於跌停，加 12 分');
-      else if(spread > 10) parts.push('漲停優於跌停，加 6 分');
-      else if(spread < -30) parts.push('跌停明顯大於漲停，扣 12 分');
-      else if(spread < -10) parts.push('跌停壓過漲停，扣 6 分');
-      else parts.push('漲跌停差距中性');
-
-      if(adv + dec > 0){
-        const advRatio = adv / (adv + dec);
-        if(advRatio >= 0.65) parts.push('上漲家數明顯優勢，廣度偏強');
-        else if(advRatio <= 0.4) parts.push('下跌家數壓制，廣度偏弱');
-        else parts.push('上漲與下跌家數接近，廣度中性');
-      }
-
-      return parts;
+    function getMarketExplainParts(market){
+      const arr = []; const a = num(market.advancers), d = num(market.decliners), up = num(market.limitUp), down = num(market.limitDown);
+      if(a + d > 0){ const ratio = a/(a+d); if(ratio >= 0.62) arr.push(`上漲家數明顯優勢，廣度偏強（${a}/${d}）`); else if(ratio >= 0.53) arr.push(`上漲家數略優，廣度偏多（${a}/${d}）`); else if(ratio <= 0.38) arr.push(`下跌家數明顯優勢，廣度偏弱（${a}/${d}）`); else if(ratio <= 0.47) arr.push(`下跌家數略優，廣度偏空（${a}/${d}）`); else arr.push(`漲跌家數接近，市場偏中性（${a}/${d}）`); }
+      if(up - down >= 10) arr.push(`漲停家數優於跌停，短線人氣偏強（+${up-down}）`); else if(down - up >= 10) arr.push(`跌停家數壓制明顯，短線風險偏高（-${down-up}）`);
+      if(market.taiexChange > 0.5) arr.push(`加權指數偏強（${pct(market.taiexChange,2)}）`); else if(market.taiexChange < -0.5) arr.push(`加權指數轉弱（${pct(market.taiexChange,2)}）`);
+      if(market.otcChange > 0.4) arr.push(`OTC 題材股偏多（${pct(market.otcChange,2)}）`); else if(market.otcChange < -0.4) arr.push(`OTC 題材股轉弱（${pct(market.otcChange,2)}）`);
+      return arr;
     }
     function calculateMarket(){
-      const m = state.market;
-      const adv = num(m.advancers), dec = num(m.decliners), up = num(m.limitUp), down = num(m.limitDown), otc = num(m.otcChange), taiex = num(m.taiexChange);
-      const totalBreadth = adv + dec;
-      const advRatio = totalBreadth > 0 ? adv / totalBreadth : 0.5;
-      let breadthScore = advRatio * 60;
-      breadthScore += Math.max(-10, Math.min(10, (adv-dec)/50));
-      breadthScore += Math.max(-8, Math.min(8, up-down));
-      breadthScore = Math.max(0, Math.min(100, Math.round(breadthScore * 10) / 10));
-      const sentimentScore = calculateAutoSentimentScore(m);
-      const totalScore = Math.round((breadthScore*0.6 + sentimentScore*0.4) * 10) / 10;
-      const decision = getMarketDecision(totalScore);
-      state.market = { ...state.market, breadthScore, sentimentScore, totalScore, signal:decision.signal, maxNewPositionsAllowed:decision.maxNewPositionsAllowed, instruction:decision.instruction };
+      const m = state.market; const adv = num(m.advancers), dec = num(m.decliners), up = num(m.limitUp), down = num(m.limitDown), otc = num(m.otcChange), taiex = num(m.taiexChange);
+      const totalBreadth = adv + dec; const advRatio = totalBreadth > 0 ? adv/totalBreadth : 0.5;
+      let breadthScore = advRatio * 60; breadthScore += Math.max(-10, Math.min(10, (adv-dec)/50)); breadthScore += Math.max(-8, Math.min(8, up-down)); breadthScore = Math.max(0, Math.min(100, breadthScore));
+      const autoSent = calculateAutoSentimentScore({limitUp:up, limitDown:down, otcChange:otc, taiexChange:taiex});
+      const sentimentScore = autoSent.score; const totalScore = Math.round((breadthScore*0.6 + sentimentScore*0.4)*10)/10; const decision = getMarketDecision(totalScore);
+      const radar = { breadth: Math.round(breadthScore), sentiment: Math.round(sentimentScore), taiex: clamp(Math.round((taiex+3)/6*100),0,100), otc: clamp(Math.round((otc+3)/6*100),0,100), spread: clamp(Math.round((up-down+40)/80*100),0,100), total: Math.round(totalScore) };
+      state.market = { ...state.market, breadthScore, sentimentScore, totalScore, signal:decision.signal, maxNewPositionsAllowed:decision.maxNewPositionsAllowed, instruction:decision.instruction, explainParts:[...autoSent.explain.map(x=>`${x[0]} ${x[1]}`), ...getMarketExplainParts({advancers:adv,decliners:dec,limitUp:up,limitDown:down,otcChange:otc,taiexChange:taiex})], radar };
     }
     function getUsedCapitalFromOpenPositions(){ return state.positions.filter(p=>p.isOpen).reduce((sum,p)=>sum+num(p.invested),0); }
-    function getPortfolioStats(){
-      let totalCost = 0, totalPnL = 0;
-      state.positions.filter(p=>p.isOpen).forEach(h => {
-        const s = Number(h.shares) || 1000;
-        totalCost += Number(h.entryPrice || 0) * s;
-        totalPnL += (Number(h.currentPrice || 0) - Number(h.entryPrice || 0)) * s;
-      });
-      const drop = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
-      return { totalCost, totalPnL, drop };
-    }
-    function getEffectiveSettings(){
-      calculateMarket();
-      const lossMode = { ...getLossMode(state.risk.lossStreak) };
-      let effectiveDailyRiskPercent = state.risk.dailyRiskPercent * lossMode.riskMultiplier;
-      let effectiveMaxNewPositions = Math.min(state.risk.maxNewPositions, state.market.maxNewPositionsAllowed);
-      if(lossMode.maxNewPositionsOverride !== null){ effectiveMaxNewPositions = Math.min(effectiveMaxNewPositions, lossMode.maxNewPositionsOverride); }
-      if(state.market.signal === 'green' && state.risk.lossStreak >= 3 && num(state.market.totalScore) >= 80){
-        effectiveMaxNewPositions = Math.max(1, effectiveMaxNewPositions);
-        effectiveDailyRiskPercent = state.risk.dailyRiskPercent * 0.5;
-        lossMode.mode = 'V轉試單模式';
-        lossMode.note = '大盤強勢綠燈(>80分)，允許半倉試單 1 檔。';
-      }else if(state.market.signal === 'red'){
-        effectiveMaxNewPositions = 0;
-      }
-      return { lossMode, effectiveDailyRiskPercent, effectiveMaxNewPositions };
-    }
-    function buildShareResult(shares, entry, stop, singleRiskAmount, sharesByRisk, sharesByCapital, availableCash){
-      const invested = shares * entry;
-      const riskPerShare = Math.abs(entry-stop);
-      const positionRisk = shares * riskPerShare;
-      return { shares, boardLots:Math.floor(shares/1000), oddLots:shares%1000, invested, positionRisk, singleRiskAmount, sharesByRisk, sharesByCapital, availableCash };
-    }
-    function calcShares(entry, stop){
-      const { effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings();
-      const capital = num(state.risk.capital);
-      const configuredAvailableCash = num(state.risk.availableCash);
-      const usedCapital = getUsedCapitalFromOpenPositions();
-      const realAvailableCash = Math.max(0, configuredAvailableCash - usedCapital);
-      const singlePositionCapitalPercent = num(state.risk.singlePositionCapitalPercent);
-      const totalRiskAmount = capital * (effectiveDailyRiskPercent / 100);
-      const bucketCount = effectiveMaxNewPositions > 0 ? effectiveMaxNewPositions : 1;
-      const singleRiskAmount = totalRiskAmount / bucketCount;
-      const riskPerShare = Math.abs(entry - stop);
-      if(riskPerShare <= 0) return buildShareResult(0, entry, stop, singleRiskAmount, 0, 0, realAvailableCash);
-      const sharesByRisk = Math.floor(singleRiskAmount / riskPerShare);
-      const maxCapitalForPosition = Math.min(realAvailableCash, capital * (singlePositionCapitalPercent / 100));
-      const sharesByCapital = Math.floor(maxCapitalForPosition / entry);
-      const finalShares = Math.max(0, Math.min(sharesByRisk, sharesByCapital));
-      return buildShareResult(finalShares, entry, stop, singleRiskAmount, sharesByRisk, sharesByCapital, realAvailableCash);
-    }
+    function getPortfolioStats(){ let totalCost=0,totalPnL=0; state.positions.filter(p=>p.isOpen).forEach(h=>{ const s=Number(h.shares)||1000; totalCost += Number(h.entryPrice||0)*s; totalPnL += (Number(h.currentPrice||0)-Number(h.entryPrice||0))*s; }); const drop = totalCost > 0 ? (totalPnL/totalCost)*100 : 0; return { totalCost, totalPnL, drop }; }
+    function getEffectiveSettings(){ calculateMarket(); const lossMode = { ...getLossMode(state.risk.lossStreak) }; let effectiveDailyRiskPercent = state.risk.dailyRiskPercent * lossMode.riskMultiplier; let effectiveMaxNewPositions = Math.min(state.risk.maxNewPositions, state.market.maxNewPositionsAllowed); if(lossMode.maxNewPositionsOverride !== null) effectiveMaxNewPositions = Math.min(effectiveMaxNewPositions, lossMode.maxNewPositionsOverride); if(state.market.signal === 'green' && state.risk.lossStreak >= 3 && num(state.market.totalScore) >= 80){ effectiveMaxNewPositions = Math.max(1, effectiveMaxNewPositions); effectiveDailyRiskPercent = state.risk.dailyRiskPercent * 0.5; lossMode.mode = 'V轉試單模式'; lossMode.note = '大盤強勢綠燈(>80分)，允許半倉試單 1 檔。'; } else if(state.market.signal === 'red'){ effectiveMaxNewPositions = 0; } return { lossMode, effectiveDailyRiskPercent, effectiveMaxNewPositions }; }
+    function buildShareResult(shares, entry, stop, singleRiskAmount, sharesByRisk, sharesByCapital, availableCash){ const invested = shares*entry; const riskPerShare = Math.abs(entry-stop); const positionRisk = shares*riskPerShare; return { shares, boardLots:Math.floor(shares/1000), oddLots:shares%1000, invested, positionRisk, singleRiskAmount, sharesByRisk, sharesByCapital, availableCash }; }
+    function calcShares(entry, stop){ const { effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings(); const capital = num(state.risk.capital); const configuredAvailableCash = num(state.risk.availableCash); const usedCapital = getUsedCapitalFromOpenPositions(); const realAvailableCash = Math.max(0, configuredAvailableCash-usedCapital); const singlePositionCapitalPercent = num(state.risk.singlePositionCapitalPercent); const totalRiskAmount = capital * (effectiveDailyRiskPercent/100); const bucketCount = effectiveMaxNewPositions > 0 ? effectiveMaxNewPositions : 1; const singleRiskAmount = totalRiskAmount / bucketCount; const riskPerShare = Math.abs(entry-stop); if(riskPerShare <= 0) return buildShareResult(0,entry,stop,singleRiskAmount,0,0,realAvailableCash); const sharesByRisk = Math.floor(singleRiskAmount/riskPerShare); const maxCapitalForPosition = Math.min(realAvailableCash, capital*(singlePositionCapitalPercent/100)); const sharesByCapital = Math.floor(maxCapitalForPosition/entry); const finalShares = Math.max(0, Math.min(sharesByRisk, sharesByCapital)); return buildShareResult(finalShares, entry, stop, singleRiskAmount, sharesByRisk, sharesByCapital, realAvailableCash); }
     function calcRR(entry, stop, takeProfit){ const risk = entry-stop; const reward = takeProfit-entry; return risk <= 0 ? 0 : reward/risk; }
 
-    function splitCsvLine(line){
-      const result = [];
-      let current = '';
-      let inQuotes = false;
-      for(let i=0;i<line.length;i++){
-        const ch = line[i];
-        if(ch === '"'){
-          if(inQuotes && line[i+1] === '"'){ current += '"'; i++; }
-          else inQuotes = !inQuotes;
-        }else if(ch === ',' && !inQuotes){
-          result.push(current); current = '';
-        }else current += ch;
-      }
-      result.push(current);
-      return result.map(x => x.trim());
-    }
+    function splitCsvLine(line){ const result=[]; let current='', inQuotes=false; for(let i=0;i<line.length;i++){ const ch=line[i]; if(ch==='"'){ if(inQuotes && line[i+1]==='"'){ current+='"'; i++; } else inQuotes=!inQuotes; } else if(ch===',' && !inQuotes){ result.push(current); current=''; } else current += ch; } result.push(current); return result.map(x=>x.trim()); }
     function normalizeHeader(h){ return String(h).replace(/^"|"$/g,'').trim(); }
-    function getCsvIndexMap(headers){
-      const map = {};
-      headers.forEach((h, idx) => { map[normalizeHeader(h)] = idx; });
-      return map;
-    }
-    function valAt(row, map, key){
-      const idx = map[key];
-      if(idx === undefined) return '';
-      return row[idx] ?? '';
-    }
+    function getCsvIndexMap(headers){ const map={}; headers.forEach((h,idx)=>{ map[normalizeHeader(h)] = idx; }); return map; }
+    function valAt(row,map,key){ const idx = map[key]; if(idx===undefined) return ''; return row[idx] ?? ''; }
+    function analystScore(rating){ const t = String(rating || '').trim(); if(t.includes('強力買入')) return 5; if(t.includes('買入')) return 4; if(t.includes('中立')) return 2; return 2; }
+    function marketSignalNumeric(signal){ if(signal==='green') return 8; if(signal==='yellow') return 5; return 1; }
 
-    function analystScore(rating){
-      const t = String(rating || '').trim();
-      if(t.includes('強力買入')) return 5;
-      if(t.includes('買入')) return 4;
-      if(t.includes('中立')) return 2;
-      return 2;
-    }
-
-    function marketSignalNumeric(signal){
-      if(signal === 'green') return 8;
-      if(signal === 'yellow') return 5;
-      return 1;
-    }
-
-    // 🌟 已對接完整的 v9.1 權重校準版，包含 baseScore 與 rrQualityScore 等變數
     function scoreCandidateCsv(stock, market){
-      const close = safeNum(stock.close);
-      const sma20 = safeNum(stock.sma20, NaN);
-      const sma60 = safeNum(stock.sma60, NaN);
-      const changePct = safeNum(stock.changePct, 0);
-      const volumeRatio = safeNum(stock.volumeRatio, NaN);
-      const rsi14 = safeNum(stock.rsi14, NaN);
-      const epsGrowthYoy = safeNum(stock.epsGrowthYoy, NaN);
-      const analystRating = stock.analystRating || '';
-      const rr = safeNum(stock.rr);
-      const riskPct = safeNum(stock.riskPct);
-
-      let maStructureScore = 0;
-      if (close > sma20 && sma20 > sma60) maStructureScore = 22;
-      else if (close > sma20 && close > sma60) maStructureScore = 17;
-      else if (close > sma20) maStructureScore = 11;
-      else maStructureScore = 3;
-
-      let momentumScore = 0;
-      if (changePct >= 2 && changePct <= 5.5) momentumScore = 12;
-      else if (changePct > 5.5 && changePct <= 7.5) momentumScore = 8;
-      else if (changePct >= 0 && changePct < 2) momentumScore = 6;
-      else if (changePct > 7.5) momentumScore = 4;
-      else momentumScore = 1;
-
-      let rsiScore = 4;
-      if (!Number.isNaN(rsi14)) {
-        if (rsi14 >= 60 && rsi14 <= 74) rsiScore = 10;
-        else if (rsi14 > 74 && rsi14 <= 78) rsiScore = 8;
-        else if (rsi14 >= 55 && rsi14 < 60) rsiScore = 7;
-        else if (rsi14 > 78 && rsi14 <= 82) rsiScore = 5;
-        else if (rsi14 > 82) rsiScore = 3;
-        else rsiScore = 4;
-      }
-
-      let volumeScore = 9;
-      if (!Number.isNaN(volumeRatio)) {
-        if (volumeRatio >= 1.2 && volumeRatio <= 2.3) volumeScore = 18;
-        else if (volumeRatio > 2.3 && volumeRatio <= 3.2) volumeScore = 14;
-        else if (volumeRatio >= 1.0 && volumeRatio < 1.2) volumeScore = 10;
-        else if (volumeRatio > 3.2 && volumeRatio <= 4.2) volumeScore = 9;
-        else if (volumeRatio > 4.2) volumeScore = 7;
-        else volumeScore = 6;
-      }
-
+      const close = safeNum(stock.close); const sma20 = safeNum(stock.sma20, NaN); const sma60 = safeNum(stock.sma60, NaN); const changePct = safeNum(stock.changePct, 0); const volumeRatio = safeNum(stock.volumeRatio, NaN); const rsi14 = safeNum(stock.rsi14, NaN); const epsGrowthYoy = safeNum(stock.epsGrowthYoy, NaN); const analystRating = stock.analystRating || ''; const rr = safeNum(stock.rr); const riskPct = safeNum(stock.riskPct);
+      let maStructureScore = 0; if(close > sma20 && sma20 > sma60) maStructureScore = 22; else if(close > sma20 && close > sma60) maStructureScore = 17; else if(close > sma20) maStructureScore = 11; else maStructureScore = 3;
+      let momentumScore = 0; if(changePct >= 2 && changePct <= 5.5) momentumScore = 12; else if(changePct > 5.5 && changePct <= 7.5) momentumScore = 8; else if(changePct >= 0 && changePct < 2) momentumScore = 6; else if(changePct > 7.5) momentumScore = 4; else momentumScore = 1;
+      let rsiScore = 4; if(!Number.isNaN(rsi14)){ if(rsi14 >= 60 && rsi14 <= 74) rsiScore = 10; else if(rsi14 > 74 && rsi14 <= 78) rsiScore = 8; else if(rsi14 >= 55 && rsi14 < 60) rsiScore = 7; else if(rsi14 > 78 && rsi14 <= 82) rsiScore = 5; else if(rsi14 > 82) rsiScore = 3; }
+      let volumeScore = 9; if(!Number.isNaN(volumeRatio)){ if(volumeRatio >= 1.2 && volumeRatio <= 2.3) volumeScore = 18; else if(volumeRatio > 2.3 && volumeRatio <= 3.2) volumeScore = 14; else if(volumeRatio >= 1.0 && volumeRatio < 1.2) volumeScore = 10; else if(volumeRatio > 3.2 && volumeRatio <= 4.2) volumeScore = 9; else if(volumeRatio > 4.2) volumeScore = 7; else volumeScore = 6; }
       const deviation20 = sma20 > 0 ? ((close - sma20) / sma20) * 100 : 0;
-      let heatControlScore = 0;
-      if (deviation20 >= 0 && deviation20 <= 10) heatControlScore = 16;
-      else if (deviation20 > 10 && deviation20 <= 18) heatControlScore = 13;
-      else if (deviation20 > 18 && deviation20 <= 25) heatControlScore = 9;
-      else if (deviation20 > 25 && deviation20 <= 35) heatControlScore = 5;
-      else if (deviation20 > 35) heatControlScore = 2;
-      else heatControlScore = 4;
-
-      const spread = num(market.limitUp) - num(market.limitDown);
-      let breadthPart = 1;
-      if (num(market.totalScore) >= 80) breadthPart = 5;
-      else if (num(market.totalScore) >= 70) breadthPart = 4;
-      else if (num(market.totalScore) >= 55) breadthPart = 3;
-      else breadthPart = 1;
-      let spreadPart = 0;
-      if (spread >= 20) spreadPart = 3;
-      else if (spread >= 10) spreadPart = 2;
-      else if (spread >= 0) spreadPart = 1;
-      else spreadPart = 0;
-      let marketResonanceScore = marketSignalNumeric(market.signal) + breadthPart + spreadPart;
-      marketResonanceScore = clamp(marketResonanceScore, 0, 18);
-
-      let rrQualityScore = 0;
-      if (rr >= 2.0 && riskPct >= 2 && riskPct <= 4) rrQualityScore = 12;
-      else if (rr >= 1.8 && riskPct >= 2 && riskPct <= 4.5) rrQualityScore = 10;
-      else if (rr >= 1.5 && riskPct >= 1.5 && riskPct <= 5) rrQualityScore = 8;
-      else if (rr >= 1.3) rrQualityScore = 5;
-      else rrQualityScore = 1;
-
-      // V9.1 的分析師評級較為保守
-      const analystPart = analystScore(analystRating) * 0.5;
-
-      let epsPart = 1;
-      if (!Number.isNaN(epsGrowthYoy)) {
-        if (epsGrowthYoy > 30) epsPart = 2;
-        else if (epsGrowthYoy >= 10) epsPart = 1.5;
-        else if (epsGrowthYoy >= 0) epsPart = 1;
-        else epsPart = 0;
-      }
-
-      // 總基礎分
+      let heatControlScore = 0; if(deviation20 >= 0 && deviation20 <= 10) heatControlScore = 16; else if(deviation20 > 10 && deviation20 <= 18) heatControlScore = 13; else if(deviation20 > 18 && deviation20 <= 25) heatControlScore = 9; else if(deviation20 > 25 && deviation20 <= 35) heatControlScore = 5; else if(deviation20 > 35) heatControlScore = 2; else heatControlScore = 4;
+      const spread = num(market.limitUp) - num(market.limitDown); let breadthPart = 1; if(num(market.totalScore) >= 80) breadthPart = 5; else if(num(market.totalScore) >= 70) breadthPart = 4; else if(num(market.totalScore) >= 55) breadthPart = 3; let spreadPart = 0; if(spread >= 20) spreadPart = 3; else if(spread >= 10) spreadPart = 2; else if(spread >= 0) spreadPart = 1; let marketResonanceScore = clamp(marketSignalNumeric(market.signal) + breadthPart + spreadPart, 0, 18);
+      let rrQualityScore = 0; if(rr >= 2.0 && riskPct >= 2 && riskPct <= 4) rrQualityScore = 12; else if(rr >= 1.8 && riskPct >= 2 && riskPct <= 4.5) rrQualityScore = 10; else if(rr >= 1.5 && riskPct >= 1.5 && riskPct <= 5) rrQualityScore = 8; else if(rr >= 1.3) rrQualityScore = 5; else rrQualityScore = 1;
+      const analystPart = analystScore(analystRating)*0.5; let epsPart = 1; if(!Number.isNaN(epsGrowthYoy)){ if(epsGrowthYoy > 30) epsPart = 2; else if(epsGrowthYoy >= 10) epsPart = 1.5; else if(epsGrowthYoy >= 0) epsPart = 1; else epsPart = 0; }
       const baseScore = maStructureScore + momentumScore + rsiScore + volumeScore + heatControlScore + marketResonanceScore + rrQualityScore + analystPart + epsPart;
-
-      let penaltyScore = 0;
-      if (changePct > 9.5) penaltyScore += 7;
-      else if (changePct > 8) penaltyScore += 4;
-      if (!Number.isNaN(rsi14)) {
-        if (rsi14 > 80) penaltyScore += 7;
-        else if (rsi14 > 77) penaltyScore += 4;
-      }
-      if (deviation20 > 40) penaltyScore += 12;
-      else if (deviation20 > 30) penaltyScore += 8;
-      else if (deviation20 > 20) penaltyScore += 4;
-      if (!Number.isNaN(volumeRatio)) {
-        if (volumeRatio > 4.5 && changePct > 8) penaltyScore += 6;
-        else if (volumeRatio > 3.5) penaltyScore += 3;
-      }
-
-      let rawFinalScore = baseScore - penaltyScore;
-      rawFinalScore = clamp(rawFinalScore, 0, 112);
-      let localScore = (rawFinalScore / 112) * 100;
-      localScore = Math.round(localScore * 10) / 10;
-
-      const warnings = [];
-      if (changePct > 7) warnings.push('短線漲幅偏大');
-      if (!Number.isNaN(rsi14) && rsi14 > 77) warnings.push('RSI偏熱');
-      if (!Number.isNaN(volumeRatio) && volumeRatio > 3.5) warnings.push('相對量偏熱');
-      if (deviation20 > 20) warnings.push('價格偏離SMA20過大');
-      if (rr < 1.5) warnings.push('風報比偏低');
-      if (riskPct > 4.5) warnings.push('停損距離偏大');
-      if (market.signal === 'yellow') warnings.push('大盤僅黃燈');
-
-      const rejectReasons = [];
-      if (close <= sma20) rejectReasons.push('價格跌回SMA20下方');
-      if (rr < 1.2) rejectReasons.push('RR過低');
-      if (riskPct > 6) rejectReasons.push('風險距離過大');
-      if (safeNum(stock.shares) <= 0) rejectReasons.push('可買股數為0');
-      if (market.signal === 'red') rejectReasons.push('大盤紅燈');
-      if (changePct > 9.5 && !Number.isNaN(rsi14) && rsi14 > 77) rejectReasons.push('過熱追價風險');
-      if (!Number.isNaN(volumeRatio) && volumeRatio > 4.5 && changePct > 8) rejectReasons.push('爆量過熱');
-
-      const rejected = rejectReasons.length > 0;
-      let grade = 'C';
-      if (!rejected) {
-        if (localScore >= 80) grade = 'A';
-        else if (localScore >= 70) grade = 'B';
-        else grade = 'C';
-      }
-
-      // 🌟 主攻資格判定
-      const isMainAttackCandidate = !rejected && grade === 'A' && market.signal !== 'red' && rr >= 1.5 && deviation20 <= 30 && (!Number.isNaN(rsi14) ? rsi14 <= 78 : true);
-
-      return {
-        ...stock,
-        maStructureScore: Math.round(maStructureScore * 10) / 10,
-        momentumScore: Math.round(momentumScore * 10) / 10,
-        rsiScore: Math.round(rsiScore * 10) / 10,
-        volumeScore: Math.round(volumeScore * 10) / 10,
-        heatControlScore: Math.round(heatControlScore * 10) / 10,
-        marketResonanceScore: Math.round(marketResonanceScore * 10) / 10,
-        rrQualityScore: Math.round(rrQualityScore * 10) / 10,
-        analystScore: Math.round(analystPart * 10) / 10,
-        epsScore: Math.round(epsPart * 10) / 10,
-        baseScore: Math.round(baseScore * 10) / 10,
-        penaltyScore: Math.round(penaltyScore * 10) / 10,
-        localScore,
-        deviation20: Math.round(deviation20 * 10) / 10,
-        riskPct: Math.round(riskPct * 10) / 10,
-        rr: Math.round(rr * 100) / 100,
-        grade,
-        warnings,
-        rejected,
-        rejectReasons,
-        isMainAttackCandidate
-      };
+      let penaltyScore = 0; if(changePct > 9.5) penaltyScore += 7; else if(changePct > 8) penaltyScore += 4; if(!Number.isNaN(rsi14)){ if(rsi14 > 80) penaltyScore += 7; else if(rsi14 > 77) penaltyScore += 4; } if(deviation20 > 40) penaltyScore += 12; else if(deviation20 > 30) penaltyScore += 8; else if(deviation20 > 20) penaltyScore += 4; if(!Number.isNaN(volumeRatio)){ if(volumeRatio > 4.5 && changePct > 8) penaltyScore += 6; else if(volumeRatio > 3.5) penaltyScore += 3; }
+      let rawFinalScore = clamp(baseScore - penaltyScore, 0, 112); let localScore = Math.round(((rawFinalScore/112)*100)*10)/10;
+      const warnings = []; if(changePct > 7) warnings.push('短線漲幅偏大'); if(!Number.isNaN(rsi14) && rsi14 > 77) warnings.push('RSI偏熱'); if(!Number.isNaN(volumeRatio) && volumeRatio > 3.5) warnings.push('相對量偏熱'); if(deviation20 > 20) warnings.push('價格偏離SMA20過大'); if(rr < 1.5) warnings.push('風報比偏低'); if(riskPct > 4.5) warnings.push('停損距離偏大'); if(market.signal === 'yellow') warnings.push('大盤僅黃燈');
+      const rejectReasons = []; if(close <= sma20) rejectReasons.push('價格跌回SMA20下方'); if(rr < 1.2) rejectReasons.push('RR過低'); if(riskPct > 6) rejectReasons.push('風險距離過大'); if(safeNum(stock.shares) <= 0) rejectReasons.push('可買股數為0'); if(market.signal === 'red') rejectReasons.push('大盤紅燈'); if(changePct > 9.5 && !Number.isNaN(rsi14) && rsi14 > 77) rejectReasons.push('過熱追價風險'); if(!Number.isNaN(volumeRatio) && volumeRatio > 4.5 && changePct > 8) rejectReasons.push('爆量過熱');
+      const rejected = rejectReasons.length > 0; let grade='C'; if(!rejected){ if(localScore >= 80) grade='A'; else if(localScore >= 70) grade='B'; }
+      const isMainAttackCandidate = !rejected && grade==='A' && market.signal!=='red' && rr >= 1.5 && deviation20 <= 30 && (!Number.isNaN(rsi14) ? rsi14 <= 78 : true);
+      return { ...stock, maStructureScore, momentumScore, rsiScore, volumeScore, heatControlScore, marketResonanceScore, rrQualityScore, analystScore:analystPart, epsScore:epsPart, baseScore:Math.round(baseScore*10)/10, penaltyScore:Math.round(penaltyScore*10)/10, localScore, deviation20:Math.round(deviation20*10)/10, riskPct:Math.round(riskPct*10)/10, rr:Math.round(rr*100)/100, grade, warnings, rejected, rejectReasons, isMainAttackCandidate };
     }
-
-    function rankCandidates(candidates, market){
-      const scored = candidates.map(stock => scoreCandidateCsv(stock, market));
-      scored.sort((a,b) => {
-        if(a.rejected !== b.rejected) return a.rejected ? 1 : -1;
-        // 🌟 排序優化：強制主攻股排在最前面
-        if (a.isMainAttackCandidate !== b.isMainAttackCandidate) return a.isMainAttackCandidate ? -1 : 1;
-        return b.localScore - a.localScore;
-      });
-      return scored.map((item, idx) => ({ ...item, rank: idx+1 }));
-    }
+    function rankCandidates(candidates, market){ const scored = candidates.map(stock => scoreCandidateCsv(stock, market)); scored.sort((a,b)=>{ if(a.rejected!==b.rejected) return a.rejected ? 1 : -1; if(a.isMainAttackCandidate!==b.isMainAttackCandidate) return a.isMainAttackCandidate ? -1 : 1; return b.localScore - a.localScore; }); return scored.map((item,idx)=>({ ...item, rank:idx+1 })); }
 
     function parseTradingViewCsv(){
-      const text = state.candidatesRawText || '';
-      const lines = text.split(/\n+/).map(x => x.trim()).filter(Boolean);
-      if(lines.length < 2){
-        state.candidates = []; saveState(); return;
+      const text = state.candidatesRawText || ''; const lines = text.split(/\n+/).map(x=>x.trim()).filter(Boolean); if(lines.length < 2){ state.candidates=[]; saveState(); return; }
+      const headers = splitCsvLine(lines[0]).map(normalizeHeader); const map = getCsvIndexMap(headers); const parsed=[];
+      for(let i=1;i<lines.length;i++){
+        const row = splitCsvLine(lines[i]); if(!row.length) continue;
+        const symbol = valAt(row,map,'商品') || valAt(row,map,'ticker') || row[0]; const name = valAt(row,map,'描述') || '';
+        const close = num(valAt(row,map,'價格') || row[2], NaN); if(!symbol || Number.isNaN(close)) continue;
+        const changePct = num(valAt(row,map,'價格變化 % 1天'), 0); const volumeRatio = num(valAt(row,map,'相對成交量 1天'), NaN); const analystRating = valAt(row,map,'分析師評級'); const sma20 = num(valAt(row,map,'簡單移動平均線 (20) 1天'), NaN); const sma60 = num(valAt(row,map,'簡單移動平均線 (60) 1天'), NaN); const rsi14 = num(valAt(row,map,'相對強弱指標 (14) 1天'), NaN); const epsGrowthYoy = num(valAt(row,map,'稀釋每股盈餘成長率 %, TTM年增率'), NaN);
+        const entry=close, stop=Number((close*0.97).toFixed(2)), takeProfit=Number((close*1.05).toFixed(2)); const fire = calcShares(entry,stop); const rr = calcRR(entry,stop,takeProfit); const riskPct = entry > stop ? ((entry-stop)/entry)*100 : 999;
+        parsed.push({ id:uid(symbol), symbol, name, close, high:close, changePct, volumeRatio, analystRating, sma20, sma60, rsi14, epsGrowthYoy, entry, stop, takeProfit, rr, riskPct, shares:fire.shares, boardLots:fire.boardLots, oddLots:fire.oddLots, invested:fire.invested, positionRisk:fire.positionRisk, sharesByRisk:fire.sharesByRisk, sharesByCapital:fire.sharesByCapital, singleRiskAmount:fire.singleRiskAmount, selected:false, createdAt:nowString() });
       }
-
-      if(lines[0].includes(',') && (lines[0].includes('商品') || lines[0].includes('ticker') || lines[0].includes('symbol'))) {
-          const headers = splitCsvLine(lines[0]).map(normalizeHeader);
-          const map = getCsvIndexMap(headers);
-          const parsed = [];
-
-          for(let i=1;i<lines.length;i++){
-            const row = splitCsvLine(lines[i]);
-            if(!row.length || row.length < 2) continue;
-
-            const symbol = valAt(row, map, '商品') || valAt(row, map, 'ticker') || row[0];
-            const name = valAt(row, map, '描述') || valAt(row, map, 'description') || '';
-            const close = num(valAt(row, map, '價格') || valAt(row, map, 'close') || row[2], NaN);
-            
-            if(!symbol || Number.isNaN(close)) continue;
-
-            const changePct = num(valAt(row, map, '價格變化 % 1天') || valAt(row, map, 'change'), 0);
-            const volumeRatio = num(valAt(row, map, '相對成交量 1天') || valAt(row, map, 'relvol'), NaN);
-            const analystRating = valAt(row, map, '分析師評級');
-            const sma20 = num(valAt(row, map, '簡單移動平均線 (20) 1天'), NaN);
-            const sma60 = num(valAt(row, map, '簡單移動平均線 (60) 1天'), NaN);
-            const rsi14 = num(valAt(row, map, '相對強弱指標 (14) 1天'), NaN);
-            const epsGrowthYoy = num(valAt(row, map, '稀釋每股盈餘成長率 %, TTM年增率'), NaN);
-
-            const entry = close;
-            const stop = Number((close * 0.97).toFixed(2));
-            const takeProfit = Number((close * 1.05).toFixed(2));
-            const fire = calcShares(entry, stop);
-            const rr = calcRR(entry, stop, takeProfit);
-            const riskPct = entry > stop ? ((entry - stop)/entry)*100 : 999;
-
-            parsed.push({
-              id:`${symbol}_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
-              symbol, name, close, high: close, changePct, volumeRatio, analystRating, sma20, sma60, rsi14, epsGrowthYoy,
-              entry, stop, takeProfit, rr, riskPct,
-              shares: fire.shares, boardLots: fire.boardLots, oddLots: fire.oddLots,
-              invested: fire.invested, positionRisk: fire.positionRisk,
-              sharesByRisk: fire.sharesByRisk, sharesByCapital: fire.sharesByCapital, singleRiskAmount: fire.singleRiskAmount,
-              selected: false, createdAt: nowString()
-            });
-          }
-          const marketData = { signal: state.market.signal, totalScore: state.market.totalScore, limitUp: state.market.limitUp, limitDown: state.market.limitDown };
-          state.candidates = rankCandidates(parsed, marketData);
-      } else {
-         const parsed = [];
-         for(const row of lines){
-             const tokens = row.split(/[,\s]+/).filter(Boolean);
-             if(tokens.length < 2) continue;
-             const symbol = tokens[0];
-             const nums = [];
-             for(let i=1; i<tokens.length; i++){
-               const n = parseFloat(tokens[i]);
-               if(!isNaN(n)) nums.push(n);
-             }
-             if(nums.length < 1) continue;
-             const close = nums[0];
-             const high = nums.length > 1 ? nums[1] : close;
-             const entry = close;
-             const stop = Number((close * 0.97).toFixed(2));
-             const takeProfit = Number((close * 1.05).toFixed(2));
-             const fire = calcShares(entry, stop);
-             
-             parsed.push({
-                 id: `${symbol}_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
-                 symbol, close, high, entry, stop, takeProfit, rr: calcRR(entry, stop, takeProfit),
-                 shares: fire.shares, boardLots: fire.boardLots, oddLots: fire.oddLots,
-                 invested: fire.invested, positionRisk: fire.positionRisk, sharesByRisk: fire.sharesByRisk,
-                 sharesByCapital: fire.sharesByCapital, singleRiskAmount: fire.singleRiskAmount,
-                 selected: false, createdAt: nowString(), dev: 0,
-                 grade: 'C', localScore: 0, warnings: ['簡單輸入模式無進階評分'], rejected: false,
-                 baseScore: 0, penaltyScore: 0, rrQualityScore: 0, isMainAttackCandidate: false
-             });
-         }
-         state.candidates = parsed;
-      }
-      saveState();
+      const marketData = { signal:state.market.signal, totalScore:state.market.totalScore, limitUp:state.market.limitUp, limitDown:state.market.limitDown };
+      state.candidates = rankCandidates(parsed, marketData); saveState();
     }
 
-    function validateCandidate(c){
-      const errors = [];
-      if(state.market.signal === 'red') errors.push('紅燈日禁止開新倉');
-      if(c.stop >= c.entry) errors.push('停損不得高於或等於買價');
-      if(c.takeProfit <= c.entry) errors.push('停利不得低於或等於買價');
-      if(c.shares <= 0) errors.push('可買股數為 0');
-      const { effectiveMaxNewPositions } = getEffectiveSettings();
-      const selectedCount = state.candidates.filter(x => x.selected).length;
-      if(!c.selected && selectedCount >= effectiveMaxNewPositions) errors.push('已達可開新倉上限');
-      if(c.rejected) errors.push(...(c.rejectReasons || []));
-      return errors;
-    }
-    function toggleSelectCandidate(id){
-      const candidate = state.candidates.find(c => c.id === id);
-      if(!candidate) return;
-      if(candidate.selected){ candidate.selected = false; saveState(); return; }
-      const { effectiveMaxNewPositions } = getEffectiveSettings();
-      const selectedCount = state.candidates.filter(c => c.selected).length;
-      if(selectedCount >= effectiveMaxNewPositions) return alert('已達今晚可鎖定的新倉上限。');
-      const errors = validateCandidate(candidate);
-      if(errors.length) return alert('此標的目前不可鎖定：\n- ' + errors.join('\n- '));
-      candidate.selected = true;
-      saveState();
-    }
-    function addPositionFromCandidate(id){
-      const c = state.candidates.find(x => x.id === id);
-      if(!c) return;
-      if(state.positions.some(p => p.symbol === c.symbol && p.isOpen)) return alert('此股票已在持倉中。');
-      const errors = validateCandidate(c);
-      if(errors.length) return alert('此標的目前不可建倉：\n- ' + errors.join('\n- '));
-      state.positions.push({
-        id:`pos_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
-        symbol:c.symbol, name:c.name || '', entryPrice:c.entry, shares:c.shares, boardLots:c.boardLots, oddLots:c.oddLots,
-        entryDate:nowString(), currentPrice:c.close, highestPrice:Math.max(c.high, c.close), lastClose:c.close,
-        initialStop:c.stop, trailingStop:c.stop, takeProfitRef:c.takeProfit, rr:c.rr, invested:c.invested,
-        status:'持有觀察', note:'', isOpen:true
-      });
-      saveState();
-    }
+    function validateCandidate(c){ const errors=[]; if(state.market.signal==='red') errors.push('紅燈日禁止開新倉'); if(c.stop >= c.entry) errors.push('停損不得高於或等於買價'); if(c.takeProfit <= c.entry) errors.push('停利不得低於或等於買價'); if(c.shares <= 0) errors.push('可買股數為 0'); const { effectiveMaxNewPositions } = getEffectiveSettings(); const selectedCount = state.candidates.filter(x=>x.selected).length; if(!c.selected && selectedCount >= effectiveMaxNewPositions) errors.push('已達可開新倉上限'); if(c.rejected) errors.push(...(c.rejectReasons || [])); return errors; }
+    function toggleSelectCandidate(id){ const c = state.candidates.find(x=>x.id===id); if(!c) return; if(c.selected){ c.selected=false; saveState(); return; } const { effectiveMaxNewPositions } = getEffectiveSettings(); const selectedCount = state.candidates.filter(x=>x.selected).length; if(selectedCount >= effectiveMaxNewPositions) return alert('已達今晚可鎖定的新倉上限。'); const errors = validateCandidate(c); if(errors.length) return alert('此標的目前不可鎖定：\n- '+errors.join('\n- ')); c.selected=true; saveState(); }
+    function addPositionFromCandidate(id){ if(state.pendingAddCandidateId===id) return; const c = state.candidates.find(x=>x.id===id); if(!c) return; if(state.positions.some(p=>p.symbol===c.symbol && p.isOpen)) return alert('此股票已在持倉中。'); const errors = validateCandidate(c); if(errors.length) return alert('此標的目前不可建倉：\n- '+errors.join('\n- ')); state.pendingAddCandidateId=id; state.positions.push({ id:uid('pos'), symbol:c.symbol, name:c.name||'', entryPrice:c.entry, shares:c.shares, boardLots:c.boardLots, oddLots:c.oddLots, entryDate:nowString(), currentPrice:c.close, highestPrice:Math.max(c.high,c.close), lastClose:c.close, initialStop:c.stop, trailingStop:c.stop, takeProfitRef:c.takeProfit, rr:c.rr, invested:c.invested, status:'持有觀察', note:'', isOpen:true }); state.pendingAddCandidateId=null; saveState(); }
+    function addManualHolding(){ const symbol=$('holdSymbol').value.trim(); const entryPrice=num($('holdBuy').value,NaN); const shares=Math.max(1,Math.floor(num($('holdShares').value,1000))); const currentPrice=num($('holdCurrent').value,NaN); if(!symbol) return alert('請輸入代號'); if(!Number.isFinite(entryPrice)||entryPrice<=0) return alert('買入價錯誤'); if(!Number.isFinite(currentPrice)||currentPrice<=0) return alert('收盤現價錯誤'); if(state.positions.some(p=>p.symbol===symbol&&p.isOpen)) return alert('此股票已在持倉監控中'); const initialStop=Number((entryPrice*0.97).toFixed(2)), takeProfit=Number((entryPrice*1.05).toFixed(2)); state.positions.push({ id:uid('pos'), symbol, name:'', entryPrice, shares, boardLots:Math.floor(shares/1000), oddLots:shares%1000, entryDate:nowString(), currentPrice, highestPrice:Math.max(entryPrice,currentPrice), lastClose:currentPrice, initialStop, trailingStop:initialStop, takeProfitRef:takeProfit, rr:calcRR(entryPrice,initialStop,takeProfit), invested:entryPrice*shares, status:'手動監控', note:'manual', isOpen:true }); $('holdSymbol').value=''; $('holdBuy').value=''; $('holdCurrent').value=''; $('holdShares').value='1000'; saveState(); }
+    function loadTopCandidate(){ const stats=getPortfolioStats(); const allowed=state.candidates.filter(c=>!c.rejected && state.market.signal!=='red' && !(stats&&stats.drop<=-5)); const top=allowed[0]; if(!top) return alert('目前沒有符合風控條件的可帶入標的'); $('holdSymbol').value=top.symbol; $('holdCurrent').value=top.close||''; $('holdBuy').value=top.entry||top.close||''; $('holdShares').value=top.shares||1000; }
+    function loadAiTopCandidate(){ const parsed = state.aiReview?.parsed; if(!parsed?.top_pick?.symbol) return alert('目前沒有 AI 主攻結果'); const target = state.candidates.find(c=>c.symbol===parsed.top_pick.symbol); if(!target) return alert('AI 主攻股不在目前候選清單中'); $('holdSymbol').value=target.symbol; $('holdCurrent').value=target.close||''; $('holdBuy').value=target.entry||target.close||''; $('holdShares').value=target.shares||1000; }
 
-    function addManualHolding(){
-      const symbol = $('holdSymbol').value.trim();
-      const entryPrice = num($('holdBuy').value, NaN);
-      const shares = Math.max(1, Math.floor(num($('holdShares').value, 1000)));
-      const currentPrice = num($('holdCurrent').value, NaN);
+    function getTrailingInfo(p){ const entry=num(p.entryPrice), current=num(p.currentPrice), highest=Math.max(num(p.highestPrice),current), trailing=num(p.trailingStop); const pnlPct=entry>0?((current-entry)/entry)*100:0; const highPnlPct=entry>0?((highest-entry)/entry)*100:0; const stopGapPct=current>0?((current-trailing)/current)*100:0; return { pnlPct, highPnlPct, stopGapPct, current, highest, trailing }; }
+    function getHoldingAction(p){ const info=getTrailingInfo(p); if(p.status.includes('撤退')||info.current<=info.trailing) return '明日優先撤退'; if(info.highPnlPct>=20) return '續抱，但嚴守移動停損'; if(info.highPnlPct>=10) return '續抱觀察，獲利已進入鎖定區'; if(info.pnlPct>0) return '續抱觀察，等待高點推升'; return '持有觀察，嚴守初始停損'; }
+    function getHoldingRiskInfo(p){ const info=getTrailingInfo(p); if(info.stopGapPct<=0) return { level:'高', cls:'red', text:'已跌破移動停損' }; if(info.stopGapPct<=2) return { level:'高', cls:'red', text:'距停損很近，需高度警戒' }; if(info.stopGapPct<=5) return { level:'中', cls:'yellow', text:'距停損不遠，需觀察' }; return { level:'低', cls:'green', text:'仍有安全距離' }; }
+    function updateTrailingStop(p){ const entry=num(p.entryPrice), initialStop=num(p.initialStop), currentPrice=num(p.currentPrice); const highestPrice=Math.max(num(p.highestPrice),currentPrice); const highPnl=((highestPrice-entry)/entry)*100; let stopPct=-5, status='初始防守'; if(highPnl>=20){ stopPct=15; status='鎖定 +15% 獲利'; } else if(highPnl>=15){ stopPct=10; status='鎖定 +10% 獲利'; } else if(highPnl>=10){ stopPct=5; status='鎖定 +5% 獲利'; } else if(highPnl>=5){ stopPct=0; status='保本防守'; } const stepStop=entry*(1+stopPct/100); const followStop=highestPrice>=entry*1.2 ? highestPrice*0.92 : stepStop; const newStop=Math.max(num(p.trailingStop,initialStop),stepStop,followStop,initialStop); if(currentPrice<=newStop) status='🔴 明日必須平倉撤退'; else if(newStop>entry*1.10) status='強勢鎖利'; else if(newStop>entry) status = status.includes('鎖定') ? status : '趨勢鎖利'; p.highestPrice=highestPrice; p.trailingStop=Number(newStop.toFixed(2)); p.status=status; }
+    function updatePositionMarket(id){ const p = state.positions.find(x=>x.id===id && x.isOpen); if(!p) return; const promptVal = prompt(`[夜間重算] 更新 ${p.symbol} 今日「收盤現價」：\n(若欲同時輸入最高價，請用逗號隔開，例如: 100,105)`, p.currentPrice); if(promptVal===null) return; let val_cur, val_hi; if(promptVal.includes(',')){ const parts=promptVal.split(','); val_cur=num(parts[0]); val_hi=num(parts[1]); } else { val_cur=num(promptVal); val_hi=val_cur; } if(!val_cur) return alert('輸入格式錯誤'); p.currentPrice=val_cur; p.lastClose=val_cur; p.highestPrice=Math.max(p.highestPrice, val_hi||0, val_cur); updateTrailingStop(p); saveState(); }
+    function openClose(id){ const p = state.positions.find(x=>x.id===id && x.isOpen); if(!p) return; state.pendingCloseId=id; $('closeInfo').textContent=`${p.symbol} ${p.name||''}｜成本 ${fmt(p.entryPrice,2)}｜現價 ${fmt(p.currentPrice,2)}｜股數 ${fmt(p.shares)}`; $('closePrice').value=p.currentPrice; $('closeReason').value='Manual'; $('closeOverlay').classList.add('show'); }
+    function confirmClosePosition(){ if(state.isClosing) return; state.isClosing=true; $('confirmCloseBtn').disabled=true; $('cancelCloseBtn').disabled=true; const id=state.pendingCloseId; const p=state.positions.find(x=>x.id===id&&x.isOpen); if(!p){ state.isClosing=false; $('confirmCloseBtn').disabled=false; $('cancelCloseBtn').disabled=false; return cancelClosePosition(); } const exitPrice=num($('closePrice').value,NaN); if(!Number.isFinite(exitPrice)||exitPrice<=0){ state.isClosing=false; $('confirmCloseBtn').disabled=false; $('cancelCloseBtn').disabled=false; return alert('賣出價無效。'); } const reason=$('closeReason').value||'Manual'; const pnl=(exitPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((exitPrice-p.entryPrice)/p.entryPrice)*100:0; const result=pnl>0?'win':(pnl<0?'loss':'flat'); state.logs.unshift({ id:uid('log'), symbol:p.symbol, name:p.name||'', entryDate:p.entryDate, exitDate:nowString(), entryPrice:p.entryPrice, exitPrice, shares:p.shares, pnl, returnPct, highestPrice:p.highestPrice, trailingStop:p.trailingStop, result, reason }); p.isOpen=false; p.exitPrice=exitPrice; p.exitDate=nowString(); p.status='已出場'; if(result==='loss') state.risk.lossStreak += 1; else if(result==='win') state.risk.lossStreak = 0; state.pendingCloseId=null; state.isClosing=false; $('confirmCloseBtn').disabled=false; $('cancelCloseBtn').disabled=false; $('closeOverlay').classList.remove('show'); saveState(); }
+    function cancelClosePosition(){ if(state.isClosing) return; state.pendingCloseId=null; $('closeOverlay').classList.remove('show'); }
 
-      if(!symbol) return alert('請輸入代號');
-      if(!Number.isFinite(entryPrice) || entryPrice <= 0) return alert('買入價錯誤');
-      if(!Number.isFinite(currentPrice) || currentPrice <= 0) return alert('收盤現價錯誤');
-      if(state.positions.some(p => p.symbol === symbol && p.isOpen)) return alert('此股票已在持倉監控中');
+    function getOpenPositions(){ return state.positions.filter(p=>p.isOpen); }
+    function getPerformance(){ const logs=state.logs; const totalTrades=logs.length; const wins=logs.filter(x=>x.result==='win').length; const losses=logs.filter(x=>x.result==='loss').length; const winRate=totalTrades>0?(wins/totalTrades)*100:0; const totalPnl=logs.reduce((s,x)=>s+num(x.pnl),0); const avgPnl=totalTrades>0?totalPnl/totalTrades:0; const avgReturn=totalTrades>0?logs.reduce((s,x)=>s+num(x.returnPct),0)/totalTrades:0; const flywheel=logs.reduce((acc,t)=>acc*(1+num(t.returnPct)/100),1); const flywheelPct=logs.length?(flywheel-1)*100:0; return { totalTrades, wins, losses, winRate, totalPnl, avgPnl, avgReturn, flywheelPct }; }
+    function getDashboardSummary(){ const { effectiveDailyRiskPercent, effectiveMaxNewPositions, lossMode } = getEffectiveSettings(); const capital=num(state.risk.capital); const dailyRiskAmount=capital*(effectiveDailyRiskPercent/100); const openPositions=getOpenPositions(); const usedCapital=getUsedCapitalFromOpenPositions(); const remainingCash=Math.max(0, num(state.risk.availableCash)-usedCapital); return { dailyRiskAmount, effectiveDailyRiskPercent, effectiveMaxNewPositions, lossMode, openPositions, usedCapital, remainingCash }; }
 
-      const initialStop = Number((entryPrice * 0.97).toFixed(2));
-      const takeProfit = Number((entryPrice * 1.05).toFixed(2));
+    function generateAiPrompt(){
+      const top = state.candidates.filter(c=>!c.rejected).slice(0,5); if(!top.length) return alert('目前沒有可供 AI 覆核的候選股。');
+      const m = state.market;
+      const prompt = `你是一名台股衛星飆股短線戰術教練。\n\n目前系統已用本地量化模型從 TradingView CSV 篩出前幾名候選股。\n請你不要重新海選市場，而是只根據以下名單，判斷「隔日夜間智慧單」最適合的 1 檔主攻、1 檔次選、1 檔應避開標的。\n\n交易風格：\n- 台股衛星飆股\n- 夜間決策、隔日掛智慧單\n- 盤中不干預\n- 重視結構、量能、過熱風險與隔日可打性\n- 火控與股數由系統決定，你只負責戰術覆核\n\n市場狀態：\n- 燈號：${m.signal}\n- 總分：${fmt(m.totalScore,1)}\n- 廣度：${fmt(m.breadthScore,1)}\n- 情緒：${fmt(m.sentimentScore,1)}\n- 說明：${(m.explainParts || []).join('；')}\n\n候選股：\n${top.map((c,idx)=>`${idx+1}. ${c.symbol} ${c.name || ''}\n   本地分數:${c.localScore}\n   級別:${c.grade}\n   主攻資格:${c.isMainAttackCandidate}\n   買價:${c.entry}\n   停損:${c.stop}\n   RR:${c.rr}\n   漲幅:${c.changePct}\n   RSI:${Number.isFinite(c.rsi14)?c.rsi14:'NA'}\n   量比:${Number.isFinite(c.volumeRatio)?c.volumeRatio:'NA'}\n   SMA20:${Number.isFinite(c.sma20)?c.sma20:'NA'}\n   SMA60:${Number.isFinite(c.sma60)?c.sma60:'NA'}\n   警示:${(c.warnings || []).join('、') || '無'}`).join('\n\n')}\n\n請只輸出 JSON，不要加多餘解釋。格式如下：\n{\n  "market_view":"",\n  "top_pick":{"symbol":"","reason":""},\n  "backup_pick":{"symbol":"","reason":""},\n  "avoid_pick":{"symbol":"","reason":""},\n  "risk_note":""\n}`;
+      state.aiReview.prompt = prompt; $('aiPromptBox').value = prompt; saveState();
+    }
+    async function copyAiPrompt(){ const txt = state.aiReview.prompt || $('aiPromptBox').value || ''; if(!txt) return alert('目前沒有可複製的 Prompt'); try{ await navigator.clipboard.writeText(txt); alert('AI Prompt 已複製'); }catch(e){ alert('複製失敗，請手動複製'); } }
+    function normalizeJsonText(raw){ const trimmed = raw.trim(); const start = trimmed.indexOf('{'); const end = trimmed.lastIndexOf('}'); if(start !== -1 && end !== -1 && end > start) return trimmed.slice(start, end+1); return trimmed; }
+    function parseAiResult(){
+      const raw = $('aiResultBox').value.trim(); if(!raw) return alert('請先貼上 AI JSON');
+      try{ const parsed = JSON.parse(normalizeJsonText(raw)); state.aiReview.rawResponse = raw; state.aiReview.parsed = parsed; state.aiReview.mode = 'ai_assisted'; saveState(); alert('✅ AI 覆核結果已解析並鎖定'); }catch(e){ alert('AI JSON 解析失敗，請確認格式正確。'); }
+    }
+    function clearAiResult(){ state.aiReview.rawResponse=''; state.aiReview.parsed=null; state.aiReview.mode='local_only'; $('aiResultBox').value=''; saveState(); }
+    function getAiFlags(symbol){ const p = state.aiReview?.parsed; return { isTop: p?.top_pick?.symbol === symbol, isBackup: p?.backup_pick?.symbol === symbol, isAvoid: p?.avoid_pick?.symbol === symbol }; }
 
-      state.positions.push({
-        id:`pos_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
-        symbol,
-        name:'',
-        entryPrice,
-        shares,
-        boardLots: Math.floor(shares / 1000),
-        oddLots: shares % 1000,
-        entryDate: nowString(),
-        currentPrice,
-        highestPrice: Math.max(entryPrice, currentPrice),
-        lastClose: currentPrice,
-        initialStop,
-        trailingStop: initialStop,
-        takeProfitRef: takeProfit,
-        rr: calcRR(entryPrice, initialStop, takeProfit),
-        invested: entryPrice * shares,
-        status:'手動監控',
-        note:'manual',
-        isOpen:true,
-        isOrdered:false
-      });
+    function fillInputsFromState(){ $('advancersInput').value=state.market.advancers; $('declinersInput').value=state.market.decliners; $('limitUpInput').value=state.market.limitUp; $('limitDownInput').value=state.market.limitDown; $('otcChangeInput').value=state.market.otcChange; $('taiexChangeInput').value=state.market.taiexChange; $('capitalInput').value=state.risk.capital; $('availableCashInput').value=state.risk.availableCash; $('dailyRiskPercentInput').value=state.risk.dailyRiskPercent; $('singlePositionCapitalPercentInput').value=state.risk.singlePositionCapitalPercent; $('maxNewPositionsInput').value=state.risk.maxNewPositions; $('lossStreakInput').value=state.risk.lossStreak; $('candidateTextarea').value=state.candidatesRawText||''; $('aiPromptBox').value=state.aiReview?.prompt||''; $('aiResultBox').value=state.aiReview?.rawResponse||''; }
+    function renderTopStatusBar(){ calculateMarket(); const { lossMode, effectiveMaxNewPositions } = getEffectiveSettings(); $('topStatusBar').innerHTML = `<div class="pill ${signalClass(state.market.signal)}">市場燈號：${state.market.signal.toUpperCase()}</div><div class="pill cyan">系統模式：${lossMode.mode}</div><div class="pill">連敗：${state.risk.lossStreak}</div><div class="pill purple">開倉上限：${effectiveMaxNewPositions}</div><div class="pill ${state.aiReview?.parsed ? 'green':'purple'}">AI覆核：${state.aiReview?.parsed ? '已載入':'未載入'}</div>`; }
+    function renderHero(){ const summary = getDashboardSummary(); const perf=getPerformance(); const items=[{label:'市場總分',value:fmt(state.market.totalScore,1),color:signalClass(state.market.signal)},{label:'今日可開新倉',value:`${summary.effectiveMaxNewPositions} 檔`},{label:'單日風險額',value:`NT$ ${fmt(summary.dailyRiskAmount)}`},{label:'持倉數量',value:`${summary.openPositions.length} 檔`},{label:'已占用資金',value:`NT$ ${fmt(summary.usedCapital)}`},{label:'剩餘資金',value:`NT$ ${fmt(summary.remainingCash)}`},{label:'飛輪累積 %',value:pct(perf.flywheelPct,2),color:perf.flywheelPct>=0?'green':'red'},{label:'平倉勝率',value:pct(perf.winRate,1),color:perf.winRate>=50?'green':'yellow'}]; $('heroMetrics').innerHTML=items.map(x=>`<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color||''}">${x.value}</div></div>`).join(''); $('todayInstruction').textContent=state.market.instruction; $('lastSyncTime').textContent=state.lastSync||'-'; }
+    function renderMarket(){ const r=state.market.radar||{}; $('marketRadarGrid').innerHTML=`<div class="radar-item"><div class="radar-title">廣度擴散</div><div class="radar-bar"><div class="radar-fill" style="width:${r.breadth||0}%"></div></div><div class="radar-score">${r.breadth||0}</div></div><div class="radar-item"><div class="radar-title">情緒熱度</div><div class="radar-bar"><div class="radar-fill" style="width:${r.sentiment||0}%"></div></div><div class="radar-score">${r.sentiment||0}</div></div><div class="radar-item"><div class="radar-title">加權強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.taiex||0}%"></div></div><div class="radar-score">${pct(state.market.taiexChange,2)}</div></div><div class="radar-item"><div class="radar-title">OTC 強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.otc||0}%"></div></div><div class="radar-score">${pct(state.market.otcChange,2)}</div></div><div class="radar-item"><div class="radar-title">漲跌停優勢</div><div class="radar-bar"><div class="radar-fill" style="width:${r.spread||0}%"></div></div><div class="radar-score">${fmt(num(state.market.limitUp)-num(state.market.limitDown),0)}</div></div><div class="radar-item"><div class="radar-title">最終戰況</div><div class="radar-bar"><div class="radar-fill" style="width:${r.total||0}%"></div></div><div class="radar-score ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()} / ${fmt(state.market.totalScore,1)}</div></div>`; $('marketSummary').innerHTML=`<div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div></div><div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div></div><div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div></div>`; $('marketExplainBox').innerHTML=(state.market.explainParts||[]).length ? state.market.explainParts.map(x=>`<div class="explain-item">${x}</div>`).join('') : `<div class="footnote">尚無燈號判定說明。</div>`; }
+    function renderRiskMode(){ const { lossMode, effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings(); const cls = lossMode.mode==='正常模式' ? 'ok-box' : 'warning-box'; $('riskModeSummary').innerHTML=`<div class="${cls}"><div><strong>目前模式：</strong>${lossMode.mode}</div><div><strong>有效單日風險：</strong>${fmt(effectiveDailyRiskPercent,2)}%</div><div><strong>有效新倉上限：</strong>${effectiveMaxNewPositions} 檔</div><div><strong>說明：</strong>${lossMode.note}</div></div>`; }
+    function renderMainAttackSummary(){ const localTop=state.candidates.filter(c=>c.isMainAttackCandidate&&!c.rejected).slice(0,2); const ai=state.aiReview?.parsed; let html=''; if(localTop.length){ html += `<div class="ok-box mainAttackGlow"><strong>本地主攻摘要</strong><br>${localTop.map((c,idx)=>`#${idx+1} ${c.symbol} ${c.name||''}（${c.grade} / ${fmt(c.localScore,1)}分｜懲罰 ${fmt(c.penaltyScore,1)}）`).join('<br>')}</div>`; } else html += `<div class="footnote">尚未產出本地主攻候選。</div>`; if(ai?.top_pick?.symbol){ html += `<div class="divider"></div><div class="ok-box"><strong>AI 覆核結果</strong><br>主攻：${ai.top_pick.symbol}${ai.top_pick.reason?`｜${ai.top_pick.reason}`:''}<br>${ai.backup_pick?.symbol?`次選：${ai.backup_pick.symbol}${ai.backup_pick.reason?`｜${ai.backup_pick.reason}`:''}<br>`:''}${ai.avoid_pick?.symbol?`避開：${ai.avoid_pick.symbol}${ai.avoid_pick.reason?`｜${ai.avoid_pick.reason}`:''}`:''}</div>`; } $('mainAttackSummary').innerHTML=html; }
+    function renderCandidateRanking(){ if(state.candidates.length===0){ $('candidateWarnings').innerHTML=`<div class="footnote">尚未解析 CSV。</div>`; $('candidateRankingTable').innerHTML=''; $('candidateCards').innerHTML=''; return; } const selectedCount=state.candidates.filter(c=>c.selected).length; const { effectiveMaxNewPositions } = getEffectiveSettings(); const mainCount=state.candidates.filter(c=>c.isMainAttackCandidate).length; const ai=state.aiReview?.parsed; $('candidateWarnings').innerHTML=`<div class="ok-box">已解析 ${state.candidates.length} 檔候選股｜主攻資格 ${mainCount} 檔｜已鎖定 ${selectedCount} 檔｜今晚上限 ${effectiveMaxNewPositions} 檔${ai?.top_pick?.symbol?`｜AI主攻 ${ai.top_pick.symbol}`:''}</div>`; $('candidateRankingTable').innerHTML=`<table><thead><tr><th>排名</th><th>股票</th><th>最終分</th><th>級別</th><th>主攻資格</th><th>AI覆核</th><th>基礎分</th><th>懲罰分</th><th>結構</th><th>量能</th><th>熱度控制</th><th>市場共振</th><th>RR品質</th><th>警示</th><th>狀態</th></tr></thead><tbody>${state.candidates.map(c=>{ const gradeClass=c.grade==='A'?'scoreA':c.grade==='B'?'scoreB':'scoreC'; const rankClass=c.rank===1?'rank1':c.rank===2?'rank2':c.rank===3?'rank3':''; const aiFlags=getAiFlags(c.symbol); const aiLabel=aiFlags.isTop?'<span class="badge green">AI主攻</span>':aiFlags.isBackup?'<span class="badge cyan">AI次選</span>':aiFlags.isAvoid?'<span class="badge red">AI避開</span>':'—'; return `<tr><td data-label="排名"><span class="rankTop ${rankClass}">#${c.rank}</span></td><td data-label="股票"><div><strong>${c.symbol}</strong> ${c.name||''}</div></td><td data-label="最終分"><span class="${gradeClass}">${fmt(c.localScore,1)}</span></td><td data-label="級別"><span class="${gradeClass}">${c.grade}</span></td><td data-label="主攻資格">${c.isMainAttackCandidate?'<span class="purple">是</span>':'否'}</td><td data-label="AI覆核">${aiLabel}</td><td data-label="基礎分">${fmt(c.baseScore,1)}</td><td data-label="懲罰分">${fmt(c.penaltyScore,1)}</td><td data-label="結構">${fmt(c.maStructureScore,1)}</td><td data-label="量能">${fmt(c.volumeScore,1)}</td><td data-label="熱度控制">${fmt(c.heatControlScore,1)}</td><td data-label="市場共振">${fmt(c.marketResonanceScore,1)}</td><td data-label="RR品質">${fmt(c.rrQualityScore,1)}</td><td data-label="警示">${c.warnings.length?c.warnings.join('、'):'—'}</td><td data-label="狀態">${c.rejected?'<span class="red">淘汰</span>':'<span class="green">可評估</span>'}</td></tr>`; }).join('')}</tbody></table>`; $('candidateCards').innerHTML=state.candidates.map(c=>{ const errors=validateCandidate(c); const gradeClass=c.grade==='A'?'green':c.grade==='B'?'yellow':'red'; const aiFlags=getAiFlags(c.symbol); return `<div class="card ${c.isMainAttackCandidate?'mainAttackGlow':''} ${aiFlags.isTop?'highlight-ai-top':''} ${aiFlags.isAvoid?'highlight-ai-avoid':''}"><div class="card-head"><div><div class="symbol">#${c.rank} ${c.symbol} ${c.name||''}</div><div class="muted">價格 ${fmt(c.close,2)}｜漲幅 ${pct(c.changePct,2)}｜RSI ${fmt(c.rsi14,2)}｜量比 ${Number.isFinite(c.volumeRatio)?fmt(c.volumeRatio,2):'-'}｜SMA20偏離 ${pct(c.deviation20,1)}</div></div><div class="btnrow"><span class="badge ${gradeClass}">本地 ${c.grade} 級</span><span class="badge ${c.isMainAttackCandidate?'purple':'cyan'}">${c.isMainAttackCandidate?'主攻資格':'一般候選'}</span>${aiFlags.isTop?'<span class="badge green">AI主攻</span>':''}${aiFlags.isBackup?'<span class="badge cyan">AI次選</span>':''}${aiFlags.isAvoid?'<span class="badge red">AI避開</span>':''}<span class="badge ${c.selected?'green':'cyan'}">${c.selected?'已鎖定戰隊':'候選中'}</span></div></div><div class="mini"><div class="cell"><div class="k">最終分</div><div class="v ${gradeClass}">${fmt(c.localScore,1)}</div></div><div class="cell"><div class="k">基礎分</div><div class="v">${fmt(c.baseScore,1)}</div></div><div class="cell"><div class="k">懲罰分</div><div class="v red">${fmt(c.penaltyScore,1)}</div></div><div class="cell"><div class="k">均線結構</div><div class="v">${fmt(c.maStructureScore,1)}</div></div><div class="cell"><div class="k">漲幅強度</div><div class="v">${fmt(c.momentumScore,1)}</div></div><div class="cell"><div class="k">RSI強度</div><div class="v">${fmt(c.rsiScore,1)}</div></div><div class="cell"><div class="k">量能品質</div><div class="v">${fmt(c.volumeScore,1)}</div></div><div class="cell"><div class="k">熱度控制</div><div class="v">${fmt(c.heatControlScore,1)}</div></div><div class="cell"><div class="k">市場共振</div><div class="v">${fmt(c.marketResonanceScore,1)}</div></div><div class="cell"><div class="k">RR品質</div><div class="v">${fmt(c.rrQualityScore,1)}</div></div><div class="cell"><div class="k">明日買價</div><div class="v">${fmt(c.entry,2)}</div></div><div class="cell"><div class="k">初始停損</div><div class="v red">${fmt(c.stop,2)}</div></div><div class="cell"><div class="k">建議股數</div><div class="v">${fmt(c.shares)}</div></div><div class="cell"><div class="k">風報比</div><div class="v">${fmt(c.rr,2)}</div></div><div class="cell"><div class="k">風險距離</div><div class="v">${pct(c.riskPct,2)}</div></div><div class="cell"><div class="k">資金占用</div><div class="v">NT$ ${fmt(c.invested)}</div></div></div><div style="margin-top:10px">${errors.length ? `<div class="warning-box">${errors.map(e=>`• ${e}`).join('<br>')}</div>` : `<div class="ok-box">此標的可納入明日智慧單。${c.warnings.length?'<br>警示：'+c.warnings.join('、'):''}${aiFlags.isTop&&state.aiReview?.parsed?.top_pick?.reason?`<br>AI主攻理由：${state.aiReview.parsed.top_pick.reason}`:''}${aiFlags.isAvoid&&state.aiReview?.parsed?.avoid_pick?.reason?`<br>AI避開理由：${state.aiReview.parsed.avoid_pick.reason}`:''}</div>`}</div><div class="btnrow" style="margin-top:10px"><button class="btn small ${c.selected?'green':''}" onclick="toggleSelectCandidate('${c.id}')">${c.selected?'取消鎖定':'鎖定戰隊'}</button><button class="btn small secondary" onclick="addPositionFromCandidate('${c.id}')">直接建倉</button></div></div>`; }).join(''); }
+    function renderAiPanel(){ const p=state.aiReview?.parsed; if(!p){ $('aiResultPanel').innerHTML=`<div class="footnote">尚未載入 AI 覆核結果。先解析 CSV，再產生 Prompt 丟給 AI。</div>`; return; } $('aiResultPanel').innerHTML=`<div class="ai-box"><div class="ai-label">市場觀點</div><div class="ai-value">${p.market_view||'-'}</div></div><div class="ai-box"><div class="ai-label">主攻</div><div class="ai-value ai-top">${p.top_pick?.symbol||'-'}${p.top_pick?.reason?`｜${p.top_pick.reason}`:''}</div></div><div class="ai-box"><div class="ai-label">次選</div><div class="ai-value ai-backup">${p.backup_pick?.symbol||'-'}${p.backup_pick?.reason?`｜${p.backup_pick.reason}`:''}</div></div><div class="ai-box"><div class="ai-label">避開</div><div class="ai-value ai-avoid">${p.avoid_pick?.symbol||'-'}${p.avoid_pick?.reason?`｜${p.avoid_pick.reason}`:''}</div></div><div class="ai-box"><div class="ai-label">風險提醒</div><div class="ai-value">${p.risk_note||'-'}</div></div>`; }
+    function renderOrders(){ const selected=state.candidates.filter(c=>c.selected); if(selected.length===0){ $('orderSummaryBox').innerHTML=`<div class="footnote">尚未鎖定明日戰隊。</div>`; $('ordersTable').innerHTML=''; return; } $('orderSummaryBox').innerHTML=`<div class="ok-box">明日掛單清單已生成。請依下表掛單，盤中不追價、不臨時改單。</div>`; $('ordersTable').innerHTML=`<table><thead><tr><th>股票</th><th>最終分</th><th>AI覆核</th><th>買價</th><th>停損</th><th>停利</th><th>股數</th><th>整張/零股</th><th>資金占用</th><th>風險占用</th><th>RR</th></tr></thead><tbody>${selected.map(c=>{ const aiFlags=getAiFlags(c.symbol); const aiText=aiFlags.isTop?'AI主攻':aiFlags.isBackup?'AI次選':aiFlags.isAvoid?'AI避開':'—'; return `<tr><td class="mono">${c.symbol}</td><td>${fmt(c.localScore,1)}</td><td>${aiText}</td><td>${fmt(c.entry,2)}</td><td class="red">${fmt(c.stop,2)}</td><td class="green">${fmt(c.takeProfit,2)}</td><td>${fmt(c.shares)}</td><td>${c.boardLots} / ${c.oddLots}</td><td>NT$ ${fmt(c.invested)}</td><td>NT$ ${fmt(c.positionRisk)}</td><td>${fmt(c.rr,2)}</td></tr>`; }).join('')}</tbody></table>`; }
+    function renderPositions(){ const openPositions=getOpenPositions(); if(openPositions.length===0){ $('positionsBox').innerHTML=`<div class="footnote">目前沒有開啟中的持倉。</div>`; return; } $('positionsBox').innerHTML=openPositions.map(p=>{ const pnl=(p.currentPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((p.currentPrice-p.entryPrice)/p.entryPrice)*100:0; const stopDistance=p.currentPrice-p.trailingStop; const action=getHoldingAction(p); const risk=getHoldingRiskInfo(p); return `<div class="card"><div class="card-head"><div><div class="symbol">${p.symbol} ${p.name||''}</div><div class="muted">建倉 ${p.entryDate}</div></div><span class="badge ${p.status.includes('撤退')?'red':(p.status.includes('鎖利')||p.status.includes('防守')?'yellow':'green')}">${p.status}</span></div><div class="mini"><div class="cell"><div class="k">成本</div><div class="v">${fmt(p.entryPrice,2)}</div></div><div class="cell"><div class="k">現價</div><div class="v">${fmt(p.currentPrice,2)}</div></div><div class="cell"><div class="k">浮盈虧</div><div class="v ${pnl>=0?'green':'red'}">NT$ ${fmt(pnl)}</div></div><div class="cell"><div class="k">報酬率</div><div class="v ${returnPct>=0?'green':'red'}">${pct(returnPct,2)}</div></div><div class="cell"><div class="k">歷史高點</div><div class="v">${fmt(p.highestPrice,2)}</div></div><div class="cell"><div class="k">移動停損</div><div class="v red">${fmt(p.trailingStop,2)}</div></div><div class="cell"><div class="k">初始停損</div><div class="v">${fmt(p.initialStop,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(p.shares)}</div></div><div class="cell"><div class="k">距停損空間</div><div class="v ${stopDistance<=0?'red':'yellow'}">${fmt(stopDistance,2)}</div></div><div class="cell"><div class="k">明日動作</div><div class="v">${action}</div></div><div class="cell"><div class="k">風險等級</div><div class="v ${risk.cls}">${risk.level}</div></div><div class="cell"><div class="k">診斷</div><div class="v">${risk.text}</div></div></div><div class="btnrow" style="margin-top:10px"><button class="btn small" onclick="updatePositionMarket('${p.id}')">更新收盤 / 高點</button><button class="btn small red" onclick="openClose('${p.id}')">真實平倉</button></div></div>`; }).join(''); }
+    function renderPerformance(){ const perf=getPerformance(); $('performanceMetrics').innerHTML=`<div class="metric"><div class="label">總交易筆數</div><div class="value">${fmt(perf.totalTrades)}</div></div><div class="metric"><div class="label">勝率</div><div class="value ${perf.winRate>=50?'green':'yellow'}">${pct(perf.winRate,1)}</div></div><div class="metric"><div class="label">累積損益</div><div class="value ${perf.totalPnl>=0?'green':'red'}">NT$ ${fmt(perf.totalPnl)}</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value ${perf.avgReturn>=0?'green':'red'}">${pct(perf.avgReturn,2)}</div></div><div class="metric"><div class="label">飛輪累積 %</div><div class="value ${perf.flywheelPct>=0?'green':'red'}">${pct(perf.flywheelPct,2)}</div></div>`; if(state.logs.length===0){ $('logsTable').innerHTML=`<div class="footnote">尚無歷史紀錄。</div>`; return; } $('logsTable').innerHTML=`<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>原因</th><th>日期</th></tr></thead><tbody>${state.logs.slice(0,12).map(l=>`<tr><td class="mono">${l.symbol}</td><td>${fmt(l.entryPrice,2)}</td><td>${fmt(l.exitPrice,2)}</td><td>${fmt(l.shares)}</td><td class="${l.pnl>=0?'green':'red'}">NT$ ${fmt(l.pnl)}</td><td class="${l.returnPct>=0?'green':'red'}">${pct(l.returnPct,2)}</td><td class="${l.result==='win'?'green':(l.result==='loss'?'red':'yellow')}">${l.result}</td><td>${l.reason||'-'}</td><td class="mono">${l.exitDate}</td></tr>`).join('')}</tbody></table>`; }
+    function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderOrders(); renderPositions(); renderPerformance(); }
 
-      $('holdSymbol').value='';
-      $('holdBuy').value='';
-      $('holdCurrent').value='';
-      $('holdShares').value='1000';
-      saveState();
-    }
+    function saveMarketInputs(){ state.market.advancers=num($('advancersInput').value); state.market.decliners=num($('declinersInput').value); state.market.limitUp=num($('limitUpInput').value); state.market.limitDown=num($('limitDownInput').value); state.market.otcChange=num($('otcChangeInput').value); state.market.taiexChange=num($('taiexChangeInput').value); saveState(); }
+    function bindEvents(){ $('calcMarketBtn').addEventListener('click', saveMarketInputs); $('saveMarketBtn').addEventListener('click', saveMarketInputs); $('saveRiskBtn').addEventListener('click', ()=>{ state.risk.capital=num($('capitalInput').value); state.risk.availableCash=num($('availableCashInput').value); state.risk.dailyRiskPercent=num($('dailyRiskPercentInput').value); state.risk.singlePositionCapitalPercent=num($('singlePositionCapitalPercentInput').value); state.risk.maxNewPositions=Math.max(1,num($('maxNewPositionsInput').value,1)); state.risk.lossStreak=Math.max(0,num($('lossStreakInput').value,0)); if(state.candidates.length){ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); return; } saveState(); }); $('parseCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); }); $('clearCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=''; state.candidates=[]; saveState(); }); $('resetAllBtn').addEventListener('click', ()=>{ if(!confirm('確定重置全部資料？')) return; state=clone(defaultState); saveState(); }); $('addHoldBtn').addEventListener('click', addManualHolding); $('loadTopBtn').addEventListener('click', loadTopCandidate); $('loadAiTopBtn').addEventListener('click', loadAiTopCandidate); $('genAiPromptBtn').addEventListener('click', generateAiPrompt); $('copyAiPromptBtn').addEventListener('click', copyAiPrompt); $('parseAiBtn').addEventListener('click', parseAiResult); $('clearAiBtn').addEventListener('click', clearAiResult); $('confirmCloseBtn').addEventListener('click', confirmClosePosition); $('cancelCloseBtn').addEventListener('click', cancelClosePosition); $('closeOverlay').addEventListener('click', (e)=>{ if(e.target === $('closeOverlay')) cancelClosePosition(); }); }
 
-    function loadTopCandidate(){
-      const stats = getPortfolioStats();
-      const allowed = state.candidates.filter(c => !c.rejected && state.market.signal !== 'red' && !(stats && stats.drop <= -5));
-      const top = allowed[0];
-      if(!top) return alert('目前沒有符合風控條件的可帶入標的');
-      $('holdSymbol').value = top.symbol || '';
-      $('holdCurrent').value = top.close || top.price || '';
-      $('holdBuy').value = top.entry || top.close || top.price || '';
-      $('holdShares').value = top.shares || 1000;
-    }
-
-    function getTrailingInfo(position){
-      const entry = num(position.entryPrice);
-      const current = num(position.currentPrice);
-      const highest = Math.max(num(position.highestPrice), current);
-      const trailing = num(position.trailingStop);
-      const pnlPct = entry > 0 ? ((current - entry) / entry) * 100 : 0;
-      const highPnlPct = entry > 0 ? ((highest - entry) / entry) * 100 : 0;
-      const stopGapPct = current > 0 ? ((current - trailing) / current) * 100 : 0;
-      return { pnlPct, highPnlPct, stopGapPct, current, highest, trailing };
-    }
-    function updateTrailingStop(position){
-      const entry = num(position.entryPrice), initialStop = num(position.initialStop), currentPrice = num(position.currentPrice);
-      const highestPrice = Math.max(num(position.highestPrice), currentPrice);
-      const highPnl = ((highestPrice - entry) / entry) * 100;
-      let stopPct = -5, status = '初始防守';
-      if(highPnl >= 20){ stopPct = 15; status = '鎖定 +15% 獲利'; }
-      else if(highPnl >= 15){ stopPct = 10; status = '鎖定 +10% 獲利'; }
-      else if(highPnl >= 10){ stopPct = 5; status = '鎖定 +5% 獲利'; }
-      else if(highPnl >= 5){ stopPct = 0; status = '保本防守'; }
-      const stepStop = entry * (1 + stopPct / 100);
-      const followStop = highestPrice >= entry * 1.20 ? highestPrice * 0.92 : stepStop;
-      const newStop = Math.max(num(position.trailingStop, initialStop), stepStop, followStop, initialStop);
-      if(currentPrice <= newStop) status = '🔴 明日必須平倉撤退';
-      else if(newStop > entry * 1.10) status = '強勢鎖利';
-      else if(newStop > entry) status = status.includes('鎖定') ? status : '趨勢鎖利';
-      position.highestPrice = highestPrice;
-      position.trailingStop = Number(newStop.toFixed(2));
-      position.status = status;
-    }
-    function updatePositionMarket(positionId){
-      const p = state.positions.find(x => x.id === positionId && x.isOpen);
-      if(!p) return;
-      const promptVal = prompt(`[夜間重算] 更新 ${p.symbol} 今日「收盤現價」：\n(若欲同時輸入最高價，請用逗號隔開，例如: 100,105)`, p.currentPrice);
-      if(promptVal === null) return;
-      
-      let val_cur, val_hi;
-      if(promptVal.includes(',')){
-          const parts = promptVal.split(',');
-          val_cur = num(parts[0]);
-          val_hi = num(parts[1]);
-      } else {
-          val_cur = num(promptVal);
-          val_hi = val_cur;
-      }
-
-      if(!val_cur) return alert('輸入格式錯誤');
-      
-      p.currentPrice = val_cur;
-      p.lastClose = val_cur;
-      p.highestPrice = Math.max(p.highestPrice, val_hi || 0, val_cur);
-      p.isOrdered = false;
-
-      updateTrailingStop(p);
-      saveState();
-    }
-    
-    function getOpenPositions(){ return state.positions.filter(p => p.isOpen); }
-    function getPerformance(){
-      const logs = state.logs;
-      const totalTrades = logs.length;
-      const wins = logs.filter(x => x.result === 'win').length;
-      const losses = logs.filter(x => x.result === 'loss').length;
-      const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
-      const totalPnl = logs.reduce((sum,x)=>sum+num(x.pnl),0);
-      const avgPnl = totalTrades > 0 ? totalPnl / totalTrades : 0;
-      const avgReturn = totalTrades > 0 ? logs.reduce((s,x)=>s+num(x.returnPct),0) / totalTrades : 0;
-      const flywheel = logs.reduce((acc,t)=>acc * (1 + num(t.returnPct)/100),1);
-      const flywheelPct = logs.length ? (flywheel - 1) * 100 : 0;
-      return { totalTrades, wins, losses, winRate, totalPnl, avgPnl, avgReturn, flywheelPct };
-    }
-    function getDashboardSummary(){
-      const { effectiveDailyRiskPercent, effectiveMaxNewPositions, lossMode } = getEffectiveSettings();
-      const capital = num(state.risk.capital);
-      const dailyRiskAmount = capital * (effectiveDailyRiskPercent / 100);
-      const openPositions = getOpenPositions();
-      const usedCapital = getUsedCapitalFromOpenPositions();
-      const remainingCash = Math.max(0, num(state.risk.availableCash) - usedCapital);
-      return { dailyRiskAmount, effectiveDailyRiskPercent, effectiveMaxNewPositions, lossMode, openPositions, usedCapital, remainingCash };
-    }
-
-    function fillInputsFromState(){
-      $('advancersInput').value = state.market.advancers;
-      $('declinersInput').value = state.market.decliners;
-      $('limitUpInput').value = state.market.limitUp;
-      $('limitDownInput').value = state.market.limitDown;
-      $('otcChangeInput').value = state.market.otcChange;
-      $('taiexChangeInput').value = state.market.taiexChange;
-      $('capitalInput').value = state.risk.capital;
-      $('availableCashInput').value = state.risk.availableCash;
-      $('dailyRiskPercentInput').value = state.risk.dailyRiskPercent;
-      $('singlePositionCapitalPercentInput').value = state.risk.singlePositionCapitalPercent;
-      $('maxNewPositionsInput').value = state.risk.maxNewPositions;
-      $('lossStreakInput').value = state.risk.lossStreak;
-      $('candidateTextarea').value = state.candidatesRawText || '';
-    }
-    function renderTopStatusBar(){
-      calculateMarket();
-      const { lossMode, effectiveMaxNewPositions } = getEffectiveSettings();
-      $('topStatusBar').innerHTML = `
-        <div class="pill ${signalClass(state.market.signal)}">市場燈號：${state.market.signal.toUpperCase()}</div>
-        <div class="pill cyan">系統模式：${lossMode.mode}</div>
-        <div class="pill">連敗：${state.risk.lossStreak}</div>
-        <div class="pill purple">開倉上限：${effectiveMaxNewPositions}</div>`;
-    }
-    function renderHero(){
-      const summary = getDashboardSummary();
-      const perf = getPerformance();
-      const heroItems = [
-        { label:'市場總分', value:fmt(state.market.totalScore,1), color:signalClass(state.market.signal) },
-        { label:'今日可開新倉', value:`${summary.effectiveMaxNewPositions} 檔` },
-        { label:'單日風險額', value:`NT$ ${fmt(summary.dailyRiskAmount)}` },
-        { label:'持倉數量', value:`${summary.openPositions.length} 檔` },
-        { label:'已占用資金', value:`NT$ ${fmt(summary.usedCapital)}` },
-        { label:'剩餘資金', value:`NT$ ${fmt(summary.remainingCash)}` },
-        { label:'飛輪累積 %', value:pct(perf.flywheelPct,2), color: perf.flywheelPct >= 0 ? 'green' : 'red' },
-        { label:'平倉勝率', value:pct(perf.winRate,1), color: perf.winRate >= 50 ? 'green' : 'yellow' }
-      ];
-      $('heroMetrics').innerHTML = heroItems.map(x => `<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color || ''}">${x.value}</div></div>`).join('');
-      $('todayInstruction').textContent = state.market.instruction;
-      $('lastSyncTime').textContent = state.lastSync || '-';
-    }
-    function marketBandLabel(score){
-      if(score >= 80) return '主攻區';
-      if(score >= 70) return '可作戰';
-      if(score >= 55) return '謹慎試單';
-      if(score >= 40) return '保守防守';
-      return '全面停戰';
-    }
-    function toneClassByValue(val, thresholds={high:70, mid:40}){
-      if(val >= thresholds.high) return 'green';
-      if(val >= thresholds.mid) return 'yellow';
-      return 'red';
-    }
-    function getMarketRadarItems(m){
-      const spread = num(m.limitUp) - num(m.limitDown);
-      const breadth = clamp(num(m.breadthScore),0,100);
-      const sentiment = clamp(num(m.sentimentScore),0,100);
-      const taiexPower = clamp(50 + num(m.taiexChange) * 25, 0, 100);
-      const otcPower = clamp(50 + num(m.otcChange) * 30, 0, 100);
-      const spreadPower = clamp(50 + spread * 1.5, 0, 100);
-      const signalPower = num(m.signal === 'green' ? 92 : m.signal === 'yellow' ? 58 : 18);
-      return [
-        { key:'breadth', label:'廣度擴散', value:breadth, cls:toneClassByValue(breadth,{high:68,mid:45}) },
-        { key:'sentiment', label:'情緒熱度', value:sentiment, cls:toneClassByValue(sentiment,{high:70,mid:45}) },
-        { key:'taiex', label:'加權強弱', value:taiexPower, cls:toneClassByValue(taiexPower,{high:65,mid:45}) },
-        { key:'otc', label:'OTC強弱', value:otcPower, cls:toneClassByValue(otcPower,{high:65,mid:45}) },
-        { key:'limit', label:'漲跌停優勢', value:spreadPower, cls:toneClassByValue(spreadPower,{high:62,mid:45}) },
-        { key:'signal', label:'最終燈號', value:signalPower, cls:m.signal === 'green' ? 'purple' : (m.signal === 'yellow' ? 'yellow' : 'red') }
-      ];
-    }
-    function getRadarDotStyle(item, idx, total){
-      const angle = (-90 + idx * (360 / total)) * Math.PI / 180;
-      const radius = 26 + item.value * 0.26;
-      const x = 50 + Math.cos(angle) * radius;
-      const y = 50 + Math.sin(angle) * radius;
-      return `left:${x}%;top:${y}%;`;
-    }
-    function renderMarket(){
-      const reasons = getMarketExplainParts(state.market);
-      const radarItems = getMarketRadarItems(state.market);
-      const lightText = state.market.signal === 'green'
-        ? '綠燈：可正常作戰，優先挑 A 級主攻'
-        : state.market.signal === 'yellow'
-          ? '黃燈：降風險，嚴選 1 檔或縮小股數'
-          : '紅燈：停止開新倉，只管理舊倉';
-      $('marketSummary').innerHTML = `
-        <div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div><div class="footnote">看上漲/下跌家數與漲跌停擴散</div></div>
-        <div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div><div class="footnote">依 OTC%、加權%、漲跌停差自動估算</div></div>
-        <div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div><div class="footnote">${marketBandLabel(state.market.totalScore)}｜總分 ${fmt(state.market.totalScore,1)}</div></div>
-        <div class="radar-panel">
-          <div class="label" style="margin-bottom:10px">市場戰況雷達</div>
-          <div class="radar-grid">
-            <div class="radar-shell">
-              <div class="radar-cross-x"></div>
-              <div class="radar-cross-y"></div>
-              <div class="radar-sweep"></div>
-              <div class="radar-center"></div>
-              ${radarItems.map((item, idx) => `<div class="radar-dot ${item.cls}" style="${getRadarDotStyle(item, idx, radarItems.length)}">${Math.round(item.value)}</div>`).join('')}
-            </div>
-            <div class="radar-legend">
-              ${radarItems.map(item => `<div class="radar-row"><div class="name">${item.label}</div><div class="radar-bar"><div class="radar-fill ${item.cls}" style="width:${item.value}%"></div></div><div class="right mono">${fmt(item.value,0)}</div></div>`).join('')}
-            </div>
-          </div>
-          <div class="divider" style="margin:12px 0"></div>
-          <div class="value small ${signalClass(state.market.signal)}" style="margin-bottom:8px">${lightText}</div>
-          <div class="radar-note">${reasons.map((x, i) => `${i+1}. ${x}`).join('<br>')}</div>
-        </div>`;
-    }
-    function renderRiskMode(){
-      const { lossMode, effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings();
-      const cls = lossMode.mode === '正常模式' ? 'ok-box' : 'warning-box';
-      $('riskModeSummary').innerHTML = `
-        <div class="${cls}">
-          <div><strong>目前模式：</strong>${lossMode.mode}</div>
-          <div><strong>有效單日風險：</strong>${fmt(effectiveDailyRiskPercent,2)}%</div>
-          <div><strong>有效新倉上限：</strong>${effectiveMaxNewPositions} 檔</div>
-          <div><strong>說明：</strong>${lossMode.note}</div>
-        </div>`;
-    }
-    function renderMainAttackSummary(){
-      const available = state.candidates.filter(c => c.isMainAttackCandidate && !c.rejected).slice(0,2);
-      const box = $('mainAttackSummary');
-      if(!available.length){ box.innerHTML = `<div class="footnote">尚未產出主攻候選。請先貼入 CSV 並完成本地評分。</div>`; return; }
-      box.innerHTML = `<div class="ok-box mainAttackGlow"><strong>明日主攻摘要</strong><br>${available.map((c, idx) => `#${idx+1} ${c.symbol} ${c.name || ''}（${c.grade} / ${fmt(c.localScore,1)}分｜懲罰 ${fmt(c.penaltyScore,1)}）`).join('<br>')}</div>`;
-    }
-    function renderCandidateRanking(){
-      const warnings = $('candidateWarnings');
-      const table = $('candidateRankingTable');
-      const cards = $('candidateCards');
-      if(state.candidates.length === 0){ warnings.innerHTML = `<div class="footnote">尚未解析 CSV。請貼入 TradingView 匯出的完整欄位。</div>`; table.innerHTML = ''; cards.innerHTML = ''; return; }
-      const selectedCount = state.candidates.filter(c => c.selected).length;
-      const { effectiveMaxNewPositions } = getEffectiveSettings();
-      const mainCount = state.candidates.filter(c => c.isMainAttackCandidate).length;
-      warnings.innerHTML = `<div class="ok-box">已解析 ${state.candidates.length} 檔候選股｜主攻資格 ${mainCount} 檔｜已鎖定 ${selectedCount} 檔｜今晚上限 ${effectiveMaxNewPositions} 檔</div>`;
-      table.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>排名</th><th>股票</th><th>最終分</th><th>級別</th><th>主攻資格</th><th>基礎分</th><th>懲罰分</th><th>結構</th><th>量能</th><th>熱度控制</th><th>市場共振</th><th>RR品質</th><th>警示</th><th>狀態</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${state.candidates.map(c => {
-              const gradeClass = c.grade === 'A' ? 'scoreA' : c.grade === 'B' ? 'scoreB' : 'scoreC';
-              const rankClass = c.rank === 1 ? 'rank1' : c.rank === 2 ? 'rank2' : c.rank === 3 ? 'rank3' : '';
-              return `
-                <tr>
-                  <td data-label="排名"><span class="rankTop ${rankClass}">#${c.rank}</span></td>
-                  <td data-label="股票"><div><strong>${c.symbol}</strong> ${c.name || ''}</div></td>
-                  <td data-label="最終分"><span class="${gradeClass}">${fmt(c.localScore,1)}</span></td>
-                  <td data-label="級別"><span class="${gradeClass}">${c.grade}</span></td>
-                  <td data-label="主攻資格">${c.isMainAttackCandidate ? '<span class="purple">是</span>' : '否'}</td>
-                  <td data-label="基礎分">${fmt(c.baseScore,1)}</td>
-                  <td data-label="懲罰分">${fmt(c.penaltyScore,1)}</td>
-                  <td data-label="結構">${fmt(c.maStructureScore,1)}</td>
-                  <td data-label="量能">${fmt(c.volumeScore,1)}</td>
-                  <td data-label="熱度控制">${fmt(c.heatControlScore,1)}</td>
-                  <td data-label="市場共振">${fmt(c.marketResonanceScore,1)}</td>
-                  <td data-label="RR品質">${fmt(c.rrQualityScore,1)}</td>
-                  <td data-label="警示">${c.warnings.length ? c.warnings.join('、') : '—'}</td>
-                  <td data-label="狀態">${c.rejected ? `<span class="red">淘汰</span>` : `<span class="green">可評估</span>`}</td>
-                </tr>`;
-            }).join('')}
-          </tbody>
-        </table>`;
-      cards.innerHTML = state.candidates.map(c => {
-        const errors = validateCandidate(c);
-        const gradeClass = c.grade === 'A' ? 'green' : c.grade === 'B' ? 'yellow' : 'red';
-        return `
-          <div class="card ${c.isMainAttackCandidate ? 'mainAttackGlow' : ''}">
-            <div class="card-head">
-              <div>
-                <div class="symbol">#${c.rank} ${c.symbol} ${c.name || ''}</div>
-                <div class="muted">價格 ${fmt(c.close,2)}｜漲幅 ${pct(c.changePct,2)}｜RSI ${fmt(c.rsi14,2)}｜量比 ${Number.isFinite(c.volumeRatio)?fmt(c.volumeRatio,2):'-'}｜SMA20偏離 ${pct(c.deviation20,1)}</div>
-              </div>
-              <div class="btnrow">
-                <span class="badge ${gradeClass}">本地 ${c.grade} 級</span>
-                <span class="badge ${c.isMainAttackCandidate ? 'purple' : 'cyan'}">${c.isMainAttackCandidate ? '主攻資格' : '一般候選'}</span>
-                <span class="badge ${c.selected ? 'green' : 'cyan'}">${c.selected ? '已鎖定戰隊' : '候選中'}</span>
-              </div>
-            </div>
-            <div class="mini">
-              <div class="cell"><div class="k">最終分</div><div class="v ${gradeClass}">${fmt(c.localScore,1)}</div></div>
-              <div class="cell"><div class="k">基礎分</div><div class="v">${fmt(c.baseScore,1)}</div></div>
-              <div class="cell"><div class="k">懲罰分</div><div class="v red">${fmt(c.penaltyScore,1)}</div></div>
-              <div class="cell"><div class="k">均線結構</div><div class="v">${fmt(c.maStructureScore,1)}</div></div>
-              <div class="cell"><div class="k">漲幅強度</div><div class="v">${fmt(c.momentumScore,1)}</div></div>
-              <div class="cell"><div class="k">RSI強度</div><div class="v">${fmt(c.rsiScore,1)}</div></div>
-              <div class="cell"><div class="k">量能品質</div><div class="v">${fmt(c.volumeScore,1)}</div></div>
-              <div class="cell"><div class="k">熱度控制</div><div class="v">${fmt(c.heatControlScore,1)}</div></div>
-              <div class="cell"><div class="k">市場共振</div><div class="v">${fmt(c.marketResonanceScore,1)}</div></div>
-              <div class="cell"><div class="k">明日買價</div><div class="v">${fmt(c.entry,2)}</div></div>
-              <div class="cell"><div class="k">初始停損</div><div class="v red">${fmt(c.stop,2)}</div></div>
-              <div class="cell"><div class="k">建議股數</div><div class="v">${fmt(c.shares)}</div></div>
-              <div class="cell"><div class="k">風報比</div><div class="v">${fmt(c.rr,2)}</div></div>
-              <div class="cell"><div class="k">風險距離</div><div class="v">${pct(c.riskPct,2)}</div></div>
-              <div class="cell"><div class="k">資金占用</div><div class="v">NT$ ${fmt(c.invested)}</div></div>
-            </div>
-            <div style="margin-top:10px">${errors.length ? `<div class="warning-box">${errors.map(e => `• ${e}`).join('<br>')}</div>` : `<div class="ok-box">此標的可納入明日智慧單。${c.warnings.length ? '<br>警示：'+c.warnings.join('、') : ''}</div>`}</div>
-            <div class="btnrow" style="margin-top:10px">
-              <button class="btn small ${c.selected ? 'green' : ''}" onclick="toggleSelectCandidate('${c.id}')">${c.selected ? '取消鎖定' : '鎖定戰隊'}</button>
-              <button class="btn small secondary" onclick="addPositionFromCandidate('${c.id}')">直接建倉</button>
-            </div>
-          </div>`;
-      }).join('');
-    }
-    function renderOrders(){
-      const selected = state.candidates.filter(c => c.selected);
-      if(selected.length === 0){ $('orderSummaryBox').innerHTML = `<div class="footnote">尚未鎖定明日戰隊。</div>`; $('ordersTable').innerHTML = ''; return; }
-      $('orderSummaryBox').innerHTML = `<div class="ok-box">明日掛單清單已生成。請依下表掛單，盤中不追價、不臨時改單。</div>`;
-      $('ordersTable').innerHTML = `
-        <table>
-          <thead><tr><th>股票</th><th>最終分</th><th>主攻資格</th><th>買價</th><th>停損</th><th>停利</th><th>股數</th><th>整張/零股</th><th>資金占用</th><th>風險占用</th><th>RR</th></tr></thead>
-          <tbody>${selected.map(c => `
-            <tr>
-              <td class="mono">${c.symbol}</td><td>${fmt(c.localScore,1)}</td><td>${c.isMainAttackCandidate ? '是' : '否'}</td><td>${fmt(c.entry,2)}</td><td class="red">${fmt(c.stop,2)}</td><td class="green">${fmt(c.takeProfit,2)}</td><td>${fmt(c.shares)}</td><td>${c.boardLots} / ${c.oddLots}</td><td>NT$ ${fmt(c.invested)}</td><td>NT$ ${fmt(c.positionRisk)}</td><td>${fmt(c.rr,2)}</td>
-            </tr>`).join('')}</tbody>
-        </table>`;
-    }
-    function renderPositions(){
-      const openPositions = getOpenPositions();
-      if(openPositions.length === 0){ $('positionsBox').innerHTML = `<div class="footnote">目前沒有開啟中的持倉。</div>`; return; }
-      $('positionsBox').innerHTML = openPositions.map(p => {
-        const t = getTrailingInfo(p);
-        const pnlAmt = (p.currentPrice - p.entryPrice) * p.shares;
-        
-        const ordered = p.isOrdered ? 'ordered' : '';
-        const orderText = p.isOrdered ? '✅ 已掛單' : '待掛單';
-
-        return `
-          <div class="card">
-            <div class="card-head">
-              <div><div class="symbol">${p.symbol} ${p.name || ''}</div><div class="muted">建倉 ${p.entryDate}</div></div>
-              <span class="badge ${p.status.includes('撤退') ? 'red' : (p.status.includes('鎖利') || p.status.includes('防守') ? 'yellow' : 'green')}">${p.status}</span>
-            </div>
-            <div class="mini">
-              <div class="cell"><div class="k">成本</div><div class="v">${fmt(p.entryPrice,2)}</div></div>
-              <div class="cell"><div class="k">現價</div><div class="v">${fmt(p.currentPrice,2)}</div></div>
-              <div class="cell"><div class="k">浮盈虧</div><div class="v ${pnlAmt >= 0 ? 'green' : 'red'}">NT$ ${fmt(pnlAmt)}</div></div>
-              <div class="cell"><div class="k">報酬率</div><div class="v ${t.pnlPct >= 0 ? 'green' : 'red'}">${pct(t.pnlPct,2)}</div></div>
-              <div class="cell"><div class="k">歷史高點</div><div class="v">${fmt(p.highestPrice,2)}</div></div>
-              <div class="cell"><div class="k">移動停損</div><div class="v red">${fmt(p.trailingStop,2)}</div></div>
-              <div class="cell"><div class="k">初始停損</div><div class="v">${fmt(p.initialStop,2)}</div></div>
-              <div class="cell"><div class="k">股數</div><div class="v">${fmt(p.shares)}</div></div>
-              <div class="cell"><div class="k">距停損空間</div><div class="v ${t.stopGapPct <= 0 ? 'red' : 'yellow'}">${fmt(t.stopGapPct,2)}</div></div>
-            </div>
-            <div class="btnrow" style="margin-top:10px">
-              <button class="btn small" onclick="updatePositionMarket('${p.id}')">更新收盤 / 高點</button>
-              <button class="order-btn ${ordered}" onclick="toggleOrder('${p.id}')">${orderText}</button>
-              <button class="btn small red" onclick="window.openClose('${p.id}')">真實平倉</button>
-            </div>
-          </div>`;
-      }).join('');
-    }
-    function renderPerformance(){
-      const perf = getPerformance();
-      if(state.logs.length === 0){ $('logsTable').innerHTML = `<div class="footnote">尚無歷史紀錄。</div>`; return; }
-      $('logsTable').innerHTML = `
-        <table>
-          <thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>原因</th><th>日期</th></tr></thead>
-          <tbody>${state.logs.slice(0,12).map(l => `
-            <tr>
-              <td class="mono">${l.symbol}</td><td>${fmt(l.entryPrice,2)}</td><td>${fmt(l.exitPrice,2)}</td><td>${fmt(l.shares)}</td><td class="${l.pnl >= 0 ? 'green' : 'red'}">NT$ ${fmt(l.pnl)}</td><td class="${l.returnPct >= 0 ? 'green' : 'red'}">${pct(l.returnPct,2)}</td><td class="${l.result === 'win' ? 'green' : (l.result === 'loss' ? 'red' : 'yellow')}">${l.result}</td><td>${l.reason || '-'}</td><td class="mono">${l.exitDate}</td>
-            </tr>`).join('')}</tbody>
-        </table>`;
-    }
-    function renderAll(){
-      fillInputsFromState();
-      getOpenPositions().forEach(updateTrailingStop);
-      renderTopStatusBar();
-      renderHero();
-      renderMarket();
-      renderRiskMode();
-      renderMainAttackSummary();
-      renderCandidateRanking();
-      renderOrders();
-      renderPositions();
-      renderPerformance();
-    }
-
-    function bindEvents(){
-      $('calcMarketBtn').addEventListener('click', saveMarketInputs);
-      $('saveMarketBtn').addEventListener('click', saveMarketInputs);
-      $('saveRiskBtn').addEventListener('click', () => {
-        state.risk.capital = num($('capitalInput').value);
-        state.risk.availableCash = num($('availableCashInput').value);
-        state.risk.dailyRiskPercent = num($('dailyRiskPercentInput').value);
-        state.risk.singlePositionCapitalPercent = num($('singlePositionCapitalPercentInput').value);
-        state.risk.maxNewPositions = Math.max(1, num($('maxNewPositionsInput').value, 1));
-        state.risk.lossStreak = Math.max(0, num($('lossStreakInput').value, 0));
-        if(state.candidates.length){ state.candidatesRawText = $('candidateTextarea').value; parseTradingViewCsv(); return; }
-        saveState();
-      });
-      $('parseCandidatesBtn').addEventListener('click', () => { state.candidatesRawText = $('candidateTextarea').value; parseTradingViewCsv(); });
-      $('clearCandidatesBtn').addEventListener('click', () => { state.candidatesRawText = ''; state.candidates = []; saveState(); });
-      $('resetAllBtn').addEventListener('click', () => { if(!confirm('確定重置全部資料？這會清空持倉、歷史紀錄、候選、設定。')) return; state = clone(defaultState); saveState(); });
-      
-      $('addHoldBtn').addEventListener('click', addManualHolding);
-      $('loadTopBtn').addEventListener('click', loadTopCandidate);
-      
-      $('confirmCloseBtn').addEventListener('click', confirmClosePosition);
-      $('cancelCloseBtn').addEventListener('click', () => {
-        state.pendingCloseId = null;
-        $('closeOverlay').classList.remove('show');
-      });
-      $('closeOverlay').addEventListener('click', (e) => {
-        if(e.target === $('closeOverlay')) {
-            state.pendingCloseId = null;
-            $('closeOverlay').classList.remove('show');
-        }
-      });
-    }
-
-    window.toggleOrder = (id) => {
-      const p = state.positions.find(x => x.id === id);
-      if(p) p.isOrdered = !p.isOrdered;
-      saveState();
-    };
-
-    window.openClose = (id) => {
-      const p = state.positions.find(x => x.id === id && x.isOpen);
-      if(!p) return;
-      state.pendingCloseId = id;
-      $('closeInfo').textContent = `${p.symbol}｜明日停損價 ${p.trailingStop.toFixed(2)}`;
-      $('closePrice').value = p.currentPrice;
-      $('closeOverlay').classList.add('show');
-    };
-
-    function confirmClosePosition() {
-      const id = state.pendingCloseId;
-      const p = state.positions.find(x => x.id === id && x.isOpen);
-      if(!p) {
-          state.pendingCloseId = null;
-          $('closeOverlay').classList.remove('show');
-          return;
-      }
-      
-      const exitPrice = num($('closePrice').value);
-      if(!exitPrice) return alert('價格錯誤');
-
-      const s = Number(p.shares) || 1000;
-      const pnlAmt = (exitPrice - p.entryPrice) * s;
-      const returnPct = p.entryPrice > 0 ? (exitPrice - p.entryPrice) / p.entryPrice * 100 : 0;
-      const result = pnlAmt > 0 ? "win" : (pnlAmt < 0 ? "loss" : "flat");
-
-      state.logs.unshift({
-        id: `log_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
-        symbol: p.symbol, entryDate: p.entryDate, exitDate: nowString(), entryPrice: p.entryPrice,
-        exitPrice, shares: s, pnl: pnlAmt, returnPct, highestPrice: p.highestPrice, trailingStop: p.trailingStop, result,
-        reason: $('closeReason').value
-      });
-
-      p.isOpen = false; p.exitPrice = exitPrice; p.exitDate = nowString(); p.status = "已出場";
-      if(result === "loss") state.risk.lossStreak += 1;
-      else if(result === "win") state.risk.lossStreak = 0;
-      
-      state.pendingCloseId = null;
-      saveState();
-      $('closeOverlay').classList.remove('show');
-    }
-
-    function saveMarketInputs(){
-      state.market.advancers = num($('advancersInput').value);
-      state.market.decliners = num($('declinersInput').value);
-      state.market.limitUp = num($('limitUpInput').value);
-      state.market.limitDown = num($('limitDownInput').value);
-      state.market.otcChange = num($('otcChangeInput').value);
-      state.market.taiexChange = num($('taiexChangeInput').value);
-      saveState();
-    }
+    window.toggleSelectCandidate = toggleSelectCandidate;
+    window.addPositionFromCandidate = addPositionFromCandidate;
+    window.updatePositionMarket = updatePositionMarket;
+    window.openClose = openClose;
 
     bindEvents();
     calculateMarket();
