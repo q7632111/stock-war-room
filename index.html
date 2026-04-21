@@ -291,38 +291,10 @@
     function calcShares(entry, stop){ const { effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings(); const capital = num(state.risk.capital); const configuredAvailableCash = num(state.risk.availableCash); const usedCapital = getUsedCapitalFromOpenPositions(); const realAvailableCash = Math.max(0, configuredAvailableCash-usedCapital); const singlePositionCapitalPercent = num(state.risk.singlePositionCapitalPercent); const totalRiskAmount = capital * (effectiveDailyRiskPercent/100); const bucketCount = effectiveMaxNewPositions > 0 ? effectiveMaxNewPositions : 1; const singleRiskAmount = totalRiskAmount / bucketCount; const riskPerShare = Math.abs(entry-stop); if(riskPerShare <= 0) return buildShareResult(0,entry,stop,singleRiskAmount,0,0,realAvailableCash); const sharesByRisk = Math.floor(singleRiskAmount/riskPerShare); const maxCapitalForPosition = Math.min(realAvailableCash, capital*(singlePositionCapitalPercent/100)); const sharesByCapital = Math.floor(maxCapitalForPosition/entry); const finalShares = Math.max(0, Math.min(sharesByRisk, sharesByCapital)); return buildShareResult(finalShares, entry, stop, singleRiskAmount, sharesByRisk, sharesByCapital, realAvailableCash); }
     function calcRR(entry, stop, takeProfit){ const risk = entry-stop; const reward = takeProfit-entry; return risk <= 0 ? 0 : reward/risk; }
 
-    function splitCsvLine(line){
-      const result=[];
-      let current='';
-      let inQuotes=false;
-      for(let i=0;i<line.length;i++){
-        const ch=line[i];
-        if(ch==='"'){
-          if(inQuotes && line[i+1]==='"'){
-            current+='"';
-            i++;
-          }else{
-            inQuotes=!inQuotes;
-          }
-        }else if(ch===',' && !inQuotes){
-          result.push(current);
-          current='';
-        }else{
-          current += ch;
-        }
-      }
-      result.push(current);
-      return result.map(x => String(x ?? '').replace(/\r/g,'').replace(/^\"|\"$/g,'').trim());
-    }
+    function splitCsvLine(line){ const result=[]; let current='', inQuotes=false; for(let i=0;i<line.length;i++){ const ch=line[i]; if(ch==='"'){ if(inQuotes && line[i+1]==='"'){ current+='"'; i++; } else inQuotes=!inQuotes; } else if(ch===',' && !inQuotes){ result.push(current); current=''; } else current += ch; } result.push(current); return result.map(x=>x.trim()); }
     function normalizeHeader(h){ return String(h).replace(/^"|"$/g,'').trim(); }
     function getCsvIndexMap(headers){ const map={}; headers.forEach((h,idx)=>{ map[normalizeHeader(h)] = idx; }); return map; }
     function valAt(row,map,key){ const idx = map[key]; if(idx===undefined) return ''; return row[idx] ?? ''; }
-    function csvNum(v, fallback=NaN){
-      const s = String(v ?? '').replace(/,/g,'').trim();
-      if(s === '') return fallback;
-      const n = parseFloat(s);
-      return Number.isFinite(n) ? n : fallback;
-    }
     function analystScore(rating){ const t = String(rating || '').trim(); if(t.includes('強力買入')) return 5; if(t.includes('買入')) return 4; if(t.includes('中立')) return 2; return 2; }
     function marketSignalNumeric(signal){ if(signal==='green') return 8; if(signal==='yellow') return 5; return 1; }
 
@@ -349,35 +321,18 @@
     function rankCandidates(candidates, market){ const scored = candidates.map(stock => scoreCandidateCsv(stock, market)); scored.sort((a,b)=>{ if(a.rejected!==b.rejected) return a.rejected ? 1 : -1; if(a.isMainAttackCandidate!==b.isMainAttackCandidate) return a.isMainAttackCandidate ? -1 : 1; return b.localScore - a.localScore; }); return scored.map((item,idx)=>({ ...item, rank:idx+1 })); }
 
     function parseTradingViewCsv(){
-      const text = state.candidatesRawText || '';
-      const lines = text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
-      if(lines.length < 2){ state.candidates=[]; saveState(); return; }
-      const headers = splitCsvLine(lines[0]).map(normalizeHeader);
-      const map = getCsvIndexMap(headers);
-      const parsed=[];
+      const text = state.candidatesRawText || ''; const lines = text.split(/\n+/).map(x=>x.trim()).filter(Boolean); if(lines.length < 2){ state.candidates=[]; saveState(); return; }
+      const headers = splitCsvLine(lines[0]).map(normalizeHeader); const map = getCsvIndexMap(headers); const parsed=[];
       for(let i=1;i<lines.length;i++){
-        const row = splitCsvLine(lines[i]);
-        if(!row.length) continue;
-        const symbol = normalizeSymbol(valAt(row,map,'商品') || valAt(row,map,'ticker') || row[0]);
-        const name = valAt(row,map,'描述') || '';
-        const close = csvNum(valAt(row,map,'價格') || row[2], NaN);
-        if(!symbol || Number.isNaN(close)) continue;
-        const changePct = csvNum(valAt(row,map,'價格變化 % 1天'), 0);
-        const volumeRatio = csvNum(valAt(row,map,'相對成交量 1天'), NaN);
-        const analystRating = valAt(row,map,'分析師評級');
-        const sma20 = csvNum(valAt(row,map,'簡單移動平均線 (20) 1天'), NaN);
-        const sma60 = csvNum(valAt(row,map,'簡單移動平均線 (60) 1天'), NaN);
-        const rsi14 = csvNum(valAt(row,map,'相對強弱指標 (14) 1天'), NaN);
-        const epsGrowthYoy = csvNum(valAt(row,map,'稀釋每股盈餘成長率 %, TTM年增率'), NaN);
-        const entry=close, stop=Number((close*0.97).toFixed(2)), takeProfit=Number((close*1.05).toFixed(2));
-        const fire = calcShares(entry,stop);
-        const rr = calcRR(entry,stop,takeProfit);
-        const riskPct = entry > stop ? ((entry-stop)/entry)*100 : 999;
+        const row = splitCsvLine(lines[i]); if(!row.length) continue;
+        const symbol = valAt(row,map,'商品') || valAt(row,map,'ticker') || row[0]; const name = valAt(row,map,'描述') || '';
+        const close = num(valAt(row,map,'價格') || row[2], NaN); if(!symbol || Number.isNaN(close)) continue;
+        const changePct = num(valAt(row,map,'價格變化 % 1天'), 0); const volumeRatio = num(valAt(row,map,'相對成交量 1天'), NaN); const analystRating = valAt(row,map,'分析師評級'); const sma20 = num(valAt(row,map,'簡單移動平均線 (20) 1天'), NaN); const sma60 = num(valAt(row,map,'簡單移動平均線 (60) 1天'), NaN); const rsi14 = num(valAt(row,map,'相對強弱指標 (14) 1天'), NaN); const epsGrowthYoy = num(valAt(row,map,'稀釋每股盈餘成長率 %, TTM年增率'), NaN);
+        const entry=close, stop=Number((close*0.97).toFixed(2)), takeProfit=Number((close*1.05).toFixed(2)); const fire = calcShares(entry,stop); const rr = calcRR(entry,stop,takeProfit); const riskPct = entry > stop ? ((entry-stop)/entry)*100 : 999;
         parsed.push({ id:uid(symbol), symbol, name, close, high:close, changePct, volumeRatio, analystRating, sma20, sma60, rsi14, epsGrowthYoy, entry, stop, takeProfit, rr, riskPct, shares:fire.shares, boardLots:fire.boardLots, oddLots:fire.oddLots, invested:fire.invested, positionRisk:fire.positionRisk, sharesByRisk:fire.sharesByRisk, sharesByCapital:fire.sharesByCapital, singleRiskAmount:fire.singleRiskAmount, selected:false, createdAt:nowString() });
       }
       const marketData = { signal:state.market.signal, totalScore:state.market.totalScore, limitUp:state.market.limitUp, limitDown:state.market.limitDown };
-      state.candidates = rankCandidates(parsed, marketData);
-      saveState();
+      state.candidates = rankCandidates(parsed, marketData); saveState();
     }
 
     function validateCandidate(c){ const errors=[]; if(state.market.signal==='red') errors.push('紅燈日禁止開新倉'); if(c.stop >= c.entry) errors.push('停損不得高於或等於買價'); if(c.takeProfit <= c.entry) errors.push('停利不得低於或等於買價'); if(c.shares <= 0) errors.push('可買股數為 0'); const { effectiveMaxNewPositions } = getEffectiveSettings(); const selectedCount = state.candidates.filter(x=>x.selected).length; if(!c.selected && selectedCount >= effectiveMaxNewPositions) errors.push('已達可開新倉上限'); if(c.rejected) errors.push(...(c.rejectReasons || [])); return errors; }
@@ -456,13 +411,115 @@ function updateTrailingStop(p){
         .replace(/^"|"$/g,'');
     }
 
-    function normalizeJsonText(raw){ const trimmed = raw.trim(); const start = trimmed.indexOf('{'); const end = trimmed.lastIndexOf('}'); if(start !== -1 && end !== -1 && end > start) return trimmed.slice(start, end+1); return trimmed; }
+    function normalizeJsonText(raw){
+      let t = String(raw || '').trim();
+      t = t.replace(/^```(?:json)?\s*/i, '').replace(/```$/,'').trim();
+      t = t.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'");
+      return t;
+    }
+    function extractBalancedJson(text){
+      const pairs = [['{','}'], ['[',']']];
+      for(const [open, close] of pairs){
+        const start = text.indexOf(open);
+        if(start === -1) continue;
+        let depth = 0, inString = false, escaped = false;
+        for(let i = start; i < text.length; i++){
+          const ch = text[i];
+          if(inString){
+            if(escaped){ escaped = false; continue; }
+            if(ch === '\\'){ escaped = true; continue; }
+            if(ch === '"') inString = false;
+            continue;
+          }
+          if(ch === '"'){ inString = true; continue; }
+          if(ch === open) depth++;
+          if(ch === close){
+            depth--;
+            if(depth === 0) return text.slice(start, i + 1);
+          }
+        }
+      }
+      return text;
+    }
+    function extractSymbolFromText(value){
+      if(value == null) return '';
+      if(typeof value === 'number') return String(value);
+      const s = String(value).trim();
+      const m = s.match(/\b\d{4}\b/);
+      return normalizeSymbol(m ? m[0] : s);
+    }
+    function normalizeAiNode(node){
+      if(node == null) return { symbol:'', reason:'' };
+      if(typeof node === 'string' || typeof node === 'number'){
+        return { symbol: extractSymbolFromText(node), reason:'' };
+      }
+      if(Array.isArray(node)){
+        return { symbol: extractSymbolFromText(node[0] || ''), reason: String(node[1] || '') };
+      }
+      return {
+        symbol: extractSymbolFromText(node.symbol || node.code || node.ticker || node.stock || node.id || ''),
+        reason: String(node.reason || node.note || node.comment || node.desc || '')
+      };
+    }
+    function tryRegexAiFallback(text){
+      const lines = String(text || '').split(/\n+/).map(x => x.trim()).filter(Boolean);
+      const result = { market_view:'', top_pick:{symbol:'',reason:''}, backup_pick:{symbol:'',reason:''}, avoid_pick:{symbol:'',reason:''}, risk_note:'' };
+      const patterns = [
+        { key:'top_pick', re:/(主攻|首選|top[_\s-]*pick|top pick)/i },
+        { key:'backup_pick', re:/(次選|備選|backup[_\s-]*pick|backup pick)/i },
+        { key:'avoid_pick', re:/(避開|avoid[_\s-]*pick|avoid pick)/i }
+      ];
+      for(const line of lines){
+        for(const p of patterns){
+          if(!result[p.key].symbol && p.re.test(line)){
+            result[p.key] = { symbol: extractSymbolFromText(line), reason: line };
+          }
+        }
+      }
+      if(!result.top_pick.symbol){
+        const all = [...String(text||'').matchAll(/\b\d{4}\b/g)].map(m=>m[0]);
+        const uniq = [...new Set(all)];
+        if(uniq[0]) result.top_pick.symbol = uniq[0];
+        if(uniq[1]) result.backup_pick.symbol = uniq[1];
+        if(uniq[2]) result.avoid_pick.symbol = uniq[2];
+      }
+      return result.top_pick.symbol || result.backup_pick.symbol || result.avoid_pick.symbol ? result : null;
+    }
+    function parseAiPayload(raw){
+      let text = normalizeJsonText(raw);
+      text = extractBalancedJson(text);
+      let parsed;
+      try{
+        parsed = JSON.parse(text);
+      }catch(e){
+        const fallback = tryRegexAiFallback(raw);
+        if(fallback) return fallback;
+        throw e;
+      }
+      if(Array.isArray(parsed)){
+        return {
+          market_view:'',
+          top_pick: normalizeAiNode(parsed[0]),
+          backup_pick: normalizeAiNode(parsed[1]),
+          avoid_pick: normalizeAiNode(parsed[2]),
+          risk_note:''
+        };
+      }
+      parsed = parsed || {};
+      return {
+        market_view: String(parsed.market_view || parsed.marketView || parsed.view || ''),
+        top_pick: normalizeAiNode(parsed.top_pick || parsed.topPick || parsed.main_pick || parsed.mainPick || parsed.pick1 || parsed.best_pick),
+        backup_pick: normalizeAiNode(parsed.backup_pick || parsed.backupPick || parsed.second_pick || parsed.secondPick || parsed.pick2),
+        avoid_pick: normalizeAiNode(parsed.avoid_pick || parsed.avoidPick || parsed.risk_pick || parsed.bad_pick || parsed.pick3),
+        risk_note: String(parsed.risk_note || parsed.riskNote || parsed.note || parsed.summary || '')
+      };
+    }
     function parseAiResult(){
       const raw = $('aiResultBox').value.trim(); if(!raw) return alert('請先貼上 AI JSON');
-      try{ const parsed = JSON.parse(normalizeJsonText(raw)); state.aiReview.rawResponse = raw; if(parsed?.top_pick?.symbol) parsed.top_pick.symbol = normalizeSymbol(parsed.top_pick.symbol);
+      try{ const parsed = parseAiPayload(raw); state.aiReview.rawResponse = raw; if(parsed?.top_pick?.symbol) parsed.top_pick.symbol = normalizeSymbol(parsed.top_pick.symbol);
       if(parsed?.backup_pick?.symbol) parsed.backup_pick.symbol = normalizeSymbol(parsed.backup_pick.symbol);
       if(parsed?.avoid_pick?.symbol) parsed.avoid_pick.symbol = normalizeSymbol(parsed.avoid_pick.symbol);
-      state.aiReview.parsed = parsed; state.aiReview.mode = 'ai_assisted'; saveState(); alert('✅ AI 覆核結果已解析並鎖定'); }catch(e){ alert('AI JSON 解析失敗，請確認格式正確。'); }
+      state.aiReview.parsed = parsed; state.aiReview.mode = 'ai_assisted'; saveState(); alert('✅ AI 覆核結果已解析並鎖定'); }catch(e){ console.error(e); alert('AI JSON 解析失敗，請確認格式正確。'); }
     }
     function clearAiResult(){ state.aiReview.rawResponse=''; state.aiReview.parsed=null; state.aiReview.mode='local_only'; $('aiResultBox').value=''; saveState(); }
     function getAiFlags(symbol){ const p = state.aiReview?.parsed; return { isTop: p?.top_pick?.symbol === symbol, isBackup: p?.backup_pick?.symbol === symbol, isAvoid: p?.avoid_pick?.symbol === symbol }; }
