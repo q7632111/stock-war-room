@@ -121,6 +121,35 @@
     .rankTop{font-size:18px;font-weight:900;color:#fff}
     .rank1{color:#7dd3fc}.rank2{color:#c4b5fd}.rank3{color:#fbbf24}
     .mainAttackGlow{box-shadow:0 0 0 1px rgba(167,139,250,.3), 0 0 22px rgba(167,139,250,.18), inset 0 1px 0 rgba(255,255,255,.03)}
+
+    .radar-panel{grid-column:1 / -1;border:1px solid rgba(167,139,250,.22);border-radius:14px;padding:12px;background:linear-gradient(180deg, rgba(27,18,49,.55), rgba(10,16,28,.55));box-shadow:0 0 18px rgba(167,139,250,.10)}
+    .radar-grid{display:grid;grid-template-columns:1.2fr .9fr;gap:12px}
+    .radar-shell{position:relative;min-height:240px;border-radius:14px;overflow:hidden;background:radial-gradient(circle at center, rgba(86,215,255,.07), transparent 58%),linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));border:1px solid rgba(86,215,255,.10)}
+    .radar-shell::before,.radar-shell::after{content:"";position:absolute;inset:14px;border:1px solid rgba(86,215,255,.10);border-radius:50%}
+    .radar-shell::after{inset:46px}
+    .radar-cross-x,.radar-cross-y{position:absolute;background:rgba(86,215,255,.10)}
+    .radar-cross-x{left:12px;right:12px;top:50%;height:1px;transform:translateY(-0.5px)}
+    .radar-cross-y{top:12px;bottom:12px;left:50%;width:1px;transform:translateX(-0.5px)}
+    .radar-sweep{position:absolute;left:50%;top:50%;width:46%;height:2px;transform-origin:left center;background:linear-gradient(90deg, rgba(167,139,250,.85), rgba(86,215,255,0));filter:drop-shadow(0 0 10px rgba(167,139,250,.35));animation:radarsweep 4.5s linear infinite}
+    .radar-center{position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:var(--purple);box-shadow:0 0 18px rgba(167,139,250,.35)}
+    .radar-dot{position:absolute;width:14px;height:14px;border-radius:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;box-shadow:0 0 14px rgba(0,0,0,.25)}
+    .radar-dot.green{background:rgba(52,211,153,.95)}
+    .radar-dot.yellow{background:rgba(251,191,36,.95);color:#1b1b1b}
+    .radar-dot.red{background:rgba(248,113,113,.95)}
+    .radar-dot.cyan{background:rgba(86,215,255,.95);color:#062536}
+    .radar-dot.purple{background:rgba(167,139,250,.95)}
+    .radar-legend{display:grid;grid-template-columns:1fr;gap:8px}
+    .radar-row{display:grid;grid-template-columns:92px 1fr 58px;gap:8px;align-items:center}
+    .radar-row .name{font-size:11px;color:var(--muted);font-weight:800}
+    .radar-bar{height:10px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;border:1px solid rgba(255,255,255,.04)}
+    .radar-fill{height:100%;border-radius:999px}
+    .radar-fill.green{background:linear-gradient(90deg, rgba(52,211,153,.35), rgba(52,211,153,.95))}
+    .radar-fill.yellow{background:linear-gradient(90deg, rgba(251,191,36,.35), rgba(251,191,36,.95))}
+    .radar-fill.red{background:linear-gradient(90deg, rgba(248,113,113,.35), rgba(248,113,113,.95))}
+    .radar-fill.cyan{background:linear-gradient(90deg, rgba(86,215,255,.35), rgba(86,215,255,.95))}
+    .radar-fill.purple{background:linear-gradient(90deg, rgba(167,139,250,.35), rgba(167,139,250,.95))}
+    .radar-note{font-size:11px;color:var(--muted);line-height:1.55}
+    @keyframes radarsweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
     
     .risk-pill{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid var(--line)}
     .risk-low{background:rgba(52,211,153,0.14);color:#bbf7d0;border-color:rgba(52,211,153,0.3)}
@@ -438,6 +467,43 @@
       else if(spread < -10) score -= 6;
 
       return Math.max(0, Math.min(100, Math.round(score * 10) / 10));
+    }
+    function getMarketExplainParts(m){
+      const parts = [];
+      const otc = num(m.otcChange);
+      const taiex = num(m.taiexChange);
+      const up = num(m.limitUp);
+      const down = num(m.limitDown);
+      const adv = num(m.advancers);
+      const dec = num(m.decliners);
+      const spread = up - down;
+
+      if(taiex > 1.2) parts.push('加權強勢上漲，加 15 分');
+      else if(taiex > 0.5) parts.push('加權偏強，加 8 分');
+      else if(taiex < -1.2) parts.push('加權大跌，扣 15 分');
+      else if(taiex < -0.5) parts.push('加權轉弱，扣 8 分');
+      else parts.push('加權影響中性');
+
+      if(otc > 1.0) parts.push('OTC 強勢上漲，加 15 分');
+      else if(otc > 0.4) parts.push('OTC 偏強，加 8 分');
+      else if(otc < -1.0) parts.push('OTC 大跌，扣 15 分');
+      else if(otc < -0.4) parts.push('OTC 轉弱，扣 8 分');
+      else parts.push('OTC 影響中性');
+
+      if(spread > 30) parts.push('漲停明顯大於跌停，加 12 分');
+      else if(spread > 10) parts.push('漲停優於跌停，加 6 分');
+      else if(spread < -30) parts.push('跌停明顯大於漲停，扣 12 分');
+      else if(spread < -10) parts.push('跌停壓過漲停，扣 6 分');
+      else parts.push('漲跌停差距中性');
+
+      if(adv + dec > 0){
+        const advRatio = adv / (adv + dec);
+        if(advRatio >= 0.65) parts.push('上漲家數明顯優勢，廣度偏強');
+        else if(advRatio <= 0.4) parts.push('下跌家數壓制，廣度偏弱');
+        else parts.push('上漲與下跌家數接近，廣度中性');
+      }
+
+      return parts;
     }
     function calculateMarket(){
       const m = state.market;
@@ -1023,11 +1089,72 @@
       $('todayInstruction').textContent = state.market.instruction;
       $('lastSyncTime').textContent = state.lastSync || '-';
     }
+    function marketBandLabel(score){
+      if(score >= 80) return '主攻區';
+      if(score >= 70) return '可作戰';
+      if(score >= 55) return '謹慎試單';
+      if(score >= 40) return '保守防守';
+      return '全面停戰';
+    }
+    function toneClassByValue(val, thresholds={high:70, mid:40}){
+      if(val >= thresholds.high) return 'green';
+      if(val >= thresholds.mid) return 'yellow';
+      return 'red';
+    }
+    function getMarketRadarItems(m){
+      const spread = num(m.limitUp) - num(m.limitDown);
+      const breadth = clamp(num(m.breadthScore),0,100);
+      const sentiment = clamp(num(m.sentimentScore),0,100);
+      const taiexPower = clamp(50 + num(m.taiexChange) * 25, 0, 100);
+      const otcPower = clamp(50 + num(m.otcChange) * 30, 0, 100);
+      const spreadPower = clamp(50 + spread * 1.5, 0, 100);
+      const signalPower = num(m.signal === 'green' ? 92 : m.signal === 'yellow' ? 58 : 18);
+      return [
+        { key:'breadth', label:'廣度擴散', value:breadth, cls:toneClassByValue(breadth,{high:68,mid:45}) },
+        { key:'sentiment', label:'情緒熱度', value:sentiment, cls:toneClassByValue(sentiment,{high:70,mid:45}) },
+        { key:'taiex', label:'加權強弱', value:taiexPower, cls:toneClassByValue(taiexPower,{high:65,mid:45}) },
+        { key:'otc', label:'OTC強弱', value:otcPower, cls:toneClassByValue(otcPower,{high:65,mid:45}) },
+        { key:'limit', label:'漲跌停優勢', value:spreadPower, cls:toneClassByValue(spreadPower,{high:62,mid:45}) },
+        { key:'signal', label:'最終燈號', value:signalPower, cls:m.signal === 'green' ? 'purple' : (m.signal === 'yellow' ? 'yellow' : 'red') }
+      ];
+    }
+    function getRadarDotStyle(item, idx, total){
+      const angle = (-90 + idx * (360 / total)) * Math.PI / 180;
+      const radius = 26 + item.value * 0.26;
+      const x = 50 + Math.cos(angle) * radius;
+      const y = 50 + Math.sin(angle) * radius;
+      return `left:${x}%;top:${y}%;`;
+    }
     function renderMarket(){
+      const reasons = getMarketExplainParts(state.market);
+      const radarItems = getMarketRadarItems(state.market);
+      const lightText = state.market.signal === 'green'
+        ? '綠燈：可正常作戰，優先挑 A 級主攻'
+        : state.market.signal === 'yellow'
+          ? '黃燈：降風險，嚴選 1 檔或縮小股數'
+          : '紅燈：停止開新倉，只管理舊倉';
       $('marketSummary').innerHTML = `
         <div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div><div class="footnote">看上漲/下跌家數與漲跌停擴散</div></div>
         <div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div><div class="footnote">依 OTC%、加權%、漲跌停差自動估算</div></div>
-        <div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div><div class="footnote">總分 = 廣度 60% + 情緒 40%</div></div>`;
+        <div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div><div class="footnote">${marketBandLabel(state.market.totalScore)}｜總分 ${fmt(state.market.totalScore,1)}</div></div>
+        <div class="radar-panel">
+          <div class="label" style="margin-bottom:10px">市場戰況雷達</div>
+          <div class="radar-grid">
+            <div class="radar-shell">
+              <div class="radar-cross-x"></div>
+              <div class="radar-cross-y"></div>
+              <div class="radar-sweep"></div>
+              <div class="radar-center"></div>
+              ${radarItems.map((item, idx) => `<div class="radar-dot ${item.cls}" style="${getRadarDotStyle(item, idx, radarItems.length)}">${Math.round(item.value)}</div>`).join('')}
+            </div>
+            <div class="radar-legend">
+              ${radarItems.map(item => `<div class="radar-row"><div class="name">${item.label}</div><div class="radar-bar"><div class="radar-fill ${item.cls}" style="width:${item.value}%"></div></div><div class="right mono">${fmt(item.value,0)}</div></div>`).join('')}
+            </div>
+          </div>
+          <div class="divider" style="margin:12px 0"></div>
+          <div class="value small ${signalClass(state.market.signal)}" style="margin-bottom:8px">${lightText}</div>
+          <div class="radar-note">${reasons.map((x, i) => `${i+1}. ${x}`).join('<br>')}</div>
+        </div>`;
     }
     function renderRiskMode(){
       const { lossMode, effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings();
