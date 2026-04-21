@@ -291,10 +291,38 @@
     function calcShares(entry, stop){ const { effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings(); const capital = num(state.risk.capital); const configuredAvailableCash = num(state.risk.availableCash); const usedCapital = getUsedCapitalFromOpenPositions(); const realAvailableCash = Math.max(0, configuredAvailableCash-usedCapital); const singlePositionCapitalPercent = num(state.risk.singlePositionCapitalPercent); const totalRiskAmount = capital * (effectiveDailyRiskPercent/100); const bucketCount = effectiveMaxNewPositions > 0 ? effectiveMaxNewPositions : 1; const singleRiskAmount = totalRiskAmount / bucketCount; const riskPerShare = Math.abs(entry-stop); if(riskPerShare <= 0) return buildShareResult(0,entry,stop,singleRiskAmount,0,0,realAvailableCash); const sharesByRisk = Math.floor(singleRiskAmount/riskPerShare); const maxCapitalForPosition = Math.min(realAvailableCash, capital*(singlePositionCapitalPercent/100)); const sharesByCapital = Math.floor(maxCapitalForPosition/entry); const finalShares = Math.max(0, Math.min(sharesByRisk, sharesByCapital)); return buildShareResult(finalShares, entry, stop, singleRiskAmount, sharesByRisk, sharesByCapital, realAvailableCash); }
     function calcRR(entry, stop, takeProfit){ const risk = entry-stop; const reward = takeProfit-entry; return risk <= 0 ? 0 : reward/risk; }
 
-    function splitCsvLine(line){ const result=[]; let current='', inQuotes=false; for(let i=0;i<line.length;i++){ const ch=line[i]; if(ch==='"'){ if(inQuotes && line[i+1]==='"'){ current+='"'; i++; } else inQuotes=!inQuotes; } else if(ch===',' && !inQuotes){ result.push(current); current=''; } else current += ch; } result.push(current); return result.map(x=>x.trim()); }
+    function splitCsvLine(line){
+      const result=[];
+      let current='';
+      let inQuotes=false;
+      for(let i=0;i<line.length;i++){
+        const ch=line[i];
+        if(ch==='"'){
+          if(inQuotes && line[i+1]==='"'){
+            current+='"';
+            i++;
+          }else{
+            inQuotes=!inQuotes;
+          }
+        }else if(ch===',' && !inQuotes){
+          result.push(current);
+          current='';
+        }else{
+          current += ch;
+        }
+      }
+      result.push(current);
+      return result.map(x => String(x ?? '').replace(/\r/g,'').replace(/^\"|\"$/g,'').trim());
+    }
     function normalizeHeader(h){ return String(h).replace(/^"|"$/g,'').trim(); }
     function getCsvIndexMap(headers){ const map={}; headers.forEach((h,idx)=>{ map[normalizeHeader(h)] = idx; }); return map; }
     function valAt(row,map,key){ const idx = map[key]; if(idx===undefined) return ''; return row[idx] ?? ''; }
+    function csvNum(v, fallback=NaN){
+      const s = String(v ?? '').replace(/,/g,'').trim();
+      if(s === '') return fallback;
+      const n = parseFloat(s);
+      return Number.isFinite(n) ? n : fallback;
+    }
     function analystScore(rating){ const t = String(rating || '').trim(); if(t.includes('強力買入')) return 5; if(t.includes('買入')) return 4; if(t.includes('中立')) return 2; return 2; }
     function marketSignalNumeric(signal){ if(signal==='green') return 8; if(signal==='yellow') return 5; return 1; }
 
@@ -321,18 +349,35 @@
     function rankCandidates(candidates, market){ const scored = candidates.map(stock => scoreCandidateCsv(stock, market)); scored.sort((a,b)=>{ if(a.rejected!==b.rejected) return a.rejected ? 1 : -1; if(a.isMainAttackCandidate!==b.isMainAttackCandidate) return a.isMainAttackCandidate ? -1 : 1; return b.localScore - a.localScore; }); return scored.map((item,idx)=>({ ...item, rank:idx+1 })); }
 
     function parseTradingViewCsv(){
-      const text = state.candidatesRawText || ''; const lines = text.split(/\n+/).map(x=>x.trim()).filter(Boolean); if(lines.length < 2){ state.candidates=[]; saveState(); return; }
-      const headers = splitCsvLine(lines[0]).map(normalizeHeader); const map = getCsvIndexMap(headers); const parsed=[];
+      const text = state.candidatesRawText || '';
+      const lines = text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+      if(lines.length < 2){ state.candidates=[]; saveState(); return; }
+      const headers = splitCsvLine(lines[0]).map(normalizeHeader);
+      const map = getCsvIndexMap(headers);
+      const parsed=[];
       for(let i=1;i<lines.length;i++){
-        const row = splitCsvLine(lines[i]); if(!row.length) continue;
-        const symbol = valAt(row,map,'商品') || valAt(row,map,'ticker') || row[0]; const name = valAt(row,map,'描述') || '';
-        const close = num(valAt(row,map,'價格') || row[2], NaN); if(!symbol || Number.isNaN(close)) continue;
-        const changePct = num(valAt(row,map,'價格變化 % 1天'), 0); const volumeRatio = num(valAt(row,map,'相對成交量 1天'), NaN); const analystRating = valAt(row,map,'分析師評級'); const sma20 = num(valAt(row,map,'簡單移動平均線 (20) 1天'), NaN); const sma60 = num(valAt(row,map,'簡單移動平均線 (60) 1天'), NaN); const rsi14 = num(valAt(row,map,'相對強弱指標 (14) 1天'), NaN); const epsGrowthYoy = num(valAt(row,map,'稀釋每股盈餘成長率 %, TTM年增率'), NaN);
-        const entry=close, stop=Number((close*0.97).toFixed(2)), takeProfit=Number((close*1.05).toFixed(2)); const fire = calcShares(entry,stop); const rr = calcRR(entry,stop,takeProfit); const riskPct = entry > stop ? ((entry-stop)/entry)*100 : 999;
+        const row = splitCsvLine(lines[i]);
+        if(!row.length) continue;
+        const symbol = normalizeSymbol(valAt(row,map,'商品') || valAt(row,map,'ticker') || row[0]);
+        const name = valAt(row,map,'描述') || '';
+        const close = csvNum(valAt(row,map,'價格') || row[2], NaN);
+        if(!symbol || Number.isNaN(close)) continue;
+        const changePct = csvNum(valAt(row,map,'價格變化 % 1天'), 0);
+        const volumeRatio = csvNum(valAt(row,map,'相對成交量 1天'), NaN);
+        const analystRating = valAt(row,map,'分析師評級');
+        const sma20 = csvNum(valAt(row,map,'簡單移動平均線 (20) 1天'), NaN);
+        const sma60 = csvNum(valAt(row,map,'簡單移動平均線 (60) 1天'), NaN);
+        const rsi14 = csvNum(valAt(row,map,'相對強弱指標 (14) 1天'), NaN);
+        const epsGrowthYoy = csvNum(valAt(row,map,'稀釋每股盈餘成長率 %, TTM年增率'), NaN);
+        const entry=close, stop=Number((close*0.97).toFixed(2)), takeProfit=Number((close*1.05).toFixed(2));
+        const fire = calcShares(entry,stop);
+        const rr = calcRR(entry,stop,takeProfit);
+        const riskPct = entry > stop ? ((entry-stop)/entry)*100 : 999;
         parsed.push({ id:uid(symbol), symbol, name, close, high:close, changePct, volumeRatio, analystRating, sma20, sma60, rsi14, epsGrowthYoy, entry, stop, takeProfit, rr, riskPct, shares:fire.shares, boardLots:fire.boardLots, oddLots:fire.oddLots, invested:fire.invested, positionRisk:fire.positionRisk, sharesByRisk:fire.sharesByRisk, sharesByCapital:fire.sharesByCapital, singleRiskAmount:fire.singleRiskAmount, selected:false, createdAt:nowString() });
       }
       const marketData = { signal:state.market.signal, totalScore:state.market.totalScore, limitUp:state.market.limitUp, limitDown:state.market.limitDown };
-      state.candidates = rankCandidates(parsed, marketData); saveState();
+      state.candidates = rankCandidates(parsed, marketData);
+      saveState();
     }
 
     function validateCandidate(c){ const errors=[]; if(state.market.signal==='red') errors.push('紅燈日禁止開新倉'); if(c.stop >= c.entry) errors.push('停損不得高於或等於買價'); if(c.takeProfit <= c.entry) errors.push('停利不得低於或等於買價'); if(c.shares <= 0) errors.push('可買股數為 0'); const { effectiveMaxNewPositions } = getEffectiveSettings(); const selectedCount = state.candidates.filter(x=>x.selected).length; if(!c.selected && selectedCount >= effectiveMaxNewPositions) errors.push('已達可開新倉上限'); if(c.rejected) errors.push(...(c.rejectReasons || [])); return errors; }
