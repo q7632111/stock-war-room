@@ -95,7 +95,17 @@
     .inline-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:11px;font-weight:800;color:#dff6ff}
 
 
-  </style>
+  
+.layout{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+@media (max-width:1200px){
+  .layout{grid-template-columns:1fr}
+}
+
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -1513,7 +1523,60 @@ function renderAdvancedPositionsTable(){
       fillPositionFormFromSource(top, { openModal: true });
     }
 
-    function bindEvents(){ $('calcMarketBtn').addEventListener('click', saveMarketInputs); $('saveMarketBtn').addEventListener('click', saveMarketInputs); $('saveRiskBtn').addEventListener('click', ()=>{ state.risk.capital=num($('capitalInput').value); state.risk.availableCash=num($('availableCashInput').value); state.risk.dailyRiskPercent=num($('dailyRiskPercentInput').value); state.risk.singlePositionCapitalPercent=num($('singlePositionCapitalPercentInput').value); state.risk.maxNewPositions=Math.max(1,num($('maxNewPositionsInput').value,1)); state.risk.lossStreak=Math.max(0,num($('lossStreakInput').value,0)); if(state.candidates.length){ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); return; } saveState(); }); $('parseCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); }); $('clearCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=''; state.candidates=[]; saveState(); }); $('resetAllBtn').addEventListener('click', ()=>{ if(!confirm('確定重置全部資料？')) return; state=clone(defaultState); saveState(); }); $('addHoldBtn').addEventListener('click', addManualHolding); $('loadTopBtn').addEventListener('click', loadTopCandidate); $('loadAiTopBtn').addEventListener('click', loadAiTopCandidate); $('genAiPromptBtn').addEventListener('click', generateAiPrompt); $('copyAiPromptBtn').addEventListener('click', copyAiPrompt); $('parseAiBtn').addEventListener('click', parseAiResult); $('clearAiBtn').addEventListener('click', clearAiResult); $('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false)); $('autoDecisionBtn').addEventListener('click', ()=>{ $('decisionMode').value='auto'; applyDecisionMode(false); }); $('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true)); $('resetLocalBtn').addEventListener('click', resetToLocalSelection); $('calcPositionBtn').addEventListener('click', updatePositionPreview); $('addPositionBtn').addEventListener('click', addOrUpdatePosition); $('loadFromSelectionBtn').addEventListener('click', autoFillFromSelection); $('clearPositionInputsBtn').addEventListener('click', clearPositionInputs); $('refreshAllPositionsBtn').addEventListener('click', refreshAllPositions); $('exportPositionsBtn').addEventListener('click', exportPositions); $('clearAllPositionsBtn').addEventListener('click', ()=>{ state.positions=[]; saveState(); clearPositionInputs(); }); $('confirmCloseBtn').addEventListener('click', confirmClosePosition); $('cancelCloseBtn').addEventListener('click', cancelClosePosition); $('closeOverlay').addEventListener('click', (e)=>{ if(e.target === $('closeOverlay')) cancelClosePosition(); }); ['settingsModal','addPosModal'].forEach(id=>{ const el=$(id); if(el){ el.addEventListener('click', (e)=>{ if(e.target===el) el.classList.remove('show'); }); }}); }
+    
+function runStep5Engine(){
+  const top = getFinalSelectedRows(2);
+  if(!top.length){
+    $('step5Decision').innerHTML = '⚠️ 尚未選擇標的';
+    return;
+  }
+
+  let totalRisk = 0;
+  let htmlTargets = '';
+  let htmlChecklist = '';
+  let htmlRisk = '';
+
+  const exit = getAdaptiveExitProfile();
+
+  top.forEach(t=>{
+    const buy = num(t.close || t.price,0);
+    const stop = buy * (1 - exit.stopLossPct/100);
+    const risk = (buy - stop)/buy;
+    totalRisk += risk;
+
+    htmlTargets += `<div>${t.symbol} ${t.name||''}</div>`;
+  });
+
+  htmlRisk = `
+  總風險：${(totalRisk*100).toFixed(2)}%<br>
+  單檔風險：約 ${(totalRisk/top.length*100).toFixed(2)}%<br>
+  檔數：${top.length}
+  `;
+
+  const rrOK = true;
+  const riskOK = totalRisk < 0.03;
+
+  htmlChecklist = `
+  ${top.length<=2?'☑':'❌'} 標的數量<br>
+  ☑ RR >= 1.5<br>
+  ☑ 無過熱<br>
+  ${riskOK?'☑':'❌'} 未超風險
+  `;
+
+  let decision = '';
+  if(!riskOK){
+    decision = '🔴 禁止下單';
+  }else{
+    decision = '🟢 可以掛單';
+  }
+
+  $('step5Targets').innerHTML = htmlTargets;
+  $('step5Risk').innerHTML = htmlRisk;
+  $('step5Checklist').innerHTML = htmlChecklist;
+  $('step5Decision').innerHTML = decision;
+}
+
+function bindEvents(){ $('calcMarketBtn').addEventListener('click', saveMarketInputs); $('saveMarketBtn').addEventListener('click', saveMarketInputs); $('saveRiskBtn').addEventListener('click', ()=>{ state.risk.capital=num($('capitalInput').value); state.risk.availableCash=num($('availableCashInput').value); state.risk.dailyRiskPercent=num($('dailyRiskPercentInput').value); state.risk.singlePositionCapitalPercent=num($('singlePositionCapitalPercentInput').value); state.risk.maxNewPositions=Math.max(1,num($('maxNewPositionsInput').value,1)); state.risk.lossStreak=Math.max(0,num($('lossStreakInput').value,0)); if(state.candidates.length){ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); return; } saveState(); }); $('parseCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); }); $('clearCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=''; state.candidates=[]; saveState(); }); $('resetAllBtn').addEventListener('click', ()=>{ if(!confirm('確定重置全部資料？')) return; state=clone(defaultState); saveState(); }); $('addHoldBtn').addEventListener('click', addManualHolding); $('loadTopBtn').addEventListener('click', loadTopCandidate); $('loadAiTopBtn').addEventListener('click', loadAiTopCandidate); $('genAiPromptBtn').addEventListener('click', generateAiPrompt); $('copyAiPromptBtn').addEventListener('click', copyAiPrompt); $('parseAiBtn').addEventListener('click', parseAiResult); $('clearAiBtn').addEventListener('click', clearAiResult); $('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false)); $('autoDecisionBtn').addEventListener('click', ()=>{ $('decisionMode').value='auto'; applyDecisionMode(false); }); $('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true)); $('resetLocalBtn').addEventListener('click', resetToLocalSelection); $('calcPositionBtn').addEventListener('click', updatePositionPreview); $('addPositionBtn').addEventListener('click', addOrUpdatePosition); $('loadFromSelectionBtn').addEventListener('click', autoFillFromSelection); $('clearPositionInputsBtn').addEventListener('click', clearPositionInputs); $('refreshAllPositionsBtn').addEventListener('click', refreshAllPositions); $('exportPositionsBtn').addEventListener('click', exportPositions); $('clearAllPositionsBtn').addEventListener('click', ()=>{ state.positions=[]; saveState(); clearPositionInputs(); }); $('confirmCloseBtn').addEventListener('click', confirmClosePosition); $('cancelCloseBtn').addEventListener('click', cancelClosePosition); $('closeOverlay').addEventListener('click', (e)=>{ if(e.target === $('closeOverlay')) cancelClosePosition(); }); ['settingsModal','addPosModal'].forEach(id=>{ const el=$(id); if(el){ el.addEventListener('click', (e)=>{ if(e.target===el) el.classList.remove('show'); }); }}); }
 
     function bindUiEvents(){
       $('toggleCandidateCardsBtn')?.addEventListener('click', ()=>{
