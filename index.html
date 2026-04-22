@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v9.3-a.7.2.1｜掛單清單同步版</title>
+<title>AI 戰艦 Pro Max v9.3-a.9.1 智慧鎖倉版.1｜掛單清單同步版</title>
 <style>
     :root{
       --bg:#071019;
@@ -438,7 +438,121 @@
     }
 
 
-    function getAdaptiveExitProfile(){
+    
+
+// ===== 智慧鎖倉版 =====
+
+function getSmartLockExecution(row, qty){
+  const q = Number(qty || row.qty || row.shares || 0);
+  const lock = getLockPlan(row);
+
+  if(!q || q <= 0){
+    return { ...lock, totalQty: 0, sellQty: 0, keepQty: 0, executionNote: '股數不足' };
+  }
+
+  // 零股或混合股數：照百分比精準分批
+  if(q % 1000 !== 0){
+    const sellQty = Math.max(1, Math.round(q * lock.firstSellPct / 100));
+    const keepQty = Math.max(0, q - sellQty);
+    return {
+      ...lock,
+      totalQty: q,
+      sellQty,
+      keepQty,
+      executionNote: `零股模式：先賣 ${sellQty.toLocaleString('zh-TW')} 股，續抱 ${keepQty.toLocaleString('zh-TW')} 股`
+    };
+  }
+
+  // 整張模式：自動換算成可執行張數
+  const lots = Math.floor(q / 1000);
+
+  if(lots <= 1){
+    return {
+      ...lock,
+      totalQty: q,
+      sellQty: 0,
+      keepQty: q,
+      executionNote: '1 張整股：不分批，直接用 Runner 續抱'
+    };
+  }
+
+  let sellLots = 0;
+  if(lock.mode === 'trend_lock'){
+    sellLots = Math.max(1, Math.round(lots * 0.3));
+  } else {
+    sellLots = Math.max(1, Math.round(lots * 0.5));
+  }
+
+  sellLots = Math.min(sellLots, lots - 1);
+
+  const sellQty = sellLots * 1000;
+  const keepQty = q - sellQty;
+
+  return {
+    ...lock,
+    totalQty: q,
+    sellQty,
+    keepQty,
+    executionNote: `整張模式：先賣 ${sellLots} 張（${sellQty.toLocaleString('zh-TW')} 股），續抱 ${keepQty.toLocaleString('zh-TW')} 股`
+  };
+}
+
+function getLockPlan(row){
+  const engine = getDualExitEngine(row);
+  const price = num(row.price);
+  if(!price) return { mode:'none', firstSellPct:0, runnerPct:0, lockTrigger:null, runnerTrail:null, note:'價格不足' };
+
+  if(engine.mode === 'trend'){
+    return {
+      mode: 'trend_lock',
+      firstSellPct: 30,
+      runnerPct: 70,
+      lockTrigger: +(price * 1.12).toFixed(2),
+      runnerTrail: 10,
+      note: '先落袋 30%，剩餘 70% 用趨勢追蹤'
+    };
+  }
+
+  return {
+    mode: 'normal_lock',
+    firstSellPct: 50,
+    runnerPct: 50,
+    lockTrigger: +(price * 1.10).toFixed(2),
+    runnerTrail: 6,
+    note: '先落袋 50%，剩餘 50% 續抱到第二停利或回撤'
+  };
+}
+
+// ===== 雙引擎停利系統 =====
+function getDualExitEngine(row){
+  const rsi = num(row.rsi14);
+  const volRatio = num(row.volumeRatio);
+  const deviation = num(row.deviation20);
+
+  // 判斷是否為飆股模式
+  const isTrend = (rsi > 70 && volRatio > 2 && deviation < 20);
+
+  if(isTrend){
+    return {
+      mode: 'trend',
+      label: '🚀 趨勢追蹤（抱飆股）',
+      stopLoss: -5,
+      trail: 12,
+      tightenTrail: 6
+    };
+  }else{
+    return {
+      mode: 'normal',
+      label: '📊 短線套利',
+      stopLoss: -7,
+      tp1: 10,
+      tp2: 15,
+      trail: 8
+    };
+  }
+}
+
+function getAdaptiveExitProfile(){
       const signal = state?.market?.signal || 'yellow';
       if(signal==='green') return { label:'綠燈進攻', stopLossPct:3, trailGapPct:4, lock1:3, lock2:8 };
       if(signal==='red') return { label:'紅燈防守', stopLossPct:2, trailGapPct:3, lock1:2, lock2:5 };
