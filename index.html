@@ -661,10 +661,85 @@ function updateTrailingStop(p){
     function getDashboardSummary(){ const { effectiveDailyRiskPercent, effectiveMaxNewPositions, lossMode } = getEffectiveSettings(); const capital=num(state.risk.capital); const dailyRiskAmount=capital*(effectiveDailyRiskPercent/100); const openPositions=getOpenPositions(); const usedCapital=getUsedCapitalFromOpenPositions(); const remainingCash=Math.max(0, num(state.risk.availableCash)-usedCapital); return { dailyRiskAmount, effectiveDailyRiskPercent, effectiveMaxNewPositions, lossMode, openPositions, usedCapital, remainingCash }; }
 
     function generateAiPrompt(){
-      const top = state.candidates.filter(c=>!c.rejected).slice(0,5); if(!top.length) return alert('目前沒有可供 AI 覆核的候選股。');
+      const top = state.candidates.filter(c=>!c.rejected).slice(0,5);
+      if(!top.length) return alert('目前沒有可供 AI 覆核的候選股。');
       const m = state.market;
-      const prompt = `你是一名台股衛星飆股短線戰術教練。\n\n目前系統已用本地量化模型從 TradingView CSV 篩出前幾名候選股。\n請你不要重新海選市場，而是只根據以下名單，判斷「隔日夜間智慧單」最適合的 1 檔主攻、1 檔次選、1 檔應避開標的。\n\n交易風格：\n- 台股衛星飆股\n- 夜間決策、隔日掛智慧單\n- 盤中不干預\n- 重視結構、量能、過熱風險與隔日可打性\n- 火控與股數由系統決定，你只負責戰術覆核\n\n市場狀態：\n- 燈號：${m.signal}\n- 總分：${fmt(m.totalScore,1)}\n- 廣度：${fmt(m.breadthScore,1)}\n- 情緒：${fmt(m.sentimentScore,1)}\n- 說明：${(m.explainParts || []).join('；')}\n\n候選股：\n${top.map((c,idx)=>`${idx+1}. ${c.symbol} ${c.name || ''}\n   本地分數:${c.localScore}\n   級別:${c.grade}\n   主攻資格:${c.isMainAttackCandidate}\n   買價:${c.entry}\n   停損:${c.stop}\n   RR:${c.rr}\n   漲幅:${c.changePct}\n   RSI:${Number.isFinite(c.rsi14)?c.rsi14:'NA'}\n   量比:${Number.isFinite(c.volumeRatio)?c.volumeRatio:'NA'}\n   SMA20:${Number.isFinite(c.sma20)?c.sma20:'NA'}\n   SMA60:${Number.isFinite(c.sma60)?c.sma60:'NA'}\n   警示:${(c.warnings || []).join('、') || '無'}`).join('\n\n')}\n\n請只輸出 JSON，不要加多餘解釋。格式如下：\n{\n  "market_view":"",\n  "top_pick":{"symbol":"","reason":""},\n  "backup_pick":{"symbol":"","reason":""},\n  "avoid_pick":{"symbol":"","reason":""},\n  "risk_note":""\n}`;
-      state.aiReview.prompt = prompt; $('aiPromptBox').value = prompt; saveState();
+      const prompt = `你是一名台股衛星飆股短線戰術教練，現在請你扮演「AI嚴選官」。
+
+任務要求：
+1. 你必須先根據下面候選股，查詢每檔股票最近 3 個交易日的法人動向、最近 7 天熱門題材與相關新聞。
+2. 你不能重新海選市場，只能在我提供的候選股名單中做比較。
+3. 你的任務是挑出：
+   - 1 檔最適合隔日夜間智慧單的主攻股
+   - 1 檔次選股
+   - 1 檔應避開的股票
+4. 你要特別考慮：
+   - 法人是否連買 / 連賣
+   - 題材是否正在發酵
+   - 新聞是利多延續還是利多出盡
+   - 是否有過熱、爆量、乖離過大風險
+5. 你只能用我提供的候選股做判斷，不要額外推薦清單外股票。
+6. 請只輸出 JSON，不要加任何前言、解釋、Markdown、\`\`\`json。
+
+交易風格：
+- 台股衛星飆股
+- 夜間決策、隔日掛智慧單
+- 盤中不干預
+- 重視結構、量能、過熱風險與隔日可打性
+- 火控與股數由系統決定，你只負責戰術覆核
+
+市場狀態：
+- 燈號：${m.signal}
+- 總分：${fmt(m.totalScore,1)}
+- 廣度：${fmt(m.breadthScore,1)}
+- 情緒：${fmt(m.sentimentScore,1)}
+- 說明：${(m.explainParts || []).join('；')}
+
+候選股：
+${top.map((c,idx)=>`${idx+1}. ${c.symbol} ${c.name || ''}
+   本地分數:${c.localScore}
+   級別:${c.grade}
+   主攻資格:${c.isMainAttackCandidate}
+   買價:${c.entry}
+   停損:${c.stop}
+   RR:${c.rr}
+   漲幅:${c.changePct}
+   RSI:${Number.isFinite(c.rsi14)?c.rsi14:'NA'}
+   量比:${Number.isFinite(c.volumeRatio)?c.volumeRatio:'NA'}
+   SMA20:${Number.isFinite(c.sma20)?c.sma20:'NA'}
+   SMA60:${Number.isFinite(c.sma60)?c.sma60:'NA'}
+   警示:${(c.warnings || []).join('、') || '無'}`).join('
+
+')}
+
+輸出格式固定如下：
+{
+  "market_view": "",
+  "top_pick": {
+    "symbol": "",
+    "reason": ""
+  },
+  "backup_pick": {
+    "symbol": "",
+    "reason": ""
+  },
+  "avoid_pick": {
+    "symbol": "",
+    "reason": ""
+  },
+  "fund_flow_note": "",
+  "theme_note": "",
+  "news_note": "",
+  "risk_note": "",
+  "ai_score": {
+    "top_pick": 0,
+    "backup_pick": 0,
+    "avoid_pick": 0
+  }
+}`;
+      state.aiReview.prompt = prompt;
+      $('aiPromptBox').value = prompt;
+      saveState();
     }
     async function copyAiPrompt(){ const txt = state.aiReview.prompt || $('aiPromptBox').value || ''; if(!txt) return alert('目前沒有可複製的 Prompt'); try{ await navigator.clipboard.writeText(txt); alert('AI Prompt 已複製'); }catch(e){ alert('複製失敗，請手動複製'); } }
     function normalizeSymbol(v){
@@ -678,11 +753,33 @@ function updateTrailingStop(p){
 
     function normalizeJsonText(raw){ const trimmed = raw.trim(); const start = trimmed.indexOf('{'); const end = trimmed.lastIndexOf('}'); if(start !== -1 && end !== -1 && end > start) return trimmed.slice(start, end+1); return trimmed; }
     function parseAiResult(){
-      const raw = $('aiResultBox').value.trim(); if(!raw) return alert('請先貼上 AI JSON');
-      try{ const parsed = JSON.parse(normalizeJsonText(raw)); state.aiReview.rawResponse = raw; if(parsed?.top_pick?.symbol) parsed.top_pick.symbol = normalizeSymbol(parsed.top_pick.symbol);
-      if(parsed?.backup_pick?.symbol) parsed.backup_pick.symbol = normalizeSymbol(parsed.backup_pick.symbol);
-      if(parsed?.avoid_pick?.symbol) parsed.avoid_pick.symbol = normalizeSymbol(parsed.avoid_pick.symbol);
-      state.aiReview.parsed = parsed; state.aiReview.mode = 'ai_assisted'; saveState(); alert('✅ AI 覆核結果已解析並鎖定'); }catch(e){ alert('AI JSON 解析失敗，請確認格式正確。'); }
+      const raw = $('aiResultBox').value.trim();
+      if(!raw) return alert('請先貼上 AI JSON');
+
+      try{
+        const parsed = JSON.parse(normalizeJsonText(raw));
+
+        if(parsed?.top_pick?.symbol) parsed.top_pick.symbol = normalizeSymbol(parsed.top_pick.symbol);
+        if(parsed?.backup_pick?.symbol) parsed.backup_pick.symbol = normalizeSymbol(parsed.backup_pick.symbol);
+        if(parsed?.avoid_pick?.symbol) parsed.avoid_pick.symbol = normalizeSymbol(parsed.avoid_pick.symbol);
+
+        if(!parsed.fund_flow_note) parsed.fund_flow_note = '';
+        if(!parsed.theme_note) parsed.theme_note = '';
+        if(!parsed.news_note) parsed.news_note = '';
+        if(!parsed.ai_score) parsed.ai_score = {};
+        if(typeof parsed.ai_score.top_pick !== 'number') parsed.ai_score.top_pick = 0;
+        if(typeof parsed.ai_score.backup_pick !== 'number') parsed.ai_score.backup_pick = 0;
+        if(typeof parsed.ai_score.avoid_pick !== 'number') parsed.ai_score.avoid_pick = 0;
+
+        state.aiReview.rawResponse = raw;
+        state.aiReview.parsed = parsed;
+        state.aiReview.mode = 'ai_assisted';
+        saveState();
+        alert('✅ AI 覆核結果已解析並鎖定');
+      }catch(e){
+        console.error('AI parse error:', e, raw);
+        alert('AI JSON 解析失敗，請確認格式正確。');
+      }
     }
     function clearAiResult(){ state.aiReview.rawResponse=''; state.aiReview.parsed=null; state.aiReview.mode='local_only'; $('aiResultBox').value=''; saveState(); }
     function getAiFlags(symbol){ const p = state.aiReview?.parsed; return { isTop: p?.top_pick?.symbol === symbol, isBackup: p?.backup_pick?.symbol === symbol, isAvoid: p?.avoid_pick?.symbol === symbol }; }
