@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v9.6.2｜彈窗強化整合版</title>
+<title>AI 戰艦 Pro Max v9.6.3｜STEP6 彈窗自動預填版</title>
 <style>
     :root{
       --bg:#071019;
@@ -98,8 +98,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v9.6.2 彈窗強化整合版</h1>
-<div class="sub">保留原穩定功能核心｜設定艙彈窗化 + STEP6 持倉彈窗化 + 輸入區重整</div>
+<h1>AI 戰艦 Pro Max v9.6.3 STEP6 彈窗自動預填版</h1>
+<div class="sub">保留原穩定功能核心｜設定艙彈窗化 + STEP6 自動預填停損停利 + 輸入區重整</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -256,9 +256,9 @@
 
 <div class="btnrow" style="margin-bottom:14px">
 <button class="btn" onclick="document.getElementById('addPosModal').classList.add('show')">➕ 手動新增 / 修改持倉</button>
-<button class="btn secondary" id="loadTopBtn" onclick="document.getElementById('addPosModal').classList.add('show')">快速帶入首選</button>
-<button class="btn purple" id="loadAiTopBtn" onclick="document.getElementById('addPosModal').classList.add('show')">快速帶入 AI 主攻</button>
-<button class="btn primary" id="loadFromSelectionBtn" onclick="document.getElementById('addPosModal').classList.add('show')">帶入最終標的</button>
+<button class="btn secondary" id="loadTopBtn" onclick="openPositionModalWithTop()">快速帶入首選</button>
+<button class="btn purple" id="loadAiTopBtn" onclick="openPositionModalWithAiTop()">快速帶入 AI 主攻</button>
+<button class="btn primary" id="loadFromSelectionBtn" onclick="openPositionModalFromFinalSelection()">帶入最終標的</button>
 <button class="btn secondary" id="refreshAllPositionsBtn">重新計算全部持倉</button>
 <button class="btn secondary" id="exportPositionsBtn">匯出持倉監控</button>
 <button class="btn red" id="clearAllPositionsBtn">清空全部持倉</button>
@@ -314,7 +314,7 @@
 
 <div class="close-overlay" id="addPosModal">
   <div class="close-modal" style="width:min(980px,95%)">
-    <div class="panel-title" style="margin-bottom:14px">➕ 手動新增 / 修改持倉</div>
+    <div class="panel-title" style="margin-bottom:14px">➕ 手動新增 / 修改持倉</div><div class="footnote" style="margin-bottom:12px">現在會依市場燈號自動預填停損、停利 1、停利 2、移動停利回撤。你只要檢查，不用自己重算。</div>
     <div class="grid-4">
       <div><label>股票代號</label><input id="holdSymbol" placeholder="例如 5244"/></div>
       <div><label>股票名稱</label><input id="holdName" placeholder="例如 健鼎"/></div>
@@ -334,9 +334,9 @@
 
     <div class="divider"></div>
     <div class="btnrow" style="margin-top:0">
-      <button class="btn secondary" id="loadTopBtn_modal_proxy" onclick="document.getElementById('loadTopBtn').click()">帶入首選</button>
-      <button class="btn purple" id="loadAiTopBtn_modal_proxy" onclick="document.getElementById('loadAiTopBtn').click()">帶入 AI 主攻</button>
-      <button class="btn primary" id="loadFromSelectionBtn_modal_proxy" onclick="document.getElementById('loadFromSelectionBtn').click()">帶入最終標的</button>
+      <button class="btn secondary" id="loadTopBtn_modal_proxy" onclick="openPositionModalWithTop()">帶入首選</button>
+      <button class="btn purple" id="loadAiTopBtn_modal_proxy" onclick="openPositionModalWithAiTop()">帶入 AI 主攻</button>
+      <button class="btn primary" id="loadFromSelectionBtn_modal_proxy" onclick="openPositionModalFromFinalSelection()">帶入最終標的</button>
     </div>
 
     <div class="divider"></div>
@@ -1424,6 +1424,70 @@ ${candidatesText}
       if(body){ body.classList.toggle('hidden-panel', !state.ui?.candidateCardsExpanded); } }
 
     function saveMarketInputs(){ state.market.advancers=num($('advancersInput').value); state.market.decliners=num($('declinersInput').value); state.market.limitUp=num($('limitUpInput').value); state.market.limitDown=num($('limitDownInput').value); state.market.otcChange=num($('otcChangeInput').value); state.market.taiexChange=num($('taiexChangeInput').value); saveState(); }
+
+    function fillPositionFormFromSource(src = {}, { openModal = true } = {}){
+      const exitProfile = getAdaptiveExitProfile();
+      const symbol = normalizeSymbol(src.symbol || '');
+      const name = src.name || '';
+      const buy = num(src.entry || src.buyPrice || src.close || src.currentPrice, 0);
+      const current = num(src.close || src.currentPrice || src.entry || src.buyPrice, buy);
+      const qty = Math.max(1, Math.floor(num(src.shares || src.qty || 1000, 1000)));
+      const highest = Math.max(num(src.highestPrice || 0, 0), current || buy);
+
+      $('holdSymbol').value = symbol || '';
+      $('holdName').value = name || '';
+      $('holdBuy').value = buy || '';
+      $('holdCurrent').value = current || '';
+      $('holdQty').value = qty || 1000;
+      $('holdShares').value = qty || 1000;
+      $('highestPrice').value = highest || '';
+
+      if(buy > 0){
+        const stop = Number((buy * (1 - exitProfile.stopLossPct/100)).toFixed(2));
+        const tp1 = Number((buy * (1 + exitProfile.lock1/100)).toFixed(2));
+        const tp2 = Number((buy * (1 + exitProfile.lock2/100)).toFixed(2));
+        $('stopLossPrice').value = stop;
+        $('takeProfit1Price').value = tp1;
+        $('takeProfit2Price').value = tp2;
+        $('trailPullback').value = exitProfile.trailGapPct;
+      }
+
+      if(openModal && $('addPosModal')) $('addPosModal').classList.add('show');
+    }
+
+    function autofillPositionTargetsByBuyPrice(){
+      const buy = num($('holdBuy')?.value, 0);
+      if(!(buy > 0)) return;
+      const exitProfile = getAdaptiveExitProfile();
+      $('stopLossPrice').value = Number((buy * (1 - exitProfile.stopLossPct/100)).toFixed(2));
+      $('takeProfit1Price').value = Number((buy * (1 + exitProfile.lock1/100)).toFixed(2));
+      $('takeProfit2Price').value = Number((buy * (1 + exitProfile.lock2/100)).toFixed(2));
+      $('trailPullback').value = exitProfile.trailGapPct;
+      if(!$('holdCurrent').value) $('holdCurrent').value = buy;
+      if(!$('highestPrice').value) $('highestPrice').value = buy;
+    }
+
+    function openPositionModalWithTop(){
+      const top = getLocalDecisionTop(1)[0];
+      if(!top) return alert('目前沒有可帶入的本地首選');
+      fillPositionFormFromSource(top, { openModal: true });
+    }
+
+    function openPositionModalWithAiTop(){
+      const parsed = state.aiReview?.parsed;
+      const aiTopCode = normalizeSymbol(parsed?.top_pick?.symbol || '');
+      if(!aiTopCode) return alert('目前沒有 AI 主攻結果');
+      const target = state.candidates.find(c => normalizeSymbol(c.symbol) === aiTopCode);
+      if(!target) return alert(`AI 主攻股 ${aiTopCode} 不在目前候選清單中`);
+      fillPositionFormFromSource(target, { openModal: true });
+    }
+
+    function openPositionModalFromFinalSelection(){
+      const top = getFinalSelectedRows(1)[0];
+      if(!top) return alert('目前沒有最終標的可帶入');
+      fillPositionFormFromSource(top, { openModal: true });
+    }
+
     function bindEvents(){ $('calcMarketBtn').addEventListener('click', saveMarketInputs); $('saveMarketBtn').addEventListener('click', saveMarketInputs); $('saveRiskBtn').addEventListener('click', ()=>{ state.risk.capital=num($('capitalInput').value); state.risk.availableCash=num($('availableCashInput').value); state.risk.dailyRiskPercent=num($('dailyRiskPercentInput').value); state.risk.singlePositionCapitalPercent=num($('singlePositionCapitalPercentInput').value); state.risk.maxNewPositions=Math.max(1,num($('maxNewPositionsInput').value,1)); state.risk.lossStreak=Math.max(0,num($('lossStreakInput').value,0)); if(state.candidates.length){ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); return; } saveState(); }); $('parseCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); }); $('clearCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=''; state.candidates=[]; saveState(); }); $('resetAllBtn').addEventListener('click', ()=>{ if(!confirm('確定重置全部資料？')) return; state=clone(defaultState); saveState(); }); $('addHoldBtn').addEventListener('click', addManualHolding); $('loadTopBtn').addEventListener('click', loadTopCandidate); $('loadAiTopBtn').addEventListener('click', loadAiTopCandidate); $('genAiPromptBtn').addEventListener('click', generateAiPrompt); $('copyAiPromptBtn').addEventListener('click', copyAiPrompt); $('parseAiBtn').addEventListener('click', parseAiResult); $('clearAiBtn').addEventListener('click', clearAiResult); $('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false)); $('autoDecisionBtn').addEventListener('click', ()=>{ $('decisionMode').value='auto'; applyDecisionMode(false); }); $('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true)); $('resetLocalBtn').addEventListener('click', resetToLocalSelection); $('calcPositionBtn').addEventListener('click', updatePositionPreview); $('addPositionBtn').addEventListener('click', addOrUpdatePosition); $('loadFromSelectionBtn').addEventListener('click', autoFillFromSelection); $('clearPositionInputsBtn').addEventListener('click', clearPositionInputs); $('refreshAllPositionsBtn').addEventListener('click', refreshAllPositions); $('exportPositionsBtn').addEventListener('click', exportPositions); $('clearAllPositionsBtn').addEventListener('click', ()=>{ state.positions=[]; saveState(); clearPositionInputs(); }); $('confirmCloseBtn').addEventListener('click', confirmClosePosition); $('cancelCloseBtn').addEventListener('click', cancelClosePosition); $('closeOverlay').addEventListener('click', (e)=>{ if(e.target === $('closeOverlay')) cancelClosePosition(); }); ['settingsModal','addPosModal'].forEach(id=>{ const el=$(id); if(el){ el.addEventListener('click', (e)=>{ if(e.target===el) el.classList.remove('show'); }); }}); }
 
     function bindUiEvents(){
