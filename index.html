@@ -29,13 +29,16 @@
     html,body{margin:0;padding:0;background:radial-gradient(circle at top left, rgba(28,183,255,.09), transparent 30%),radial-gradient(circle at top right, rgba(52,211,153,.06), transparent 25%),linear-gradient(180deg,#06111b 0%,#08131f 100%);color:var(--text);font-family:"Segoe UI","Noto Sans TC",system-ui,sans-serif}
     body{min-height:100vh}
     .wrap{max-width:1760px;margin:0 auto;padding:14px}
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:linear-gradient(180deg,rgba(19,34,51,.96),rgba(10,20,31,.96));border:1px solid var(--line2);box-shadow:var(--shadow);border-radius:14px;margin-bottom:14px;position:sticky;top:0;z-index:30;backdrop-filter:blur(8px)}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:linear-gradient(180deg,rgba(19,34,51,.96),rgba(10,20,31,.96));border:1px solid var(--line2);box-shadow:var(--shadow);border-radius:14px;margin-bottom:14px;position:static;backdrop-filter:blur(8px)}
     .brand{display:flex;flex-direction:column;gap:2px}.brand h1{margin:0;font-size:22px;letter-spacing:1px;color:#dff6ff;text-shadow:0 0 12px rgba(86,215,255,.2)}.brand .sub{font-size:12px;color:var(--muted)}
     .statusbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
     .pill{padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,rgba(15,28,42,.95),rgba(8,18,28,.95));border:1px solid var(--line);color:#d9edff;font-size:12px;font-weight:700;box-shadow:var(--glow)}
     .pill.green{color:#d8fff1;border-color:rgba(52,211,153,.45)}.pill.yellow{color:#fff5d6;border-color:rgba(251,191,36,.45)}.pill.red{color:#ffe0e0;border-color:rgba(248,113,113,.45)}.pill.purple{color:#efe8ff;border-color:rgba(167,139,250,.45)}
     .layout{display:grid;grid-template-columns:300px minmax(0,1fr) 360px;gap:14px;align-items:start}.col{display:flex;flex-direction:column;gap:14px;min-width:0}
     @media (max-width:1600px){.layout{grid-template-columns:280px minmax(0,1fr) 320px}}@media (max-width:1460px){.layout{grid-template-columns:1fr}}
+    .layout>.col:nth-child(3){grid-column:1 / -1}
+    @media (max-width:1460px){.layout>.col:nth-child(3){grid-column:auto}}
+
     .panel{background:linear-gradient(180deg,rgba(16,29,42,.98),rgba(9,18,28,.98));border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
     .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(90deg,rgba(86,215,255,.10),transparent 40%),linear-gradient(180deg,rgba(18,35,52,.95),rgba(11,22,34,.95));border-bottom:1px solid rgba(86,215,255,.12)}
     .panel-title{margin:0;font-size:15px;font-weight:900;letter-spacing:.5px;color:#dff6ff}.panel-sub{font-size:11px;color:var(--muted)}.panel-body{padding:14px}
@@ -76,7 +79,7 @@
     .action-btn{padding:6px 10px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,255,255,.08);color:#e5e7eb}
 
   
-    .quicknav{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:76px;z-index:25;margin-bottom:14px;padding:10px 12px;background:linear-gradient(180deg,rgba(10,20,31,.94),rgba(7,15,24,.94));border:1px solid rgba(86,215,255,.12);border-radius:14px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+    .quicknav{display:flex;gap:8px;flex-wrap:wrap;position:static;margin-bottom:14px;padding:10px 12px;background:linear-gradient(180deg,rgba(10,20,31,.94),rgba(7,15,24,.94));border:1px solid rgba(86,215,255,.12);border-radius:14px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
     .quicknav a,.quicknav button{appearance:none;text-decoration:none;border:none;cursor:pointer;color:#dff6ff;font-weight:800;font-size:12px;padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,#17304a,#0f2234);border:1px solid #315676}
     .quicknav .ghost{background:linear-gradient(180deg,#162231,#101c29);border-color:#29465f}
     .compact-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
@@ -250,7 +253,7 @@
 </div>
 <div class="col">
 <section class="panel" id="step6Panel">
-<div class="panel-head"><div><h2 class="panel-title">STEP 6｜持倉戰情中心</h2><div class="panel-sub">把手動輸入改成彈窗，不擠在主畫面；主畫面只保留動作與監控結果</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">STEP 6｜持倉戰情中心</h2><div class="panel-sub">把手動輸入改成彈窗，不擠在主畫面；桌機版持倉區改為下方全寬顯示，手機版維持自然下移</div></div></div>
 <div class="panel-body">
 <div class="ok-box"><strong>STEP 6 新動線</strong><br>需要輸入持倉資料時，再打開彈窗填寫。主畫面只保留：快速帶入、重算、匯出、清空，以及持倉監控結果。</div>
 
