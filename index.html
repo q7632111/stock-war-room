@@ -83,6 +83,14 @@
     .hidden-panel{display:none}
     .sticky-note{border:1px dashed rgba(86,215,255,.25);background:rgba(255,255,255,.02);border-radius:12px;padding:10px 12px;font-size:12px;color:var(--muted)}
     .summary-missing{border:1px solid rgba(251,191,36,.3);background:linear-gradient(180deg,rgba(95,71,8,.18),rgba(45,35,5,.15));color:#fff3bf;border-radius:12px;padding:10px 12px;font-size:12px}
+    .detail-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    .detail-tools .ghost{appearance:none;border:1px solid rgba(86,215,255,.2);background:rgba(255,255,255,.03);color:#dff6ff;padding:8px 12px;border-radius:999px;font-weight:800;cursor:pointer}
+    .detail-tools .ghost:hover{filter:brightness(1.08)}
+    .detail-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px;position:sticky;top:76px;z-index:8;background:linear-gradient(180deg,rgba(10,20,31,.94),rgba(7,15,24,.94));padding:10px 12px;border:1px solid rgba(86,215,255,.12);border-radius:12px;box-shadow:var(--shadow)}
+    .detail-toolbar .left,.detail-toolbar .right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .micro-note{font-size:12px;color:var(--muted)}
+    .inline-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:11px;font-weight:800;color:#dff6ff}
+
 
   </style>
 </head>
@@ -90,8 +98,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v9.4.2 穩定戰神版 FIX</h1>
-<div class="sub">股票戰情室單一完整版｜無菌修復 + AI欄位完整顯示 + Full策略/停利/鎖倉保留</div>
+<h1>AI 戰艦 Pro Max v9.4.4 UI優化版</h1>
+<div class="sub">股票戰情室單一完整版｜動線優化 + 候選詳卡控制重構 + 停利參數調整</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 </div>
@@ -103,9 +111,6 @@
   <a href="#step5Panel">STEP 5｜掛單</a>
   <a href="#step6Panel">STEP 6｜持倉</a>
   <a href="#detailCandidatesPanel">候選詳卡</a>
-  <button class="ghost" id="toggleCandidateCardsBtn" type="button">展開候選詳卡</button>
-  <button class="ghost" id="showTop5Btn" type="button">詳卡前 5</button>
-  <button class="ghost" id="showAllCardsBtn" type="button">詳卡全部</button>
 </div>
 
 <div class="layout">
@@ -215,12 +220,30 @@
 </section>
 
 <section class="panel" id="detailCandidatesPanel">
-<div class="panel-head"><div><h2 class="panel-title">候選詳卡總覽</h2><div class="panel-sub">預設收合，不擋 STEP 4 / STEP 5。需要時再展開查看細節與操作按鈕</div></div></div>
-<div class="panel-body hidden-panel" id="candidateCardsPanelBody">
-<div class="compact-toolbar" style="margin-bottom:10px">
-  <div class="sticky-note">這裡放大卡片只負責細看標的，不影響上面的主流程。</div>
+<div class="panel-head">
+  <div>
+    <h2 class="panel-title">候選詳卡總覽</h2>
+    <div class="panel-sub">預設收合，不擋 STEP 4 / STEP 5。需要時再展開查看細節與操作按鈕</div>
+  </div>
+  <div class="detail-tools">
+    <button class="ghost" id="toggleCandidateCardsBtn" type="button">展開候選詳卡</button>
+    <button class="ghost" id="showTop5Btn" type="button">詳卡前 5</button>
+    <button class="ghost" id="showAllCardsBtn" type="button">詳卡全部</button>
+  </div>
 </div>
-<div id="candidateCards"></div>
+<div class="panel-body hidden-panel" id="candidateCardsPanelBody">
+  <div class="detail-toolbar">
+    <div class="left">
+      <span class="inline-badge">候選詳卡控制台</span>
+      <span class="micro-note">這裡放大卡片只負責細看標的，不影響上面的主流程。</span>
+    </div>
+    <div class="right">
+      <a class="ghost" href="#step4Panel">回 STEP 4</a>
+      <a class="ghost" href="#step45Panel">回 STEP 4.5</a>
+      <a class="ghost" href="#step5Panel">回 STEP 5</a>
+    </div>
+  </div>
+  <div id="candidateCards"></div>
 </div>
 </section>
 </div>
@@ -636,9 +659,9 @@ function getAdaptiveFilterProfile(){
 
 function getAdaptiveExitProfile(){
       const signal = state?.market?.signal || 'yellow';
-      if(signal==='green') return { label:'綠燈進攻', stopLossPct:3, trailGapPct:4, lock1:3, lock2:8 };
-      if(signal==='red') return { label:'紅燈防守', stopLossPct:2, trailGapPct:3, lock1:2, lock2:5 };
-      return { label:'黃燈平衡', stopLossPct:2.5, trailGapPct:3.5, lock1:2.5, lock2:6 };
+      if(signal==='green') return { label:'綠燈進攻', stopLossPct:4, trailGapPct:5.5, lock1:4, lock2:10 };
+      if(signal==='red') return { label:'紅燈防守', stopLossPct:2.5, trailGapPct:3.5, lock1:2.5, lock2:5 };
+      return { label:'黃燈平衡', stopLossPct:3.5, trailGapPct:4.5, lock1:3.5, lock2:7 };
     }
 
     function getHoldingAction(p, portfolioStats){
@@ -724,7 +747,7 @@ function updateTrailingStop(p){
    - 新聞屬於利多延續、利多出盡、還是雜訊
    - 是否有過熱、爆量、乖離過大風險
 5. 請只輸出 JSON，不要加前言、不要加 Markdown、不要加 \`\`\`json。
-6. 以下欄位不可留空：fund_flow_note、theme_note、news_note，以及 top_pick / backup_pick / avoid_pick 內的 topic、institutional_flow、news_signal、confidence。若查無明確資料，請填「查無明確資料」。
+6. 以下欄位不可留空：fund_flow_note、theme_note、news_note，以及 top_pick / backup_pick / avoid_pick 內的 topic、institutional_flow、news_signal、confidence。若查無明確資料，請填「查無明確資料」，不要留空白、不要只填符號。
 
 交易風格：
 - 台股衛星飆股
@@ -1216,7 +1239,10 @@ ${candidatesText}
 
     function renderPositions(){ const openPositions=getOpenPositions(); if(openPositions.length===0){ $('positionsBox').innerHTML=`<div class="footnote">目前沒有開啟中的持倉。</div>`; return; } const portfolioStats=getPortfolioStats(); const lossMode=getLossMode(state.risk.lossStreak); const profile=getAdaptiveExitProfile(); let topAlert=`<div class="ok-box" style="margin-bottom:12px"><strong>目前出場模式：</strong>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div>`; if(state.market.signal==='red'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 市場紅燈：</strong>禁止新倉，持倉全面進入防守狀態。</div>`; } else if(portfolioStats.drop <= -5){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 組合熔斷：</strong>總回撤 ${pct(portfolioStats.drop,2)}，優先降倉保命，只減不加。</div>`; } else if(lossMode.mode==='冷卻模式'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🧊 冷卻模式：</strong>連敗達標，禁止新倉，只管理舊倉。</div>`; } $('positionsBox').innerHTML=topAlert + openPositions.map(p=>{ const pnl=(p.currentPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((p.currentPrice-p.entryPrice)/p.entryPrice)*100:0; const stopDistance=p.currentPrice-p.trailingStop; const action=getHoldingAction(p, portfolioStats); const risk=getHoldingRiskInfo(p, portfolioStats); return `<div class="card"><div class="card-head"><div><div class="symbol">${p.symbol} ${p.name||''}</div><div class="muted">建倉 ${p.entryDate}</div></div><span class="badge ${p.status.includes('撤退')?'red':(p.status.includes('鎖利')||p.status.includes('防守')?'yellow':'green')}">${p.status}</span></div><div class="mini"><div class="cell"><div class="k">成本</div><div class="v">${fmt(p.entryPrice,2)}</div></div><div class="cell"><div class="k">現價</div><div class="v">${fmt(p.currentPrice,2)}</div></div><div class="cell"><div class="k">浮盈虧</div><div class="v ${pnl>=0?'green':'red'}">NT$ ${fmt(pnl)}</div></div><div class="cell"><div class="k">報酬率</div><div class="v ${returnPct>=0?'green':'red'}">${pct(returnPct,2)}</div></div><div class="cell"><div class="k">歷史高點</div><div class="v">${fmt(p.highestPrice,2)}</div></div><div class="cell"><div class="k">移動停損</div><div class="v red">${fmt(p.trailingStop,2)}</div></div><div class="cell"><div class="k">初始停損</div><div class="v">${fmt(p.initialStop,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(p.shares)}</div></div><div class="cell"><div class="k">距停損空間</div><div class="v ${stopDistance<=0?'red':'yellow'}">${fmt(stopDistance,2)}</div></div><div class="cell"><div class="k">明日動作</div><div class="v">${action}</div></div><div class="cell"><div class="k">風險等級</div><div class="v ${risk.cls}">${risk.level}</div></div><div class="cell"><div class="k">診斷</div><div class="v">${risk.text}</div></div></div>${(state.market.signal==='red' || portfolioStats.drop <= -5 || lossMode.mode==='冷卻模式') ? `<div class="warning-box" style="margin-top:10px">系統防守警報：目前僅建議防守、減碼或平倉，不建議任何加碼動作。</div>` : ''}<div class="btnrow" style="margin-top:10px"><button class="btn small" onclick="updatePositionMarket('${p.id}')">更新收盤 / 高點</button><button class="btn small red" onclick="openClose('${p.id}')">真實平倉</button></div></div>`; }).join(''); }
     function renderPerformance(){ const perf=getPerformance(); $('performanceMetrics').innerHTML=`<div class="metric"><div class="label">總交易筆數</div><div class="value">${fmt(perf.totalTrades)}</div></div><div class="metric"><div class="label">勝率</div><div class="value ${perf.winRate>=50?'green':'yellow'}">${pct(perf.winRate,1)}</div></div><div class="metric"><div class="label">累積損益</div><div class="value ${perf.totalPnl>=0?'green':'red'}">NT$ ${fmt(perf.totalPnl)}</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value ${perf.avgReturn>=0?'green':'red'}">${pct(perf.avgReturn,2)}</div></div><div class="metric"><div class="label">飛輪累積 %</div><div class="value ${perf.flywheelPct>=0?'green':'red'}">${pct(perf.flywheelPct,2)}</div></div>`; if(state.logs.length===0){ $('logsTable').innerHTML=`<div class="footnote">尚無歷史紀錄。</div>`; return; } $('logsTable').innerHTML=`<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>原因</th><th>日期</th></tr></thead><tbody>${state.logs.slice(0,12).map(l=>`<tr><td class="mono">${l.symbol}</td><td>${fmt(l.entryPrice,2)}</td><td>${fmt(l.exitPrice,2)}</td><td>${fmt(l.shares)}</td><td class="${l.pnl>=0?'green':'red'}">NT$ ${fmt(l.pnl)}</td><td class="${l.returnPct>=0?'green':'red'}">${pct(l.returnPct,2)}</td><td class="${l.result==='win'?'green':(l.result==='loss'?'red':'yellow')}">${l.result}</td><td>${l.reason||'-'}</td><td class="mono">${l.exitDate}</td></tr>`).join('')}</tbody></table>`; }
-    function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn'); if(btn){ btn.textContent = (state.ui?.candidateCardsExpanded ? '收合候選詳卡' : '展開候選詳卡'); } }
+    function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
+      if(btn){ btn.textContent = (state.ui?.candidateCardsExpanded ? '收合候選詳卡' : '展開候選詳卡'); }
+      const body=$('candidateCardsPanelBody');
+      if(body){ body.classList.toggle('hidden-panel', !state.ui?.candidateCardsExpanded); } }
 
     function saveMarketInputs(){ state.market.advancers=num($('advancersInput').value); state.market.decliners=num($('declinersInput').value); state.market.limitUp=num($('limitUpInput').value); state.market.limitDown=num($('limitDownInput').value); state.market.otcChange=num($('otcChangeInput').value); state.market.taiexChange=num($('taiexChangeInput').value); saveState(); }
     function bindEvents(){ $('calcMarketBtn').addEventListener('click', saveMarketInputs); $('saveMarketBtn').addEventListener('click', saveMarketInputs); $('saveRiskBtn').addEventListener('click', ()=>{ state.risk.capital=num($('capitalInput').value); state.risk.availableCash=num($('availableCashInput').value); state.risk.dailyRiskPercent=num($('dailyRiskPercentInput').value); state.risk.singlePositionCapitalPercent=num($('singlePositionCapitalPercentInput').value); state.risk.maxNewPositions=Math.max(1,num($('maxNewPositionsInput').value,1)); state.risk.lossStreak=Math.max(0,num($('lossStreakInput').value,0)); if(state.candidates.length){ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); return; } saveState(); }); $('parseCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); }); $('clearCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=''; state.candidates=[]; saveState(); }); $('resetAllBtn').addEventListener('click', ()=>{ if(!confirm('確定重置全部資料？')) return; state=clone(defaultState); saveState(); }); $('addHoldBtn').addEventListener('click', addManualHolding); $('loadTopBtn').addEventListener('click', loadTopCandidate); $('loadAiTopBtn').addEventListener('click', loadAiTopCandidate); $('genAiPromptBtn').addEventListener('click', generateAiPrompt); $('copyAiPromptBtn').addEventListener('click', copyAiPrompt); $('parseAiBtn').addEventListener('click', parseAiResult); $('clearAiBtn').addEventListener('click', clearAiResult); $('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false)); $('autoDecisionBtn').addEventListener('click', ()=>{ $('decisionMode').value='auto'; applyDecisionMode(false); }); $('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true)); $('resetLocalBtn').addEventListener('click', resetToLocalSelection); $('calcPositionBtn').addEventListener('click', updatePositionPreview); $('addPositionBtn').addEventListener('click', addOrUpdatePosition); $('loadFromSelectionBtn').addEventListener('click', autoFillFromSelection); $('clearPositionInputsBtn').addEventListener('click', clearPositionInputs); $('refreshAllPositionsBtn').addEventListener('click', refreshAllPositions); $('exportPositionsBtn').addEventListener('click', exportPositions); $('clearAllPositionsBtn').addEventListener('click', ()=>{ state.positions=[]; saveState(); clearPositionInputs(); }); $('confirmCloseBtn').addEventListener('click', confirmClosePosition); $('cancelCloseBtn').addEventListener('click', cancelClosePosition); $('closeOverlay').addEventListener('click', (e)=>{ if(e.target === $('closeOverlay')) cancelClosePosition(); }); }
