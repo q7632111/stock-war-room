@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v9.3-a.5｜最終戰神整合版</title>
+<title>AI 戰艦 Pro Max v9.3-a.7｜市場自適應過濾版</title>
 <style>
     :root{
       --bg:#071019;
@@ -219,7 +219,7 @@
 </div>
 <script>
     const $ = id => document.getElementById(id);
-    const STORAGE_KEY = 'warroom_v9_3a5_final_wargod';
+    const STORAGE_KEY = 'warroom_v9_3a7_adaptive_filter';
 
     const defaultState = {
       market: { advancers:0, decliners:0, limitUp:0, limitDown:0, otcChange:0, taiexChange:0, breadthScore:0, sentimentScore:0, totalScore:0, signal:'yellow', maxNewPositionsAllowed:1, instruction:'等待市場狀態更新', explainParts:[], radar:{} },
@@ -352,9 +352,9 @@
         const row = splitCsvLine(lines[i]); if(!row.length) continue;
         const symbol = valAt(row,map,'商品') || valAt(row,map,'ticker') || row[0]; const name = valAt(row,map,'描述') || '';
         const close = num(valAt(row,map,'價格') || row[2], NaN); if(!symbol || Number.isNaN(close)) continue;
-        const changePct = num(valAt(row,map,'價格變化 % 1天'), 0); const volumeRatio = num(valAt(row,map,'相對成交量 1天'), NaN); const analystRating = valAt(row,map,'分析師評級'); const sma20 = num(valAt(row,map,'簡單移動平均線 (20) 1天'), NaN); const sma60 = num(valAt(row,map,'簡單移動平均線 (60) 1天'), NaN); const rsi14 = num(valAt(row,map,'相對強弱指標 (14) 1天'), NaN); const epsGrowthYoy = num(valAt(row,map,'稀釋每股盈餘成長率 %, TTM年增率'), NaN);
+        const changePct = num(valAt(row,map,'價格變化 % 1天'), 0); const volume = num(valAt(row,map,'成交量 1天'), NaN); const volumeRatio = num(valAt(row,map,'相對成交量 1天'), NaN); const analystRating = valAt(row,map,'分析師評級'); const sma20 = num(valAt(row,map,'簡單移動平均線 (20) 1天'), NaN); const sma60 = num(valAt(row,map,'簡單移動平均線 (60) 1天'), NaN); const rsi14 = num(valAt(row,map,'相對強弱指標 (14) 1天'), NaN); const epsGrowthYoy = num(valAt(row,map,'稀釋每股盈餘成長率 %, TTM年增率'), NaN);
         const entry=close, stop=Number((close*0.97).toFixed(2)), takeProfit=Number((close*1.05).toFixed(2)); const fire = calcShares(entry,stop); const rr = calcRR(entry,stop,takeProfit); const riskPct = entry > stop ? ((entry-stop)/entry)*100 : 999;
-        parsed.push({ id:uid(symbol), symbol, name, close, high:close, changePct, volumeRatio, analystRating, sma20, sma60, rsi14, epsGrowthYoy, entry, stop, takeProfit, rr, riskPct, shares:fire.shares, boardLots:fire.boardLots, oddLots:fire.oddLots, invested:fire.invested, positionRisk:fire.positionRisk, sharesByRisk:fire.sharesByRisk, sharesByCapital:fire.sharesByCapital, singleRiskAmount:fire.singleRiskAmount, selected:false, createdAt:nowString() });
+        parsed.push({ id:uid(symbol), symbol, name, close, high:close, changePct, volume, volumeRatio, analystRating, sma20, sma60, rsi14, epsGrowthYoy, entry, stop, takeProfit, rr, riskPct, shares:fire.shares, boardLots:fire.boardLots, oddLots:fire.oddLots, invested:fire.invested, positionRisk:fire.positionRisk, sharesByRisk:fire.sharesByRisk, sharesByCapital:fire.sharesByCapital, singleRiskAmount:fire.singleRiskAmount, selected:false, createdAt:nowString() });
       }
       const marketData = { signal:state.market.signal, totalScore:state.market.totalScore, limitUp:state.market.limitUp, limitDown:state.market.limitDown };
       state.candidates = rankCandidates(parsed, marketData); saveState();
@@ -407,6 +407,7 @@
 
 function updateTrailingStop(p){
       const profile = getAdaptiveExitProfile();
+      const filterProfile = getAdaptiveFilterProfile();
       const entry = num(p.entryPrice);
       const initialStop = num(p.initialStop);
       const currentPrice = num(p.currentPrice);
@@ -511,7 +512,8 @@ function updateTrailingStop(p){
         .slice(0,2);
       const ai=state.aiReview?.parsed;
       const profile = getAdaptiveExitProfile();
-      let html=`<div class="ok-box"><strong>自適應停利模式</strong><br>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div>`;
+      const filterProfile = getAdaptiveFilterProfile();
+      let html=`<div class="ok-box"><strong>自適應停利模式</strong><br>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div><div class="ok-box" style="margin-top:10px"><strong>自適應過濾模式</strong><br>${filterProfile.label}｜量能 ≥ ${filterProfile.minVolume.toLocaleString('zh-TW')}｜相對量 ≥ ${filterProfile.minRelVolume}｜RSI ${filterProfile.rsiMin}~${filterProfile.rsiMax}｜20MA乖離 ≤ ${filterProfile.maxDeviation20}%</div>`;
       if(ranked.length){
         html += `<div class="decision-pick"><strong>今晚決策摘要</strong><br>${ranked.map((c,idx)=>{ const tag=getDecisionTag(c, idx); return `${tag.text}：${c.symbol} ${c.name||''}｜決策分 ${fmt(c.decisionScore,1)}｜本地 ${fmt(c.localScore,1)}｜${tag.reason}`; }).join('<br>')}</div>`;
       } else {
