@@ -291,8 +291,32 @@
     function calcShares(entry, stop){ const { effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings(); const capital = num(state.risk.capital); const configuredAvailableCash = num(state.risk.availableCash); const usedCapital = getUsedCapitalFromOpenPositions(); const realAvailableCash = Math.max(0, configuredAvailableCash-usedCapital); const singlePositionCapitalPercent = num(state.risk.singlePositionCapitalPercent); const totalRiskAmount = capital * (effectiveDailyRiskPercent/100); const bucketCount = effectiveMaxNewPositions > 0 ? effectiveMaxNewPositions : 1; const singleRiskAmount = totalRiskAmount / bucketCount; const riskPerShare = Math.abs(entry-stop); if(riskPerShare <= 0) return buildShareResult(0,entry,stop,singleRiskAmount,0,0,realAvailableCash); const sharesByRisk = Math.floor(singleRiskAmount/riskPerShare); const maxCapitalForPosition = Math.min(realAvailableCash, capital*(singlePositionCapitalPercent/100)); const sharesByCapital = Math.floor(maxCapitalForPosition/entry); const finalShares = Math.max(0, Math.min(sharesByRisk, sharesByCapital)); return buildShareResult(finalShares, entry, stop, singleRiskAmount, sharesByRisk, sharesByCapital, realAvailableCash); }
     function calcRR(entry, stop, takeProfit){ const risk = entry-stop; const reward = takeProfit-entry; return risk <= 0 ? 0 : reward/risk; }
 
-    function splitCsvLine(line){ const result=[]; let current='', inQuotes=false; for(let i=0;i<line.length;i++){ const ch=line[i]; if(ch==='"'){ if(inQuotes && line[i+1]==='"'){ if(line[i+2]==='"'){ current+='"'; i+=2; } else { inQuotes=false; i++; } } else { inQuotes=!inQuotes; } } else if(ch===',' && !inQuotes){ result.push(current); current=''; } else current += ch; } result.push(current); return result.map(x=>String(x ?? '').replace(/^"|"$/g,'').replace(/
-/g,'').trim()); }
+    function splitCsvLine(line){
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+
+      for(let i=0;i<line.length;i++){
+        const ch = line[i];
+        if(ch === '"'){
+          if(inQuotes && line[i+1] === '"'){
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if(ch === ',' && !inQuotes){
+          result.push(current);
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+
+      result.push(current);
+      return result.map(x => String(x ?? '').replace(/^"|"$/g,'').replace(/\r/g,'').trim());
+    }
+
     function normalizeHeader(h){ return String(h).replace(/^"|"$/g,'').trim(); }
     function getCsvIndexMap(headers){ const map={}; headers.forEach((h,idx)=>{ map[normalizeHeader(h)] = idx; }); return map; }
     function valAt(row,map,key){ const idx = map[key]; if(idx===undefined) return ''; return row[idx] ?? ''; }
