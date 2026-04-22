@@ -264,7 +264,9 @@
 <button class="btn red" id="clearAllPositionsBtn">清空全部持倉</button>
 </div>
 
-<div id="positionsBox"></div>
+
+<div id="positionsBox" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+
 <div class="divider"></div>
 <div class="tableWrap"><table style="min-width:1200px"><thead><tr><th>狀態</th><th>股票</th><th>成本</th><th>現價</th><th>報酬率</th><th>未實現損益</th><th>停損</th><th>停利1</th><th>停利2</th><th>最高價</th><th>高點回撤</th><th>操作</th></tr></thead><tbody id="positionsTableBody"><tr><td colspan="12" class="muted">尚無持倉資料。</td></tr></tbody></table></div>
 
@@ -1228,7 +1230,27 @@ ${candidatesText}
       saveState();
       $('addPosModal') && $('addPosModal').classList.remove('show');
     }
-    function renderAdvancedPositionsTable(){
+    
+function renderPositions(){
+  const box = $('positionsBox');
+  if(!box) return;
+  if(!state.positions || state.positions.length===0){
+    box.innerHTML = '<div class="muted">尚無持倉</div>';
+    return;
+  }
+  box.innerHTML = state.positions.map(p=>{
+    return `<div class="card">
+      <div class="label">${p.symbol} ${p.name||''}</div>
+      <div>成本：${p.buy}</div>
+      <div>現價：${p.current}</div>
+      <div>停損：${p.stop}</div>
+      <div>TP1：${p.tp1}</div>
+      <div>TP2：${p.tp2}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderAdvancedPositionsTable(){
       if(!$('positionsTableBody')) return;
       if(!state.positions.length){ $('positionsTableBody').innerHTML = '<tr><td colspan="12" class="muted">尚無持倉資料。</td></tr>'; return; }
       $('positionsTableBody').innerHTML = state.positions.filter(p => p.isOpen !== false).map((p, idx) => {
