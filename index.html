@@ -552,6 +552,43 @@ function getDualExitEngine(row){
   }
 }
 
+
+function getAdaptiveFilterProfile(){
+      const signal = state?.market?.signal || 'yellow';
+      const totalScore = num(state?.market?.totalScore, 50);
+
+      if(signal === 'green' && totalScore >= 75){
+        return {
+          label: '強勢進攻',
+          minVolume: 1500000,
+          minRelVolume: 1.3,
+          rsiMin: 62,
+          rsiMax: 80,
+          maxDeviation20: 18
+        };
+      }
+
+      if(signal === 'red' || totalScore <= 39){
+        return {
+          label: '防守過濾',
+          minVolume: 3000000,
+          minRelVolume: 1.8,
+          rsiMin: 60,
+          rsiMax: 72,
+          maxDeviation20: 10
+        };
+      }
+
+      return {
+        label: '平衡過濾',
+        minVolume: 2000000,
+        minRelVolume: 1.5,
+        rsiMin: 65,
+        rsiMax: 78,
+        maxDeviation20: 15
+      };
+    }
+
 function getAdaptiveExitProfile(){
       const signal = state?.market?.signal || 'yellow';
       if(signal==='green') return { label:'綠燈進攻', stopLossPct:3, trailGapPct:4, lock1:3, lock2:8 };
