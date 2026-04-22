@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v9.4.2｜穩定戰神版</title>
+<title>AI 戰艦 Pro Max v9.6.1｜真戰神UI完整版</title>
 <style>
     :root{
       --bg:#071019;
@@ -92,14 +92,160 @@
     .inline-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:11px;font-weight:800;color:#dff6ff}
 
 
-  </style>
+  
+    /* ===== v9.6.1 Slate UI override (logic unchanged) ===== */
+    :root{
+      --bg:#0f172a;
+      --bg2:#111827;
+      --panel:#1e293b;
+      --panel2:#0f172a;
+      --line:#334155;
+      --line2:#475569;
+      --text:#f8fafc;
+      --muted:#94a3b8;
+      --cyan:#38bdf8;
+      --cyan2:#7dd3fc;
+      --green:#10b981;
+      --yellow:#f59e0b;
+      --red:#f43f5e;
+      --orange:#fb923c;
+      --purple:#8b5cf6;
+      --shadow:0 10px 30px rgba(2,6,23,.35),0 0 0 1px rgba(148,163,184,.08);
+      --glow:0 0 0 1px rgba(56,189,248,.16),0 0 18px rgba(56,189,248,.10);
+    }
+    html,body{
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.08), transparent 30%),
+        radial-gradient(circle at top right, rgba(139,92,246,.06), transparent 28%),
+        linear-gradient(180deg,#020617 0%,#0f172a 100%);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;
+    }
+    .wrap{max-width:1820px;padding:18px}
+    .topbar{
+      background:rgba(15,23,42,.78);
+      border:1px solid rgba(148,163,184,.18);
+      box-shadow:0 12px 30px rgba(2,6,23,.42);
+      border-radius:18px;
+      padding:16px 18px;
+      top:10px;
+      backdrop-filter: blur(14px);
+    }
+    .brand h1{font-size:24px;color:#e0f2fe;text-shadow:none}
+    .brand .sub{font-size:12px;color:#94a3b8}
+    .pill{
+      background:rgba(2,6,23,.55);
+      border:1px solid rgba(148,163,184,.18);
+      box-shadow:none;
+      color:#e2e8f0;
+      padding:8px 12px;
+    }
+    .layout{grid-template-columns:320px minmax(0,1fr) 380px;gap:18px}
+    @media (max-width:1600px){.layout{grid-template-columns:300px minmax(0,1fr) 340px}}
+    @media (max-width:1460px){.layout{grid-template-columns:1fr}}
+    .panel{
+      background:linear-gradient(180deg,rgba(30,41,59,.90),rgba(15,23,42,.92));
+      border:1px solid rgba(148,163,184,.14);
+      box-shadow:var(--shadow);
+      border-radius:18px;
+    }
+    .panel-head{
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));
+      border-bottom:1px solid rgba(148,163,184,.12);
+      padding:14px 16px;
+    }
+    .panel-title{font-size:15px;color:#f8fafc}
+    .panel-sub{color:#94a3b8}
+    .panel-body{padding:16px}
+    .metric,.card,.ai-box{
+      background:rgba(2,6,23,.35);
+      border:1px solid rgba(148,163,184,.12);
+      border-radius:14px;
+      box-shadow:none;
+    }
+    .metric .label,.cell .k,.ai-label{color:#94a3b8}
+    .metric .value,.symbol,.ai-value{color:#f8fafc}
+    input,textarea,select{
+      background:rgba(2,6,23,.55);
+      border:1px solid rgba(71,85,105,.75);
+      border-radius:12px;
+      color:#f8fafc;
+      box-shadow:none;
+    }
+    input:focus,textarea:focus,select:focus{
+      border-color:rgba(56,189,248,.8);
+      box-shadow:0 0 0 3px rgba(56,189,248,.16);
+    }
+    .btn{
+      background:linear-gradient(180deg,#1e293b,#0f172a);
+      border:1px solid rgba(71,85,105,.9);
+      border-radius:12px;
+      box-shadow:none;
+      color:#e2e8f0;
+      font-weight:800;
+    }
+    .btn:hover{filter:none;transform:translateY(-1px);border-color:rgba(125,211,252,.7)}
+    .btn.secondary{background:linear-gradient(180deg,#0f172a,#0b1220);border-color:rgba(71,85,105,.7)}
+    .btn.green{background:linear-gradient(180deg,rgba(16,185,129,.22),rgba(6,95,70,.18));border-color:rgba(16,185,129,.55)}
+    .btn.red{background:linear-gradient(180deg,rgba(244,63,94,.22),rgba(136,19,55,.18));border-color:rgba(244,63,94,.55)}
+    .btn.purple{background:linear-gradient(180deg,rgba(139,92,246,.22),rgba(88,28,135,.18));border-color:rgba(139,92,246,.55)}
+    .quicknav{
+      top:88px;
+      gap:10px;
+      padding:12px 14px;
+      background:rgba(15,23,42,.72);
+      border:1px solid rgba(148,163,184,.14);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+    .quicknav a,.quicknav button,.detail-tools .ghost,.detail-toolbar .right a.ghost{
+      background:rgba(2,6,23,.48);
+      border:1px solid rgba(71,85,105,.8);
+      color:#e2e8f0;
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:800;
+      text-decoration:none;
+    }
+    .quicknav a:hover,.quicknav button:hover,.detail-tools .ghost:hover,.detail-toolbar .right a.ghost:hover{
+      border-color:rgba(56,189,248,.75);
+      color:#e0f2fe;
+    }
+    .detail-toolbar{
+      top:88px;
+      background:rgba(15,23,42,.82);
+      border:1px solid rgba(148,163,184,.14);
+      border-radius:14px;
+      backdrop-filter: blur(12px);
+    }
+    .ok-box{background:rgba(16,185,129,.10);border-color:rgba(16,185,129,.28);color:#d1fae5}
+    .warning-box{background:rgba(244,63,94,.10);border-color:rgba(244,63,94,.28);color:#ffe4e6}
+    .summary-missing{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.26);color:#fef3c7}
+    .sticky-note{background:rgba(56,189,248,.06);border-color:rgba(56,189,248,.24);color:#cbd5e1}
+    .tableWrap{border-radius:14px;border:1px solid rgba(148,163,184,.12)}
+    table{font-size:13px}
+    th{
+      background:rgba(15,23,42,.94);
+      color:#94a3b8;
+      border-bottom:1px solid rgba(148,163,184,.12);
+    }
+    td{border-bottom:1px solid rgba(148,163,184,.08)}
+    .close-overlay{background:rgba(2,6,23,.72);backdrop-filter:blur(6px)}
+    .close-modal{
+      background:linear-gradient(180deg,rgba(30,41,59,.98),rgba(15,23,42,.98));
+      border:1px solid rgba(148,163,184,.18);
+      box-shadow:0 20px 40px rgba(2,6,23,.55);
+    }
+
+</style>
 </head>
 <body>
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v9.4.5 過熱濾網強化版</h1>
-<div class="sub">股票戰情室單一完整版｜動線優化 + 過熱組合濾網強化 + 4%風控版</div>
+<h1>AI 戰艦 Pro Max v9.6.1 真戰神UI完整版</h1>
+<div class="sub">全功能穩定核心｜v9.6 Slate UI 移植 + AI 面板完整化 + 4%風控版</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 </div>
@@ -155,7 +301,7 @@
 </div>
 <div class="col">
 <section class="panel" id="step2Panel">
-<div class="panel-head"><div><h2 class="panel-title">STEP 2｜貼 CSV 做本地初篩</h2><div class="panel-sub">先貼資料做本地評分，再往下看候選結果</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">STEP 2｜CSV 初篩</h2><div class="panel-sub">先貼資料做本地評分，再往下看候選結果</div></div></div>
 <div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地排序 → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v9.4.5 已改成「組合過熱」優先處理：不是單一 RSI 或單一漲幅就亂砍，而是爆量 + 高乖離 + 高漲幅等組合才重罰或淘汰。</div>
 <label>貼上 TradingView CSV（保留標題列）</label><div class="footnote" style="margin-bottom:8px">這格只負責貼資料，貼完就往下看，不需要一直盯著它。</div>
 <div class="footnote" style="margin-bottom:8px">這格只負責貼入資料，貼完通常就不需要再看，已縮成短框避免佔畫面。</div>
@@ -174,7 +320,7 @@
 </div>
 </section>
 <section class="panel" id="step4Panel">
-<div class="panel-head"><div><h2 class="panel-title">STEP 4｜產生 AI 提示詞並貼回結果</h2><div class="panel-sub">本地前幾名送 AI 二次覆核，AI 只輔助，不直接替你做決策</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">STEP 4｜AI 戰術覆核</h2><div class="panel-sub">本地前幾名送 AI 二次覆核，AI 只輔助，不直接替你做決策</div></div></div>
 <div class="panel-body">
 <div class="btnrow">
 <button class="btn purple" id="genAiPromptBtn">產生 AI Prompt</button>
@@ -211,7 +357,7 @@
 </section>
 
 <section class="panel" id="step5Panel">
-<div class="panel-head"><div><h2 class="panel-title">STEP 5｜確認明天掛單名單</h2><div class="panel-sub">本地 + AI 看完後，由你自己決定鎖定戰隊與掛單內容</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">STEP 5｜最終掛單面板</h2><div class="panel-sub">本地 + AI 看完後，由你自己決定鎖定戰隊與掛單內容</div></div></div>
 <div class="panel-body">
 <div id="orderSummaryBox"></div>
 <div class="divider"></div>
@@ -249,7 +395,7 @@
 </div>
 <div class="col">
 <section class="panel" id="step6Panel">
-<div class="panel-head"><div><h2 class="panel-title">STEP 6｜手動帶入持倉監控</h2><div class="panel-sub">等你自己決定標的後，再把股票帶進持倉，不讓 AI 自動幫你做主</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">STEP 6｜持倉戰情中心</h2><div class="panel-sub">等你自己決定標的後，再把股票帶進持倉，不讓 AI 自動幫你做主</div></div></div>
 <div class="panel-body">
 <div class="grid-4" style="margin-bottom:14px">
 <div><label>代號</label><input id="holdSymbol" placeholder="例如 5244"/></div>
