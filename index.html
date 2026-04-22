@@ -678,11 +678,32 @@ function updateTrailingStop(p){
 
     function normalizeJsonText(raw){ const trimmed = raw.trim(); const start = trimmed.indexOf('{'); const end = trimmed.lastIndexOf('}'); if(start !== -1 && end !== -1 && end > start) return trimmed.slice(start, end+1); return trimmed; }
     function parseAiResult(){
-      const raw = $('aiResultBox').value.trim(); if(!raw) return alert('請先貼上 AI JSON');
-      try{ const parsed = JSON.parse(normalizeJsonText(raw)); state.aiReview.rawResponse = raw; if(parsed?.top_pick?.symbol) parsed.top_pick.symbol = normalizeSymbol(parsed.top_pick.symbol);
-      if(parsed?.backup_pick?.symbol) parsed.backup_pick.symbol = normalizeSymbol(parsed.backup_pick.symbol);
-      if(parsed?.avoid_pick?.symbol) parsed.avoid_pick.symbol = normalizeSymbol(parsed.avoid_pick.symbol);
-      state.aiReview.parsed = parsed; state.aiReview.mode = 'ai_assisted'; saveState(); alert('✅ AI 覆核結果已解析並鎖定'); }catch(e){ alert('AI JSON 解析失敗，請確認格式正確。'); }
+      const raw = $('aiResultBox').value.trim();
+      if(!raw) return alert('請先貼上 AI JSON');
+
+      let parsed;
+      try{
+        parsed = JSON.parse(normalizeJsonText(raw));
+      }catch(e){
+        console.error('AI JSON.parse failed:', e, raw);
+        alert('AI JSON 解析失敗：JSON 格式不合法。');
+        return;
+      }
+
+      try{
+        if(parsed?.top_pick?.symbol) parsed.top_pick.symbol = normalizeSymbol(parsed.top_pick.symbol);
+        if(parsed?.backup_pick?.symbol) parsed.backup_pick.symbol = normalizeSymbol(parsed.backup_pick.symbol);
+        if(parsed?.avoid_pick?.symbol) parsed.avoid_pick.symbol = normalizeSymbol(parsed.avoid_pick.symbol);
+
+        state.aiReview.rawResponse = raw;
+        state.aiReview.parsed = parsed;
+        state.aiReview.mode = 'ai_assisted';
+        saveState();
+        alert('✅ AI 覆核結果已解析並鎖定');
+      }catch(e){
+        console.error('AI post-parse/render failed:', e, parsed);
+        alert('AI JSON 本身格式正確，但系統在套用/渲染 AI 結果時發生錯誤：' + e.message);
+      }
     }
     function clearAiResult(){ state.aiReview.rawResponse=''; state.aiReview.parsed=null; state.aiReview.mode='local_only'; $('aiResultBox').value=''; saveState(); }
     function getAiFlags(symbol){ const p = state.aiReview?.parsed; return { isTop: p?.top_pick?.symbol === symbol, isBackup: p?.backup_pick?.symbol === symbol, isAvoid: p?.avoid_pick?.symbol === symbol }; }
