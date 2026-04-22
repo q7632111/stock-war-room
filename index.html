@@ -98,8 +98,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v9.4.4 UI優化版</h1>
-<div class="sub">股票戰情室單一完整版｜動線優化 + 候選詳卡控制重構 + 停利參數調整</div>
+<h1>AI 戰艦 Pro Max v9.4.5 過熱濾網強化版</h1>
+<div class="sub">股票戰情室單一完整版｜動線優化 + 過熱組合濾網強化 + 4%風控版</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 </div>
@@ -156,7 +156,7 @@
 <div class="col">
 <section class="panel" id="step2Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 2｜貼 CSV 做本地初篩</h2><div class="panel-sub">先貼資料做本地評分，再往下看候選結果</div></div></div>
-<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地排序 → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div>
+<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地排序 → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v9.4.5 已改成「組合過熱」優先處理：不是單一 RSI 或單一漲幅就亂砍，而是爆量 + 高乖離 + 高漲幅等組合才重罰或淘汰。</div>
 <label>貼上 TradingView CSV（保留標題列）</label><div class="footnote" style="margin-bottom:8px">這格只負責貼資料，貼完就往下看，不需要一直盯著它。</div>
 <div class="footnote" style="margin-bottom:8px">這格只負責貼入資料，貼完通常就不需要再看，已縮成短框避免佔畫面。</div>
 <textarea id="candidateTextarea" placeholder="直接貼上 TradingView CSV，例如：商品,描述,價格,價格變化 % 1天,相對成交量 1天,..."></textarea>
@@ -440,24 +440,170 @@
     function marketSignalNumeric(signal){ if(signal==='green') return 8; if(signal==='yellow') return 5; return 1; }
 
     function scoreCandidateCsv(stock, market){
-      const close = safeNum(stock.close); const sma20 = safeNum(stock.sma20, NaN); const sma60 = safeNum(stock.sma60, NaN); const changePct = safeNum(stock.changePct, 0); const volumeRatio = safeNum(stock.volumeRatio, NaN); const rsi14 = safeNum(stock.rsi14, NaN); const epsGrowthYoy = safeNum(stock.epsGrowthYoy, NaN); const analystRating = stock.analystRating || ''; const rr = safeNum(stock.rr); const riskPct = safeNum(stock.riskPct);
-      let maStructureScore = 0; if(close > sma20 && sma20 > sma60) maStructureScore = 22; else if(close > sma20 && close > sma60) maStructureScore = 17; else if(close > sma20) maStructureScore = 11; else maStructureScore = 3;
-      let momentumScore = 0; if(changePct >= 2 && changePct <= 5.5) momentumScore = 12; else if(changePct > 5.5 && changePct <= 7.5) momentumScore = 8; else if(changePct >= 0 && changePct < 2) momentumScore = 6; else if(changePct > 7.5) momentumScore = 4; else momentumScore = 1;
-      let rsiScore = 4; if(!Number.isNaN(rsi14)){ if(rsi14 >= 60 && rsi14 <= 74) rsiScore = 10; else if(rsi14 > 74 && rsi14 <= 78) rsiScore = 8; else if(rsi14 >= 55 && rsi14 < 60) rsiScore = 7; else if(rsi14 > 78 && rsi14 <= 82) rsiScore = 5; else if(rsi14 > 82) rsiScore = 3; }
-      let volumeScore = 9; if(!Number.isNaN(volumeRatio)){ if(volumeRatio >= 1.2 && volumeRatio <= 2.3) volumeScore = 18; else if(volumeRatio > 2.3 && volumeRatio <= 3.2) volumeScore = 14; else if(volumeRatio >= 1.0 && volumeRatio < 1.2) volumeScore = 10; else if(volumeRatio > 3.2 && volumeRatio <= 4.2) volumeScore = 9; else if(volumeRatio > 4.2) volumeScore = 7; else volumeScore = 6; }
+      const close = safeNum(stock.close);
+      const sma20 = safeNum(stock.sma20, NaN);
+      const sma60 = safeNum(stock.sma60, NaN);
+      const changePct = safeNum(stock.changePct, 0);
+      const volumeRatio = safeNum(stock.volumeRatio, NaN);
+      const rsi14 = safeNum(stock.rsi14, NaN);
+      const epsGrowthYoy = safeNum(stock.epsGrowthYoy, NaN);
+      const analystRating = stock.analystRating || '';
+      const rr = safeNum(stock.rr);
+      const riskPct = safeNum(stock.riskPct);
+
+      let maStructureScore = 0;
+      if(close > sma20 && sma20 > sma60) maStructureScore = 22;
+      else if(close > sma20 && close > sma60) maStructureScore = 17;
+      else if(close > sma20) maStructureScore = 11;
+      else maStructureScore = 3;
+
+      let momentumScore = 0;
+      if(changePct >= 2 && changePct <= 5.5) momentumScore = 12;
+      else if(changePct > 5.5 && changePct <= 7.5) momentumScore = 8;
+      else if(changePct >= 0 && changePct < 2) momentumScore = 6;
+      else if(changePct > 7.5) momentumScore = 4;
+      else momentumScore = 1;
+
+      let rsiScore = 4;
+      if(!Number.isNaN(rsi14)){
+        if(rsi14 >= 60 && rsi14 <= 74) rsiScore = 10;
+        else if(rsi14 > 74 && rsi14 <= 78) rsiScore = 8;
+        else if(rsi14 >= 55 && rsi14 < 60) rsiScore = 7;
+        else if(rsi14 > 78 && rsi14 <= 82) rsiScore = 5;
+        else if(rsi14 > 82) rsiScore = 3;
+      }
+
+      let volumeScore = 9;
+      if(!Number.isNaN(volumeRatio)){
+        if(volumeRatio >= 1.2 && volumeRatio <= 2.3) volumeScore = 18;
+        else if(volumeRatio > 2.3 && volumeRatio <= 3.2) volumeScore = 14;
+        else if(volumeRatio >= 1.0 && volumeRatio < 1.2) volumeScore = 10;
+        else if(volumeRatio > 3.2 && volumeRatio <= 4.2) volumeScore = 9;
+        else if(volumeRatio > 4.2) volumeScore = 7;
+        else volumeScore = 6;
+      }
+
       const deviation20 = sma20 > 0 ? ((close - sma20) / sma20) * 100 : 0;
-      let heatControlScore = 0; if(deviation20 >= 0 && deviation20 <= 10) heatControlScore = 16; else if(deviation20 > 10 && deviation20 <= 18) heatControlScore = 13; else if(deviation20 > 18 && deviation20 <= 25) heatControlScore = 9; else if(deviation20 > 25 && deviation20 <= 35) heatControlScore = 5; else if(deviation20 > 35) heatControlScore = 2; else heatControlScore = 4;
-      const spread = num(market.limitUp) - num(market.limitDown); let breadthPart = 1; if(num(market.totalScore) >= 80) breadthPart = 5; else if(num(market.totalScore) >= 70) breadthPart = 4; else if(num(market.totalScore) >= 55) breadthPart = 3; let spreadPart = 0; if(spread >= 20) spreadPart = 3; else if(spread >= 10) spreadPart = 2; else if(spread >= 0) spreadPart = 1; let marketResonanceScore = clamp(marketSignalNumeric(market.signal) + breadthPart + spreadPart, 0, 18);
-      let rrQualityScore = 0; if(rr >= 2.0 && riskPct >= 2 && riskPct <= 4) rrQualityScore = 12; else if(rr >= 1.8 && riskPct >= 2 && riskPct <= 4.5) rrQualityScore = 10; else if(rr >= 1.5 && riskPct >= 1.5 && riskPct <= 5) rrQualityScore = 8; else if(rr >= 1.3) rrQualityScore = 5; else rrQualityScore = 1;
-      const analystPart = analystScore(analystRating)*0.5; let epsPart = 1; if(!Number.isNaN(epsGrowthYoy)){ if(epsGrowthYoy > 30) epsPart = 2; else if(epsGrowthYoy >= 10) epsPart = 1.5; else if(epsGrowthYoy >= 0) epsPart = 1; else epsPart = 0; }
+
+      let heatControlScore = 0;
+      if(deviation20 >= 0 && deviation20 <= 10) heatControlScore = 16;
+      else if(deviation20 > 10 && deviation20 <= 18) heatControlScore = 13;
+      else if(deviation20 > 18 && deviation20 <= 25) heatControlScore = 9;
+      else if(deviation20 > 25 && deviation20 <= 35) heatControlScore = 5;
+      else if(deviation20 > 35) heatControlScore = 2;
+      else heatControlScore = 4;
+
+      const spread = num(market.limitUp) - num(market.limitDown);
+      let breadthPart = 1;
+      if(num(market.totalScore) >= 80) breadthPart = 5;
+      else if(num(market.totalScore) >= 70) breadthPart = 4;
+      else if(num(market.totalScore) >= 55) breadthPart = 3;
+
+      let spreadPart = 0;
+      if(spread >= 20) spreadPart = 3;
+      else if(spread >= 10) spreadPart = 2;
+      else if(spread >= 0) spreadPart = 1;
+
+      let marketResonanceScore = clamp(marketSignalNumeric(market.signal) + breadthPart + spreadPart, 0, 18);
+
+      let rrQualityScore = 0;
+      if(rr >= 2.0 && riskPct >= 2 && riskPct <= 4) rrQualityScore = 12;
+      else if(rr >= 1.8 && riskPct >= 2 && riskPct <= 4.5) rrQualityScore = 10;
+      else if(rr >= 1.5 && riskPct >= 1.5 && riskPct <= 5) rrQualityScore = 8;
+      else if(rr >= 1.3) rrQualityScore = 5;
+      else rrQualityScore = 1;
+
+      const analystPart = analystScore(analystRating)*0.5;
+      let epsPart = 1;
+      if(!Number.isNaN(epsGrowthYoy)){
+        if(epsGrowthYoy > 30) epsPart = 2;
+        else if(epsGrowthYoy >= 10) epsPart = 1.5;
+        else if(epsGrowthYoy >= 0) epsPart = 1;
+        else epsPart = 0;
+      }
+
       const baseScore = maStructureScore + momentumScore + rsiScore + volumeScore + heatControlScore + marketResonanceScore + rrQualityScore + analystPart + epsPart;
-      let penaltyScore = 0; if(changePct > 9.5) penaltyScore += 7; else if(changePct > 8) penaltyScore += 4; if(!Number.isNaN(rsi14)){ if(rsi14 > 80) penaltyScore += 7; else if(rsi14 > 77) penaltyScore += 4; } if(deviation20 > 35) penaltyScore += 10; else if(deviation20 > 25) penaltyScore += 6; else if(deviation20 > 15) penaltyScore += 5; if(!Number.isNaN(volumeRatio)){ if(volumeRatio > 4.5 && changePct > 8) penaltyScore += 6; else if(volumeRatio > 3.5) penaltyScore += 3; }
-      let rawFinalScore = clamp(baseScore - penaltyScore, 0, 112); let localScore = Math.round(((rawFinalScore/112)*100)*10)/10;
-      const warnings = []; if(changePct > 7) warnings.push('短線漲幅偏大'); if(!Number.isNaN(rsi14) && rsi14 > 77) warnings.push('RSI偏熱'); if(!Number.isNaN(volumeRatio) && volumeRatio > 3.5) warnings.push('相對量偏熱'); if(deviation20 > 15) warnings.push('⚠️ 乖離 20MA 超過 15%'); if(rr < 1.5) warnings.push('風報比偏低'); if(riskPct > 4.5) warnings.push('停損距離偏大'); if(market.signal === 'yellow') warnings.push('大盤僅黃燈');
-      const rejectReasons = []; if(close <= sma20) rejectReasons.push('價格跌回SMA20下方'); if(rr < 1.2) rejectReasons.push('RR過低'); if(riskPct > 6) rejectReasons.push('風險距離過大'); if(safeNum(stock.shares) <= 0) rejectReasons.push('可買股數為0'); if(market.signal === 'red') rejectReasons.push('大盤紅燈'); if(changePct > 9.5 && !Number.isNaN(rsi14) && rsi14 > 77) rejectReasons.push('過熱追價風險'); if(!Number.isNaN(volumeRatio) && volumeRatio > 4.5 && changePct > 8) rejectReasons.push('爆量過熱');
-      const rejected = rejectReasons.length > 0; let grade='C'; if(!rejected){ if(localScore >= 80) grade='A'; else if(localScore >= 70) grade='B'; }
-      const isMainAttackCandidate = !rejected && grade==='A' && market.signal!=='red' && rr >= 1.5 && deviation20 <= 30 && (!Number.isNaN(rsi14) ? rsi14 <= 78 : true);
-      return { ...stock, maStructureScore, momentumScore, rsiScore, volumeScore, heatControlScore, marketResonanceScore, rrQualityScore, analystScore:analystPart, epsScore:epsPart, baseScore:Math.round(baseScore*10)/10, penaltyScore:Math.round(penaltyScore*10)/10, localScore, deviation20:Math.round(deviation20*10)/10, riskPct:Math.round(riskPct*10)/10, rr:Math.round(rr*100)/100, grade, warnings, rejected, rejectReasons, isMainAttackCandidate };
+
+      // ===== v9.4.5 過熱組合濾網 =====
+      let penaltyScore = 0;
+
+      // 單一高漲幅/高RSI/高乖離仍保留懲罰，但不過度誤殺
+      if(changePct > 9.5) penaltyScore += 9;
+      else if(changePct > 8) penaltyScore += 5;
+
+      if(!Number.isNaN(rsi14)){
+        if(rsi14 > 80) penaltyScore += 8;
+        else if(rsi14 > 77) penaltyScore += 4;
+      }
+
+      if(deviation20 > 35) penaltyScore += 12;
+      else if(deviation20 > 25) penaltyScore += 8;
+      else if(deviation20 > 15) penaltyScore += 5;
+
+      if(!Number.isNaN(volumeRatio)){
+        if(volumeRatio > 4.5) penaltyScore += 4;
+        else if(volumeRatio > 3.5) penaltyScore += 2;
+      }
+
+      // 組合過熱：這才是主力出貨/隔日難打的核心條件
+      if(changePct > 8 && !Number.isNaN(rsi14) && rsi14 > 75) penaltyScore += 12;
+      if(deviation20 > 20 && !Number.isNaN(volumeRatio) && volumeRatio > 3) penaltyScore += 10;
+      if(changePct > 9 && !Number.isNaN(volumeRatio) && volumeRatio > 4) penaltyScore += 15;
+      if(!Number.isNaN(rsi14) && rsi14 > 78 && deviation20 > 18) penaltyScore += 10;
+
+      let rawFinalScore = clamp(baseScore - penaltyScore, 0, 112);
+      let localScore = Math.round(((rawFinalScore/112)*100)*10)/10;
+
+      const warnings = [];
+      if(changePct > 7) warnings.push('短線漲幅偏大');
+      if(!Number.isNaN(rsi14) && rsi14 > 77) warnings.push('RSI偏熱');
+      if(!Number.isNaN(volumeRatio) && volumeRatio > 3.5) warnings.push('相對量偏熱');
+      if(deviation20 > 15) warnings.push('⚠️ 乖離 20MA 超過 15%');
+      if(rr < 1.5) warnings.push('風報比偏低');
+      if(riskPct > 4.5) warnings.push('停損距離偏大');
+      if(market.signal === 'yellow') warnings.push('大盤僅黃燈');
+      if(changePct > 8 && !Number.isNaN(rsi14) && rsi14 > 75) warnings.push('組合過熱：漲幅 + RSI 偏熱');
+      if(deviation20 > 20 && !Number.isNaN(volumeRatio) && volumeRatio > 3) warnings.push('組合過熱：乖離 + 量比偏熱');
+
+      const rejectReasons = [];
+      if(close <= sma20) rejectReasons.push('價格跌回SMA20下方');
+      if(rr < 1.2) rejectReasons.push('RR過低');
+      if(riskPct > 6) rejectReasons.push('風險距離過大');
+      if(safeNum(stock.shares) <= 0) rejectReasons.push('可買股數為0');
+      if(market.signal === 'red') rejectReasons.push('大盤紅燈');
+
+      // 組合條件才直接淘汰，避免把剛起漲的健康股誤殺
+      if(changePct > 9.5 && !Number.isNaN(rsi14) && rsi14 > 77) rejectReasons.push('過熱追價風險');
+      if(!Number.isNaN(volumeRatio) && volumeRatio > 4.5 && changePct > 8) rejectReasons.push('爆量過熱');
+      if(deviation20 > 25 && !Number.isNaN(volumeRatio) && volumeRatio > 3.5) rejectReasons.push('高乖離且量比過熱');
+      if(!Number.isNaN(rsi14) && rsi14 > 80 && deviation20 > 20) rejectReasons.push('高 RSI 且高乖離');
+
+      const rejected = rejectReasons.length > 0;
+      let grade = 'C';
+      if(!rejected){
+        if(localScore >= 80) grade='A';
+        else if(localScore >= 70) grade='B';
+      }
+
+      const isMainAttackCandidate = !rejected
+        && grade === 'A'
+        && market.signal !== 'red'
+        && rr >= 1.5
+        && deviation20 <= 25
+        && (!Number.isNaN(rsi14) ? rsi14 <= 78 : true);
+
+      return {
+        ...stock,
+        maStructureScore, momentumScore, rsiScore, volumeScore, heatControlScore, marketResonanceScore,
+        rrQualityScore, analystScore:analystPart, epsScore:epsPart,
+        baseScore:Math.round(baseScore*10)/10,
+        penaltyScore:Math.round(penaltyScore*10)/10,
+        localScore,
+        deviation20:Math.round(deviation20*10)/10,
+        riskPct:Math.round(riskPct*10)/10,
+        rr:Math.round(rr*100)/100,
+        grade, warnings, rejected, rejectReasons, isMainAttackCandidate
+      };
     }
     function rankCandidates(candidates, market){
       const scored = candidates.map(stock => {
