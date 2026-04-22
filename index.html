@@ -291,26 +291,8 @@
     function calcShares(entry, stop){ const { effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings(); const capital = num(state.risk.capital); const configuredAvailableCash = num(state.risk.availableCash); const usedCapital = getUsedCapitalFromOpenPositions(); const realAvailableCash = Math.max(0, configuredAvailableCash-usedCapital); const singlePositionCapitalPercent = num(state.risk.singlePositionCapitalPercent); const totalRiskAmount = capital * (effectiveDailyRiskPercent/100); const bucketCount = effectiveMaxNewPositions > 0 ? effectiveMaxNewPositions : 1; const singleRiskAmount = totalRiskAmount / bucketCount; const riskPerShare = Math.abs(entry-stop); if(riskPerShare <= 0) return buildShareResult(0,entry,stop,singleRiskAmount,0,0,realAvailableCash); const sharesByRisk = Math.floor(singleRiskAmount/riskPerShare); const maxCapitalForPosition = Math.min(realAvailableCash, capital*(singlePositionCapitalPercent/100)); const sharesByCapital = Math.floor(maxCapitalForPosition/entry); const finalShares = Math.max(0, Math.min(sharesByRisk, sharesByCapital)); return buildShareResult(finalShares, entry, stop, singleRiskAmount, sharesByRisk, sharesByCapital, realAvailableCash); }
     function calcRR(entry, stop, takeProfit){ const risk = entry-stop; const reward = takeProfit-entry; return risk <= 0 ? 0 : reward/risk; }
 
-    function splitCsvLine(line){
-      const result=[]; let current='', inQuotes=false;
-      for(let i=0;i<line.length;i++){
-        const ch=line[i];
-        if(ch==='"'){
-          if(inQuotes && line[i+1]==='"'){
-            current+='"'; i++;
-          }else{
-            inQuotes=!inQuotes;
-          }
-        }else if(ch===',' && !inQuotes){
-          result.push(current); current='';
-        }else{
-          current += ch;
-        }
-      }
-      result.push(current);
-      return result.map(x=>String(x??'').replace(/^"|"$/g,'').replace(/
-/g,'').trim());
-    }
+    function splitCsvLine(line){ const result=[]; let current='', inQuotes=false; for(let i=0;i<line.length;i++){ const ch=line[i]; if(ch==='"'){ if(inQuotes && line[i+1]==='"'){ if(line[i+2]==='"'){ current+='"'; i+=2; } else { inQuotes=false; i++; } } else { inQuotes=!inQuotes; } } else if(ch===',' && !inQuotes){ result.push(current); current=''; } else current += ch; } result.push(current); return result.map(x=>String(x ?? '').replace(/^"|"$/g,'').replace(/
+/g,'').trim()); }
     function normalizeHeader(h){ return String(h).replace(/^"|"$/g,'').trim(); }
     function getCsvIndexMap(headers){ const map={}; headers.forEach((h,idx)=>{ map[normalizeHeader(h)] = idx; }); return map; }
     function valAt(row,map,key){ const idx = map[key]; if(idx===undefined) return ''; return row[idx] ?? ''; }
@@ -369,6 +351,34 @@
       $('holdCurrent').value = target.close || '';
       $('holdBuy').value = target.entry || target.close || '';
       $('holdShares').value = target.shares || 1000;
+    }
+
+
+    function getAdaptiveExitProfile(){
+      const signal = state?.market?.signal || 'yellow';
+      if(signal==='green') return { label:'綠燈進攻', stopLossPct:3, trailGapPct:4, lock1:3, lock2:8 };
+      if(signal==='red') return { label:'紅燈防守', stopLossPct:2, trailGapPct:3, lock1:2, lock2:5 };
+      return { label:'黃燈平衡', stopLossPct:2.5, trailGapPct:3.5, lock1:2.5, lock2:6 };
+    }
+
+    function getHoldingAction(p, portfolioStats){
+      const lossMode = getLossMode(state.risk.lossStreak);
+      if(state.market.signal==='red') return '🔴 只准防守，不開新倉';
+      if(portfolioStats?.drop <= -5) return '🚨 強制降倉 / 只減不加';
+      if(lossMode.mode==='冷卻模式') return '🧊 冷卻觀察，優先防守';
+      if(num(p.currentPrice) <= num(p.trailingStop)) return '🔴 明日優先撤退';
+      if(num(p.trailingStop) >= num(p.entryPrice)) return '🟡 已保本，續抱觀察';
+      if(num(p.currentPrice) > num(p.entryPrice)) return '🟢 趨勢續抱';
+      return '🟡 觀察收斂';
+    }
+
+    function getHoldingRiskInfo(p, portfolioStats){
+      if(state.market.signal==='red') return { level:'高', cls:'red', text:'市場紅燈，全面防守' };
+      if(portfolioStats?.drop <= -5) return { level:'高', cls:'red', text:'組合熔斷，優先保命' };
+      const distancePct = num(p.currentPrice) > 0 ? ((num(p.currentPrice)-num(p.trailingStop))/num(p.currentPrice))*100 : 0;
+      if(distancePct <= 1) return { level:'高', cls:'red', text:'距停損很近' };
+      if(distancePct <= 3) return { level:'中', cls:'yellow', text:'需盯緊移動停損' };
+      return { level:'低', cls:'green', text:'風險可控' };
     }
 
 function updateTrailingStop(p){
@@ -431,105 +441,12 @@ function updateTrailingStop(p){
     }
 
     function normalizeJsonText(raw){ const trimmed = raw.trim(); const start = trimmed.indexOf('{'); const end = trimmed.lastIndexOf('}'); if(start !== -1 && end !== -1 && end > start) return trimmed.slice(start, end+1); return trimmed; }
-    function pickSymbolFromAny(v){
-      if(!v) return '';
-      if(typeof v === 'string') return normalizeSymbol(v);
-      if(Array.isArray(v)){
-        for(const item of v){
-          const got = pickSymbolFromAny(item);
-          if(got) return got;
-        }
-        return '';
-      }
-      if(typeof v === 'object'){
-        return normalizeSymbol(v.symbol || v.code || v.ticker || v.stock || v.id || '');
-      }
-      return '';
-    }
-    function extractJsonCandidate(raw){
-      const trimmed = raw.trim();
-      const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-      if(fence) return fence[1].trim();
-      const startObj = trimmed.indexOf('{');
-      const endObj = trimmed.lastIndexOf('}');
-      if(startObj !== -1 && endObj !== -1 && endObj > startObj) return trimmed.slice(startObj, endObj+1);
-      return trimmed;
-    }
-    function buildParsedAiFallback(raw){
-      const symbols = Array.from(new Set((raw.match(/\d{4}/g) || []).map(normalizeSymbol)));
-      return {
-        market_view:'',
-        top_pick:{ symbol: symbols[0] || '', reason:'' },
-        backup_pick:{ symbol: symbols[1] || '', reason:'' },
-        avoid_pick:{ symbol: symbols[2] || '', reason:'' },
-        risk_note:''
-      };
-    }
-    function normalizeAiShape(parsed){
-      const topSymbol = pickSymbolFromAny(parsed.top_pick || parsed.top || parsed.main_pick || parsed.main || parsed.pick1 || parsed.best_pick || parsed.primary);
-      const backupSymbol = pickSymbolFromAny(parsed.backup_pick || parsed.backup || parsed.second_pick || parsed.secondary || parsed.pick2 || parsed.alt_pick);
-      const avoidSymbol = pickSymbolFromAny(parsed.avoid_pick || parsed.avoid || parsed.skip_pick || parsed.risk_pick || parsed.pick3);
-      return {
-        market_view: parsed.market_view || parsed.marketView || parsed.market || parsed.view || '',
-        top_pick: { symbol: topSymbol, reason: (parsed.top_pick && parsed.top_pick.reason) || parsed.top_reason || parsed.main_reason || parsed.reason_top || '' },
-        backup_pick: { symbol: backupSymbol, reason: (parsed.backup_pick && parsed.backup_pick.reason) || parsed.backup_reason || parsed.second_reason || parsed.reason_backup || '' },
-        avoid_pick: { symbol: avoidSymbol, reason: (parsed.avoid_pick && parsed.avoid_pick.reason) || parsed.avoid_reason || parsed.risk_reason || parsed.reason_avoid || '' },
-        risk_note: parsed.risk_note || parsed.riskNote || parsed.note || parsed.risk || ''
-      };
-    }
-    function getAdaptiveExitProfile(){
-      if(state.market.signal === 'red') return { label:'紅燈極防守', stopLossPct:5, trailGapPct:8, lock1:5, lock2:10 };
-      if(state.market.signal === 'green') return { label:'綠燈進攻', stopLossPct:5, trailGapPct:8, lock1:5, lock2:10 };
-      return { label:'黃燈平衡', stopLossPct:5, trailGapPct:8, lock1:5, lock2:10 };
-    }
-    function getTrailingInfo(p){
-      const entry=num(p.entryPrice), current=num(p.currentPrice), highest=Math.max(num(p.highestPrice),current), trailing=num(p.trailingStop);
-      const pnlPct=entry>0?((current-entry)/entry)*100:0;
-      const highPnlPct=entry>0?((highest-entry)/entry)*100:0;
-      const stopGapPct=current>0?((current-trailing)/current)*100:0;
-      return { pnlPct, highPnlPct, stopGapPct, current, highest, trailing };
-    }
-    function getHoldingAction(p, portfolioStats){
-      const info=getTrailingInfo(p); const stats = portfolioStats || getPortfolioStats(); const lossMode = getLossMode(state.risk.lossStreak);
-      if(state.market.signal==='red') return '🚨 市場紅燈：禁止加碼，優先防守';
-      if(stats && stats.drop <= -5) return '🚨 組合熔斷：優先降倉保命';
-      if(lossMode.mode === '冷卻模式') return '🧊 冷卻模式：只減不加';
-      if(p.status.includes('撤退')||info.current<=info.trailing) return '明日優先撤退';
-      if(info.highPnlPct>=20) return '續抱，但嚴守移動停損';
-      if(info.highPnlPct>=10) return '續抱觀察，獲利已進入鎖定區';
-      if(info.pnlPct>0) return '續抱觀察，等待高點推升';
-      return '持有觀察，嚴守初始停損';
-    }
-    function getHoldingRiskInfo(p, portfolioStats){
-      const info=getTrailingInfo(p); const stats = portfolioStats || getPortfolioStats(); const lossMode = getLossMode(state.risk.lossStreak);
-      if(state.market.signal === 'red') return { level:'高', cls:'red', text:'市場紅燈，只能防守，不可加碼' };
-      if(stats && stats.drop <= -5) return { level:'高', cls:'red', text:'組合回撤達熔斷線，優先降倉保命' };
-      if(lossMode.mode === '冷卻模式') return { level:'高', cls:'red', text:'冷卻模式啟動，禁止新倉' };
-      if(info.stopGapPct<=0) return { level:'高', cls:'red', text:'已跌破移動停損' };
-      if(info.stopGapPct<=2) return { level:'高', cls:'red', text:'距停損很近，需高度警戒' };
-      if(info.stopGapPct<=5) return { level:'中', cls:'yellow', text:'距停損不遠，需觀察' };
-      return { level:'低', cls:'green', text:'仍有安全距離' };
-    }
-
     function parseAiResult(){
       const raw = $('aiResultBox').value.trim(); if(!raw) return alert('請先貼上 AI JSON');
-      try{
-        let parsed;
-        try{
-          parsed = JSON.parse(extractJsonCandidate(raw));
-        }catch(err){
-          parsed = buildParsedAiFallback(raw);
-        }
-        parsed = normalizeAiShape(parsed);
-        state.aiReview.rawResponse = raw;
-        state.aiReview.parsed = parsed;
-        state.aiReview.mode = 'ai_assisted';
-        saveState();
-        alert('✅ AI 覆核結果已解析並鎖定');
-      }catch(e){
-        console.error(e);
-        alert('AI JSON 解析失敗，請確認格式正確。');
-      }
+      try{ const parsed = JSON.parse(normalizeJsonText(raw)); state.aiReview.rawResponse = raw; if(parsed?.top_pick?.symbol) parsed.top_pick.symbol = normalizeSymbol(parsed.top_pick.symbol);
+      if(parsed?.backup_pick?.symbol) parsed.backup_pick.symbol = normalizeSymbol(parsed.backup_pick.symbol);
+      if(parsed?.avoid_pick?.symbol) parsed.avoid_pick.symbol = normalizeSymbol(parsed.avoid_pick.symbol);
+      state.aiReview.parsed = parsed; state.aiReview.mode = 'ai_assisted'; saveState(); alert('✅ AI 覆核結果已解析並鎖定'); }catch(e){ alert('AI JSON 解析失敗，請確認格式正確。'); }
     }
     function clearAiResult(){ state.aiReview.rawResponse=''; state.aiReview.parsed=null; state.aiReview.mode='local_only'; $('aiResultBox').value=''; saveState(); }
     function getAiFlags(symbol){ const p = state.aiReview?.parsed; return { isTop: p?.top_pick?.symbol === symbol, isBackup: p?.backup_pick?.symbol === symbol, isAvoid: p?.avoid_pick?.symbol === symbol }; }
