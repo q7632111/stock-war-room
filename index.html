@@ -75,6 +75,15 @@
     .kpi .value{font-size:20px;font-weight:800}
     .action-btn{padding:6px 10px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,255,255,.08);color:#e5e7eb}
 
+  
+    .quicknav{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:76px;z-index:25;margin-bottom:14px;padding:10px 12px;background:linear-gradient(180deg,rgba(10,20,31,.94),rgba(7,15,24,.94));border:1px solid rgba(86,215,255,.12);border-radius:14px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+    .quicknav a,.quicknav button{appearance:none;text-decoration:none;border:none;cursor:pointer;color:#dff6ff;font-weight:800;font-size:12px;padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,#17304a,#0f2234);border:1px solid #315676}
+    .quicknav .ghost{background:linear-gradient(180deg,#162231,#101c29);border-color:#29465f}
+    .compact-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+    .hidden-panel{display:none}
+    .sticky-note{border:1px dashed rgba(86,215,255,.25);background:rgba(255,255,255,.02);border-radius:12px;padding:10px 12px;font-size:12px;color:var(--muted)}
+    .summary-missing{border:1px solid rgba(251,191,36,.3);background:linear-gradient(180deg,rgba(95,71,8,.18),rgba(45,35,5,.15));color:#fff3bf;border-radius:12px;padding:10px 12px;font-size:12px}
+
   </style>
 </head>
 <body>
@@ -86,6 +95,19 @@
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 </div>
+
+<div class="quicknav">
+  <a href="#step2Panel">STEP 2｜CSV</a>
+  <a href="#step4Panel">STEP 4｜AI</a>
+  <a href="#step45Panel">STEP 4.5｜決策</a>
+  <a href="#step5Panel">STEP 5｜掛單</a>
+  <a href="#step6Panel">STEP 6｜持倉</a>
+  <a href="#detailCandidatesPanel">候選詳卡</a>
+  <button class="ghost" id="toggleCandidateCardsBtn" type="button">展開候選詳卡</button>
+  <button class="ghost" id="showTop5Btn" type="button">詳卡前 5</button>
+  <button class="ghost" id="showAllCardsBtn" type="button">詳卡全部</button>
+</div>
+
 <div class="layout">
 <div class="col">
 <section class="panel">
@@ -127,7 +149,7 @@
 
 </div>
 <div class="col">
-<section class="panel">
+<section class="panel" id="step2Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 2｜貼 CSV 做本地初篩</h2><div class="panel-sub">先貼資料做本地評分，再往下看候選結果</div></div></div>
 <div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地排序 → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div>
 <label>貼上 TradingView CSV（保留標題列）</label><div class="footnote" style="margin-bottom:8px">這格只負責貼資料，貼完就往下看，不需要一直盯著它。</div>
@@ -141,11 +163,12 @@
 <div id="candidateWarnings"></div>
 <div class="divider"></div>
 <div class="tableWrap" id="candidateRankingTable"></div>
-<div class="divider"></div>
-<div id="candidateCards"></div>
+<div class="compact-toolbar">
+  <div class="sticky-note">候選詳卡已移到下方獨立面板，避免解析完 17 檔後還要一路往下滑才能到 STEP 4。</div>
+</div>
 </div>
 </section>
-<section class="panel">
+<section class="panel" id="step4Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 4｜產生 AI 提示詞並貼回結果</h2><div class="panel-sub">本地前幾名送 AI 二次覆核，AI 只輔助，不直接替你做決策</div></div></div>
 <div class="panel-body">
 <div class="btnrow">
@@ -163,7 +186,7 @@
 </div>
 </section>
 
-<section class="panel">
+<section class="panel" id="step45Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 4.5｜AI 決策模式區</h2><div class="panel-sub">交集 / 本地優先 / AI優先 / 自動判斷，讓 AI 輔助但不搶主控權</div></div></div>
 <div class="panel-body">
 <div class="grid-3">
@@ -182,7 +205,7 @@
 </div>
 </section>
 
-<section class="panel">
+<section class="panel" id="step5Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 5｜確認明天掛單名單</h2><div class="panel-sub">本地 + AI 看完後，由你自己決定鎖定戰隊與掛單內容</div></div></div>
 <div class="panel-body">
 <div id="orderSummaryBox"></div>
@@ -190,9 +213,19 @@
 <div class="tableWrap" id="ordersTable"></div>
 </div>
 </section>
+
+<section class="panel" id="detailCandidatesPanel">
+<div class="panel-head"><div><h2 class="panel-title">候選詳卡總覽</h2><div class="panel-sub">預設收合，不擋 STEP 4 / STEP 5。需要時再展開查看細節與操作按鈕</div></div></div>
+<div class="panel-body hidden-panel" id="candidateCardsPanelBody">
+<div class="compact-toolbar" style="margin-bottom:10px">
+  <div class="sticky-note">這裡放大卡片只負責細看標的，不影響上面的主流程。</div>
+</div>
+<div id="candidateCards"></div>
+</div>
+</section>
 </div>
 <div class="col">
-<section class="panel">
+<section class="panel" id="step6Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 6｜手動帶入持倉監控</h2><div class="panel-sub">等你自己決定標的後，再把股票帶進持倉，不讓 AI 自動幫你做主</div></div></div>
 <div class="panel-body">
 <div class="grid-4" style="margin-bottom:14px">
@@ -284,7 +317,8 @@
       risk: { capital:200000, availableCash:200000, dailyRiskPercent:1, singlePositionCapitalPercent:25, maxNewPositions:2, lossStreak:0 },
       candidatesRawText:'', candidates:[], positions:[], logs:[], lastSync:'', pendingCloseId:null, isClosing:false, pendingAddCandidateId:null,
       aiReview: { prompt:'', rawResponse:'', parsed:null, mode:'local_only' },
-      decision: { mode:'auto', finalSymbols:[], summary:'', autoHeatThreshold:20, autoScoreGap:12 }
+      decision: { mode:'auto', finalSymbols:[], summary:'', autoHeatThreshold:20, autoScoreGap:12 },
+      ui: { candidateCardsExpanded:false, candidateCardsMode:'top5' }
     };
 
     let state = loadState();
@@ -690,6 +724,7 @@ function updateTrailingStop(p){
    - 新聞屬於利多延續、利多出盡、還是雜訊
    - 是否有過熱、爆量、乖離過大風險
 5. 請只輸出 JSON，不要加前言、不要加 Markdown、不要加 \`\`\`json。
+6. 以下欄位不可留空：fund_flow_note、theme_note、news_note，以及 top_pick / backup_pick / avoid_pick 內的 topic、institutional_flow、news_signal、confidence。若查無明確資料，請填「查無明確資料」。
 
 交易風格：
 - 台股衛星飆股
@@ -753,15 +788,15 @@ ${candidatesText}
           if(parsed[k].symbol) parsed[k].symbol = normalizeSymbol(parsed[k].symbol);
           if(!parsed[k].reason) parsed[k].reason = '';
           if(typeof parsed[k].ai_score !== 'number') parsed[k].ai_score = 0;
-          if(!parsed[k].topic) parsed[k].topic = '';
-          if(!parsed[k].institutional_flow) parsed[k].institutional_flow = '';
-          if(!parsed[k].news_signal) parsed[k].news_signal = '';
-          if(!parsed[k].confidence) parsed[k].confidence = '';
+          if(!parsed[k].topic) parsed[k].topic = '查無明確資料';
+          if(!parsed[k].institutional_flow) parsed[k].institutional_flow = '查無明確資料';
+          if(!parsed[k].news_signal) parsed[k].news_signal = '查無明確資料';
+          if(!parsed[k].confidence) parsed[k].confidence = '查無明確資料';
         });
 
-        if(!parsed.fund_flow_note) parsed.fund_flow_note = '';
-        if(!parsed.theme_note) parsed.theme_note = '';
-        if(!parsed.news_note) parsed.news_note = '';
+        if(!parsed.fund_flow_note) parsed.fund_flow_note = 'AI 本次未提供法人摘要';
+        if(!parsed.theme_note) parsed.theme_note = 'AI 本次未提供題材摘要';
+        if(!parsed.news_note) parsed.news_note = 'AI 本次未提供新聞摘要';
         if(!parsed.market_view) parsed.market_view = '';
         if(!parsed.risk_note) parsed.risk_note = '';
 
@@ -1126,7 +1161,14 @@ ${candidatesText}
       const finalRows = getFinalSelectedRows(2);
       $('candidateWarnings').innerHTML = `<div class="ok-box">已解析 ${list.length} 檔候選股｜已鎖定 ${selectedCount} 檔｜最終決策 ${finalRows.map(x=>x.symbol).join('、') || '尚未決策'}</div>`;
       $('candidateRankingTable').innerHTML = `<table><thead><tr><th>排名</th><th>股票</th><th>決策</th><th>決策分</th><th>本地分</th><th>級別</th><th>AI覆核</th><th>警示</th><th>狀態</th></tr></thead><tbody>${list.map((c,idx)=>{ const tag=getDecisionTag(c, idx); const ai=getAiFlags(c.symbol); const aiText=ai.isTop?'AI主攻':(ai.isBackup?'AI次選':(ai.isAvoid?'AI避開':'—')); return `<tr><td>#${idx+1}</td><td><strong>${c.symbol}</strong> ${c.name||''}</td><td class="${tag.cls}">${tag.text}</td><td>${fmt(c.decisionScore,1)}</td><td>${fmt(c.localScore,1)}</td><td>${c.grade||'-'}</td><td>${aiText}</td><td>${(c.warnings||[]).join('、')||'—'}</td><td>${c.rejected?'<span class="red">淘汰</span>':'<span class="green">可評估</span>'}</td></tr>`; }).join('')}</tbody></table>`;
-      $('candidateCards').innerHTML = list.map((c,idx)=>{ const tag=getDecisionTag(c, idx); const ai=getAiFlags(c.symbol); return `<div class="card ${idx===0?'mainAttackGlow':''}"><div class="card-head"><div><div class="symbol">#${idx+1} ${c.symbol} ${c.name||''}</div><div class="muted">價格 ${fmt(c.close,2)}｜漲幅 ${pct(c.changePct,2)}｜RSI ${Number.isFinite(c.rsi14)?fmt(c.rsi14,2):'-'}｜量比 ${Number.isFinite(c.volumeRatio)?fmt(c.volumeRatio,2):'-'}</div></div><div class="btnrow"><span class="badge ${tag.cls}">${tag.text}</span>${ai.isTop?'<span class="badge green">AI主攻</span>':''}${ai.isBackup?'<span class="badge cyan">AI次選</span>':''}${ai.isAvoid?'<span class="badge red">AI避開</span>':''}<span class="badge ${c.selected?'green':'cyan'}">${c.selected?'已鎖定戰隊':'候選中'}</span></div></div><div class="mini"><div class="cell"><div class="k">決策分</div><div class="v">${fmt(c.decisionScore,1)}</div></div><div class="cell"><div class="k">本地分</div><div class="v">${fmt(c.localScore,1)}</div></div><div class="cell"><div class="k">買價</div><div class="v">${fmt(c.entry,2)}</div></div><div class="cell"><div class="k">停損</div><div class="v red">${fmt(c.stop,2)}</div></div><div class="cell"><div class="k">RR</div><div class="v">${fmt(c.rr,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(c.shares)}</div></div></div><div style="margin-top:10px">${c.rejected?`<div class="warning-box">${(c.rejectReasons||[]).join('、')||'不符風控條件'}</div>`:`<div class="ok-box"><strong>${tag.text}</strong>｜${tag.reason}${(c.warnings||[]).length?`<br>警示：${c.warnings.join('、')}`:''}</div>`}</div><div class="btnrow" style="margin-top:10px"><button class="btn small ${c.selected?'green':''}" onclick="toggleSelectCandidate('${c.id}')">${c.selected?'取消鎖定':'鎖定戰隊'}</button><button class="btn small secondary" onclick="addPositionFromCandidate('${c.id}')">直接建倉</button></div></div>`; }).join('');
+
+      const mode = state.ui?.candidateCardsMode || 'top5';
+      const expanded = !!state.ui?.candidateCardsExpanded;
+      const body = $('candidateCardsPanelBody');
+      if(body) body.classList.toggle('hidden-panel', !expanded);
+
+      const cardList = mode === 'all' ? list : list.slice(0,5);
+      $('candidateCards').innerHTML = cardList.map((c,idx)=>{ const realIndex = list.findIndex(x=>x.id===c.id); const tag=getDecisionTag(c, realIndex); const ai=getAiFlags(c.symbol); return `<div class="card ${realIndex===0?'mainAttackGlow':''}"><div class="card-head"><div><div class="symbol">#${realIndex+1} ${c.symbol} ${c.name||''}</div><div class="muted">價格 ${fmt(c.close,2)}｜漲幅 ${pct(c.changePct,2)}｜RSI ${Number.isFinite(c.rsi14)?fmt(c.rsi14,2):'-'}｜量比 ${Number.isFinite(c.volumeRatio)?fmt(c.volumeRatio,2):'-'}</div></div><div class="btnrow"><span class="badge ${tag.cls}">${tag.text}</span>${ai.isTop?'<span class="badge green">AI主攻</span>':''}${ai.isBackup?'<span class="badge cyan">AI次選</span>':''}${ai.isAvoid?'<span class="badge red">AI避開</span>':''}<span class="badge ${c.selected?'green':'cyan'}">${c.selected?'已鎖定戰隊':'候選中'}</span></div></div><div class="mini"><div class="cell"><div class="k">決策分</div><div class="v">${fmt(c.decisionScore,1)}</div></div><div class="cell"><div class="k">本地分</div><div class="v">${fmt(c.localScore,1)}</div></div><div class="cell"><div class="k">買價</div><div class="v">${fmt(c.entry,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(c.shares)}</div></div><div class="cell"><div class="k">RR</div><div class="v">${fmt(c.rr,2)}</div></div><div class="cell"><div class="k">級別</div><div class="v">${c.grade||'-'}</div></div></div><div style="margin-top:10px">${tag.reason}${(c.warnings||[]).length?`<br>警示：${c.warnings.join('、')}`:''}</div><div class="btnrow" style="margin-top:10px"><button class="btn small ${c.selected?'green':''}" onclick="toggleSelectCandidate('${c.id}')">${c.selected?'取消鎖定':'鎖定戰隊'}</button><button class="btn small secondary" onclick="addPositionFromCandidate('${c.id}')">直接建倉</button></div></div>`; }).join('');
     }
 
     function renderAiPanel(){
@@ -1135,14 +1177,19 @@ ${candidatesText}
         $('aiResultPanel').innerHTML = `<div class="footnote">尚未載入 AI 覆核結果。</div>`;
         return;
       }
+      const flowNote = p.fund_flow_note || 'AI 本次未提供法人摘要';
+      const themeNote = p.theme_note || 'AI 本次未提供題材摘要';
+      const newsNote = p.news_note || 'AI 本次未提供新聞摘要';
+      const missingSummary = !p.fund_flow_note && !p.theme_note && !p.news_note;
       $('aiResultPanel').innerHTML = `
+        ${missingSummary ? `<div class="summary-missing">目前法人 / 題材 / 新聞摘要為空白是正常的，代表本次 AI 回覆沒有把這三個欄位填出來。已在 Prompt 加強要求；若仍空白，請確認你使用的 AI 真的有搜尋並依指定格式輸出。</div>` : ''}
         <div class="ai-box"><div class="ai-label">市場觀點</div><div class="ai-value">${p.market_view||'-'}</div></div>
-        <div class="ai-box"><div class="ai-label">主攻</div><div class="ai-value ai-top">${p.top_pick?.symbol||'-'}｜${p.top_pick?.reason||'-'}<br>AI分數 ${num(p.top_pick?.ai_score,0)}｜題材 ${p.top_pick?.topic||'-'}｜法人 ${p.top_pick?.institutional_flow||'-'}｜新聞 ${p.top_pick?.news_signal||'-'}｜信心 ${p.top_pick?.confidence||'-'}</div></div>
-        <div class="ai-box"><div class="ai-label">次選</div><div class="ai-value ai-backup">${p.backup_pick?.symbol||'-'}｜${p.backup_pick?.reason||'-'}<br>AI分數 ${num(p.backup_pick?.ai_score,0)}｜題材 ${p.backup_pick?.topic||'-'}｜法人 ${p.backup_pick?.institutional_flow||'-'}｜新聞 ${p.backup_pick?.news_signal||'-'}｜信心 ${p.backup_pick?.confidence||'-'}</div></div>
-        <div class="ai-box"><div class="ai-label">避開</div><div class="ai-value ai-avoid">${p.avoid_pick?.symbol||'-'}｜${p.avoid_pick?.reason||'-'}<br>AI分數 ${num(p.avoid_pick?.ai_score,0)}｜題材 ${p.avoid_pick?.topic||'-'}｜法人 ${p.avoid_pick?.institutional_flow||'-'}｜新聞 ${p.avoid_pick?.news_signal||'-'}｜信心 ${p.avoid_pick?.confidence||'-'}</div></div>
-        <div class="ai-box"><div class="ai-label">法人摘要</div><div class="ai-value">${p.fund_flow_note||'-'}</div></div>
-        <div class="ai-box"><div class="ai-label">題材摘要</div><div class="ai-value">${p.theme_note||'-'}</div></div>
-        <div class="ai-box"><div class="ai-label">新聞摘要</div><div class="ai-value">${p.news_note||'-'}</div></div>
+        <div class="ai-box"><div class="ai-label">主攻</div><div class="ai-value ai-top">${p.top_pick?.symbol||'-'}｜${p.top_pick?.reason||'-'}<br>AI分數 ${num(p.top_pick?.ai_score,0)}｜題材 ${p.top_pick?.topic||'查無明確資料'}｜法人 ${p.top_pick?.institutional_flow||'查無明確資料'}｜新聞 ${p.top_pick?.news_signal||'查無明確資料'}｜信心 ${p.top_pick?.confidence||'查無明確資料'}</div></div>
+        <div class="ai-box"><div class="ai-label">次選</div><div class="ai-value ai-backup">${p.backup_pick?.symbol||'-'}｜${p.backup_pick?.reason||'-'}<br>AI分數 ${num(p.backup_pick?.ai_score,0)}｜題材 ${p.backup_pick?.topic||'查無明確資料'}｜法人 ${p.backup_pick?.institutional_flow||'查無明確資料'}｜新聞 ${p.backup_pick?.news_signal||'查無明確資料'}｜信心 ${p.backup_pick?.confidence||'查無明確資料'}</div></div>
+        <div class="ai-box"><div class="ai-label">避開</div><div class="ai-value ai-avoid">${p.avoid_pick?.symbol||'-'}｜${p.avoid_pick?.reason||'-'}<br>AI分數 ${num(p.avoid_pick?.ai_score,0)}｜題材 ${p.avoid_pick?.topic||'查無明確資料'}｜法人 ${p.avoid_pick?.institutional_flow||'查無明確資料'}｜新聞 ${p.avoid_pick?.news_signal||'查無明確資料'}｜信心 ${p.avoid_pick?.confidence||'查無明確資料'}</div></div>
+        <div class="ai-box"><div class="ai-label">法人摘要</div><div class="ai-value">${flowNote}</div></div>
+        <div class="ai-box"><div class="ai-label">題材摘要</div><div class="ai-value">${themeNote}</div></div>
+        <div class="ai-box"><div class="ai-label">新聞摘要</div><div class="ai-value">${newsNote}</div></div>
         <div class="ai-box"><div class="ai-label">風險提醒</div><div class="ai-value">${p.risk_note||'-'}</div></div>`;
     }
 
@@ -1169,10 +1216,27 @@ ${candidatesText}
 
     function renderPositions(){ const openPositions=getOpenPositions(); if(openPositions.length===0){ $('positionsBox').innerHTML=`<div class="footnote">目前沒有開啟中的持倉。</div>`; return; } const portfolioStats=getPortfolioStats(); const lossMode=getLossMode(state.risk.lossStreak); const profile=getAdaptiveExitProfile(); let topAlert=`<div class="ok-box" style="margin-bottom:12px"><strong>目前出場模式：</strong>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div>`; if(state.market.signal==='red'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 市場紅燈：</strong>禁止新倉，持倉全面進入防守狀態。</div>`; } else if(portfolioStats.drop <= -5){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 組合熔斷：</strong>總回撤 ${pct(portfolioStats.drop,2)}，優先降倉保命，只減不加。</div>`; } else if(lossMode.mode==='冷卻模式'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🧊 冷卻模式：</strong>連敗達標，禁止新倉，只管理舊倉。</div>`; } $('positionsBox').innerHTML=topAlert + openPositions.map(p=>{ const pnl=(p.currentPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((p.currentPrice-p.entryPrice)/p.entryPrice)*100:0; const stopDistance=p.currentPrice-p.trailingStop; const action=getHoldingAction(p, portfolioStats); const risk=getHoldingRiskInfo(p, portfolioStats); return `<div class="card"><div class="card-head"><div><div class="symbol">${p.symbol} ${p.name||''}</div><div class="muted">建倉 ${p.entryDate}</div></div><span class="badge ${p.status.includes('撤退')?'red':(p.status.includes('鎖利')||p.status.includes('防守')?'yellow':'green')}">${p.status}</span></div><div class="mini"><div class="cell"><div class="k">成本</div><div class="v">${fmt(p.entryPrice,2)}</div></div><div class="cell"><div class="k">現價</div><div class="v">${fmt(p.currentPrice,2)}</div></div><div class="cell"><div class="k">浮盈虧</div><div class="v ${pnl>=0?'green':'red'}">NT$ ${fmt(pnl)}</div></div><div class="cell"><div class="k">報酬率</div><div class="v ${returnPct>=0?'green':'red'}">${pct(returnPct,2)}</div></div><div class="cell"><div class="k">歷史高點</div><div class="v">${fmt(p.highestPrice,2)}</div></div><div class="cell"><div class="k">移動停損</div><div class="v red">${fmt(p.trailingStop,2)}</div></div><div class="cell"><div class="k">初始停損</div><div class="v">${fmt(p.initialStop,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(p.shares)}</div></div><div class="cell"><div class="k">距停損空間</div><div class="v ${stopDistance<=0?'red':'yellow'}">${fmt(stopDistance,2)}</div></div><div class="cell"><div class="k">明日動作</div><div class="v">${action}</div></div><div class="cell"><div class="k">風險等級</div><div class="v ${risk.cls}">${risk.level}</div></div><div class="cell"><div class="k">診斷</div><div class="v">${risk.text}</div></div></div>${(state.market.signal==='red' || portfolioStats.drop <= -5 || lossMode.mode==='冷卻模式') ? `<div class="warning-box" style="margin-top:10px">系統防守警報：目前僅建議防守、減碼或平倉，不建議任何加碼動作。</div>` : ''}<div class="btnrow" style="margin-top:10px"><button class="btn small" onclick="updatePositionMarket('${p.id}')">更新收盤 / 高點</button><button class="btn small red" onclick="openClose('${p.id}')">真實平倉</button></div></div>`; }).join(''); }
     function renderPerformance(){ const perf=getPerformance(); $('performanceMetrics').innerHTML=`<div class="metric"><div class="label">總交易筆數</div><div class="value">${fmt(perf.totalTrades)}</div></div><div class="metric"><div class="label">勝率</div><div class="value ${perf.winRate>=50?'green':'yellow'}">${pct(perf.winRate,1)}</div></div><div class="metric"><div class="label">累積損益</div><div class="value ${perf.totalPnl>=0?'green':'red'}">NT$ ${fmt(perf.totalPnl)}</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value ${perf.avgReturn>=0?'green':'red'}">${pct(perf.avgReturn,2)}</div></div><div class="metric"><div class="label">飛輪累積 %</div><div class="value ${perf.flywheelPct>=0?'green':'red'}">${pct(perf.flywheelPct,2)}</div></div>`; if(state.logs.length===0){ $('logsTable').innerHTML=`<div class="footnote">尚無歷史紀錄。</div>`; return; } $('logsTable').innerHTML=`<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>原因</th><th>日期</th></tr></thead><tbody>${state.logs.slice(0,12).map(l=>`<tr><td class="mono">${l.symbol}</td><td>${fmt(l.entryPrice,2)}</td><td>${fmt(l.exitPrice,2)}</td><td>${fmt(l.shares)}</td><td class="${l.pnl>=0?'green':'red'}">NT$ ${fmt(l.pnl)}</td><td class="${l.returnPct>=0?'green':'red'}">${pct(l.returnPct,2)}</td><td class="${l.result==='win'?'green':(l.result==='loss'?'red':'yellow')}">${l.result}</td><td>${l.reason||'-'}</td><td class="mono">${l.exitDate}</td></tr>`).join('')}</tbody></table>`; }
-    function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); }
+    function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn'); if(btn){ btn.textContent = (state.ui?.candidateCardsExpanded ? '收合候選詳卡' : '展開候選詳卡'); } }
 
     function saveMarketInputs(){ state.market.advancers=num($('advancersInput').value); state.market.decliners=num($('declinersInput').value); state.market.limitUp=num($('limitUpInput').value); state.market.limitDown=num($('limitDownInput').value); state.market.otcChange=num($('otcChangeInput').value); state.market.taiexChange=num($('taiexChangeInput').value); saveState(); }
     function bindEvents(){ $('calcMarketBtn').addEventListener('click', saveMarketInputs); $('saveMarketBtn').addEventListener('click', saveMarketInputs); $('saveRiskBtn').addEventListener('click', ()=>{ state.risk.capital=num($('capitalInput').value); state.risk.availableCash=num($('availableCashInput').value); state.risk.dailyRiskPercent=num($('dailyRiskPercentInput').value); state.risk.singlePositionCapitalPercent=num($('singlePositionCapitalPercentInput').value); state.risk.maxNewPositions=Math.max(1,num($('maxNewPositionsInput').value,1)); state.risk.lossStreak=Math.max(0,num($('lossStreakInput').value,0)); if(state.candidates.length){ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); return; } saveState(); }); $('parseCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); }); $('clearCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=''; state.candidates=[]; saveState(); }); $('resetAllBtn').addEventListener('click', ()=>{ if(!confirm('確定重置全部資料？')) return; state=clone(defaultState); saveState(); }); $('addHoldBtn').addEventListener('click', addManualHolding); $('loadTopBtn').addEventListener('click', loadTopCandidate); $('loadAiTopBtn').addEventListener('click', loadAiTopCandidate); $('genAiPromptBtn').addEventListener('click', generateAiPrompt); $('copyAiPromptBtn').addEventListener('click', copyAiPrompt); $('parseAiBtn').addEventListener('click', parseAiResult); $('clearAiBtn').addEventListener('click', clearAiResult); $('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false)); $('autoDecisionBtn').addEventListener('click', ()=>{ $('decisionMode').value='auto'; applyDecisionMode(false); }); $('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true)); $('resetLocalBtn').addEventListener('click', resetToLocalSelection); $('calcPositionBtn').addEventListener('click', updatePositionPreview); $('addPositionBtn').addEventListener('click', addOrUpdatePosition); $('loadFromSelectionBtn').addEventListener('click', autoFillFromSelection); $('clearPositionInputsBtn').addEventListener('click', clearPositionInputs); $('refreshAllPositionsBtn').addEventListener('click', refreshAllPositions); $('exportPositionsBtn').addEventListener('click', exportPositions); $('clearAllPositionsBtn').addEventListener('click', ()=>{ state.positions=[]; saveState(); clearPositionInputs(); }); $('confirmCloseBtn').addEventListener('click', confirmClosePosition); $('cancelCloseBtn').addEventListener('click', cancelClosePosition); $('closeOverlay').addEventListener('click', (e)=>{ if(e.target === $('closeOverlay')) cancelClosePosition(); }); }
+
+    function bindUiEvents(){
+      $('toggleCandidateCardsBtn')?.addEventListener('click', ()=>{
+        state.ui.candidateCardsExpanded = !state.ui.candidateCardsExpanded;
+        saveState();
+      });
+      $('showTop5Btn')?.addEventListener('click', ()=>{
+        state.ui.candidateCardsMode = 'top5';
+        state.ui.candidateCardsExpanded = true;
+        saveState();
+      });
+      $('showAllCardsBtn')?.addEventListener('click', ()=>{
+        state.ui.candidateCardsMode = 'all';
+        state.ui.candidateCardsExpanded = true;
+        saveState();
+      });
+    }
 
     window.toggleSelectCandidate = toggleSelectCandidate;
     window.addPositionFromCandidate = addPositionFromCandidate;
@@ -1182,32 +1246,9 @@ ${candidatesText}
     window.removePosition = removePosition;
 
     bindEvents();
+    bindUiEvents();
     calculateMarket();
     renderAll();
   </script>
 </body>
 </html>
-### 第一步：專家優化
-
-**[角色任務]**：台股量化交易與資產配置專家、前端系統架構與除錯最高顧問。
-**[背景資訊]**：使用者提供了一份名為「AI 戰艦 Pro Max v9.4-Quant」的 HTML 檔案，並詢問這版程式碼是否能正常運作。
-**[具體指令]**：
-1. 檢視使用者提供的檔案內容，確認這是否為上一輪提供的「單一乾淨覆寫版」。
-2. 確認按鈕失效的問題是否已經被徹底解決。
-3. 給予使用者信心，宣告這份程式碼的穩定性。
-**[約束條件]**：語氣維持專業、穩定軍心且具備實戰感。一律採用正向表述，數值標示直接呈現。
-
----
-
-### 第二步：直接答覆
-
-這版程式碼**非常完美，絕對可以跑！** 這正是我們上一輪經過「無菌清理」、剔除了所有重複的 4 套 HTML 結構，並且修復了所有「實體換行」與「展開運算子」語法錯誤的 **v9.4-Quant 最終乾淨版本**。
-
-目前這個版本已經具備了以下防彈特性：
-1. **按鈕全面解鎖**：所有的 `bindEvents` 都已正確掛載，不會再因為編譯錯誤而卡死。
-2. **20MA 風控精準執行**：乖離率 > 15% 的扣分與預警機制已完美封裝在內。
-3. **飛輪系統同步**：單筆風險控管（Fixed Fractional Sizing）與平倉後的權重計算都能如實運作。
-
-你現在可以直接把它存成 `index.html`，丟進瀏覽器裡使用了。
-
-既然系統已經徹底穩固，接下來你希望我們先拿一檔實際的股票（例如：長榮或廣達），模擬一次**「從匯入 CSV 到設定兩段式停利」**的完整流程，還是想探討**「如何客製化 TradingView 匯出腳本」**來確保每次匯入的欄位都 100% 完美對接？
