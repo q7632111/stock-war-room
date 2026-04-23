@@ -29,44 +29,13 @@
     html,body{margin:0;padding:0;background:radial-gradient(circle at top left, rgba(28,183,255,.09), transparent 30%),radial-gradient(circle at top right, rgba(52,211,153,.06), transparent 25%),linear-gradient(180deg,#06111b 0%,#08131f 100%);color:var(--text);font-family:"Segoe UI","Noto Sans TC",system-ui,sans-serif}
     body{min-height:100vh}
     .wrap{max-width:1760px;margin:0 auto;padding:14px}
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:linear-gradient(180deg,rgba(19,34,51,.96),rgba(10,20,31,.96));border:1px solid var(--line2);box-shadow:var(--shadow);border-radius:14px;margin-bottom:14px;position:static;backdrop-filter:blur(8px)}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:linear-gradient(180deg,rgba(19,34,51,.96),rgba(10,20,31,.96));border:1px solid var(--line2);box-shadow:var(--shadow);border-radius:14px;margin-bottom:14px;position:sticky;top:0;z-index:30;backdrop-filter:blur(8px)}
     .brand{display:flex;flex-direction:column;gap:2px}.brand h1{margin:0;font-size:22px;letter-spacing:1px;color:#dff6ff;text-shadow:0 0 12px rgba(86,215,255,.2)}.brand .sub{font-size:12px;color:var(--muted)}
     .statusbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
     .pill{padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,rgba(15,28,42,.95),rgba(8,18,28,.95));border:1px solid var(--line);color:#d9edff;font-size:12px;font-weight:700;box-shadow:var(--glow)}
     .pill.green{color:#d8fff1;border-color:rgba(52,211,153,.45)}.pill.yellow{color:#fff5d6;border-color:rgba(251,191,36,.45)}.pill.red{color:#ffe0e0;border-color:rgba(248,113,113,.45)}.pill.purple{color:#efe8ff;border-color:rgba(167,139,250,.45)}
     .layout{display:grid;grid-template-columns:300px minmax(0,1fr) 360px;gap:14px;align-items:start}.col{display:flex;flex-direction:column;gap:14px;min-width:0}
     @media (max-width:1600px){.layout{grid-template-columns:280px minmax(0,1fr) 320px}}@media (max-width:1460px){.layout{grid-template-columns:1fr}}
-    .layout>.col:nth-child(3){grid-column:1 / -1}
-    @media (max-width:1460px){.layout>.col:nth-child(3){grid-column:auto}}
-
-    
-    .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
-    @media (max-width:1460px){.layout{grid-template-columns:1fr}}
-    .layout>.col:nth-child(3){grid-column:1 / -1}
-    @media (max-width:1460px){.layout>.col:nth-child(3){grid-column:auto}}
-    .sleep-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px}
-    @media (max-width:1100px){.sleep-grid{grid-template-columns:1fr}}
-    .sleep-card{background:linear-gradient(180deg,rgba(14,25,37,.95),rgba(8,16,25,.95));border:1px solid rgba(86,215,255,.12);border-radius:14px;padding:14px}
-    .sleep-title{font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:800;letter-spacing:.4px}
-    .sleep-kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-    @media (max-width:900px){.sleep-kpi{grid-template-columns:1fr}}
-    .sleep-kpi .item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
-    .sleep-kpi .k{font-size:11px;color:var(--muted);margin-bottom:6px}
-    .sleep-kpi .v{font-size:18px;font-weight:900}
-    .checklist{display:grid;gap:8px}
-    .check-item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:10px 12px}
-    .check-item .name{font-size:13px}
-    .decision-banner{display:flex;align-items:center;justify-content:center;min-height:84px;border-radius:16px;font-weight:900;font-size:24px;letter-spacing:.5px}
-    .decision-banner.ok{background:linear-gradient(180deg,rgba(18,74,54,.24),rgba(12,43,31,.18));border:1px solid rgba(52,211,153,.35);color:#d9fff1}
-    .decision-banner.warn{background:linear-gradient(180deg,rgba(95,71,8,.22),rgba(45,35,5,.16));border:1px solid rgba(251,191,36,.35);color:#fff3bf}
-    .decision-banner.stop{background:linear-gradient(180deg,rgba(80,25,25,.24),rgba(43,14,14,.18));border:1px solid rgba(248,113,113,.35);color:#ffd8d8}
-    .target-list{display:grid;gap:10px}
-    .target-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:10px 12px}
-    .target-role{font-weight:900}
-    .target-main{font-size:15px;font-weight:900}
-    .risk-note-list{display:grid;gap:8px}
-    .risk-note{font-size:12px;color:var(--muted);padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}
-
     .panel{background:linear-gradient(180deg,rgba(16,29,42,.98),rgba(9,18,28,.98));border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
     .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(90deg,rgba(86,215,255,.10),transparent 40%),linear-gradient(180deg,rgba(18,35,52,.95),rgba(11,22,34,.95));border-bottom:1px solid rgba(86,215,255,.12)}
     .panel-title{margin:0;font-size:15px;font-weight:900;letter-spacing:.5px;color:#dff6ff}.panel-sub{font-size:11px;color:var(--muted)}.panel-body{padding:14px}
@@ -107,7 +76,7 @@
     .action-btn{padding:6px 10px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,255,255,.08);color:#e5e7eb}
 
   
-    .quicknav{display:flex;gap:8px;flex-wrap:wrap;position:static;margin-bottom:14px;padding:10px 12px;background:linear-gradient(180deg,rgba(10,20,31,.94),rgba(7,15,24,.94));border:1px solid rgba(86,215,255,.12);border-radius:14px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+    .quicknav{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:76px;z-index:25;margin-bottom:14px;padding:10px 12px;background:linear-gradient(180deg,rgba(10,20,31,.94),rgba(7,15,24,.94));border:1px solid rgba(86,215,255,.12);border-radius:14px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
     .quicknav a,.quicknav button{appearance:none;text-decoration:none;border:none;cursor:pointer;color:#dff6ff;font-weight:800;font-size:12px;padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,#17304a,#0f2234);border:1px solid #315676}
     .quicknav .ghost{background:linear-gradient(180deg,#162231,#101c29);border-color:#29465f}
     .compact-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
@@ -117,240 +86,41 @@
     .detail-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
     .detail-tools .ghost{appearance:none;border:1px solid rgba(86,215,255,.2);background:rgba(255,255,255,.03);color:#dff6ff;padding:8px 12px;border-radius:999px;font-weight:800;cursor:pointer}
     .detail-tools .ghost:hover{filter:brightness(1.08)}
-    .detail-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px;position:static;background:linear-gradient(180deg,rgba(10,20,31,.94),rgba(7,15,24,.94));padding:10px 12px;border:1px solid rgba(86,215,255,.12);border-radius:12px;box-shadow:var(--shadow)}
+    .detail-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px;position:sticky;top:76px;z-index:8;background:linear-gradient(180deg,rgba(10,20,31,.94),rgba(7,15,24,.94));padding:10px 12px;border:1px solid rgba(86,215,255,.12);border-radius:12px;box-shadow:var(--shadow)}
     .detail-toolbar .left,.detail-toolbar .right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
     .micro-note{font-size:12px;color:var(--muted)}
     .inline-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:11px;font-weight:800;color:#dff6ff}
 
 
   
-/* ===== v9.8.1 中下段滿版 hotfix ===== */
+/* ===== v9.6.4 穩定滿版修正 ===== */
 .layout{
-  display:grid !important;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
-  gap:18px !important;
-  align-items:start;
+  display:block !important;
 }
-.layout>.col{
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-}
-.layout>.col:nth-child(3){
-  grid-column:1 / -1 !important;
+.layout > .col{
+  display:block !important;
   width:100% !important;
 }
-#step5Panel, #detailCandidatesPanel, #step6Panel{
+.layout > .col > section.panel{
   width:100% !important;
+  margin-bottom:18px !important;
 }
-#step5Targets .target-row{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding:10px 12px;
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:10px;
-  margin-bottom:10px;
-  background:rgba(255,255,255,.02);
-}
-#step5Targets .left, #step5Targets .right{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-#step5Targets .right{ text-align:right; }
-#step5Checklist .check-row,
-#step5Risk .risk-row{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  padding:8px 0;
-  border-bottom:1px solid rgba(255,255,255,.06);
-}
-#step5Checklist .check-row:last-child,
-#step5Risk .risk-row:last-child{
-  border-bottom:none;
+#step2Panel, #step4Panel, #step45Panel, #step5Panel, #detailCandidatesPanel, #step6Panel{
+  width:100% !important;
 }
 #positionsBox{
   display:grid !important;
   grid-template-columns:repeat(auto-fit, minmax(320px,1fr)) !important;
   gap:14px !important;
+}
+.detail-toolbar{
+  position:static !important;
 }
 @media (max-width:1200px){
-  .layout{
+  #positionsBox{
     grid-template-columns:1fr !important;
   }
-  .layout>.col:nth-child(3){
-    grid-column:auto !important;
-  }
 }
-
-
-/* ===== v9.9 真戰神 UI 重構 ===== */
-.layout{
-  display:grid !important;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
-  grid-template-areas:
-    "left right"
-    "step5 step5"
-    "step6 step6"
-    "detail detail";
-  gap:18px !important;
-  align-items:start;
-}
-.layout>.col{
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-}
-.layout>.col:nth-child(1){grid-area:left}
-.layout>.col:nth-child(2){grid-area:right}
-.layout>.col:nth-child(3){grid-area:step6; width:100% !important}
-#step5Panel{grid-area:step5; width:100% !important}
-#detailCandidatesPanel{grid-area:detail; width:100% !important; margin-top:18px}
-#step6Panel{width:100% !important}
-#step5Panel .panel-body{padding:20px}
-#step5Panel .hero-decision{
-  display:grid;
-  grid-template-columns:1.2fr .9fr;
-  gap:16px;
-}
-#step5Panel .big-decision{
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;
-  padding:18px;
-  background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
-}
-#step5Panel .decision-banner{
-  border-radius:16px;
-  padding:18px;
-  text-align:center;
-  font-size:28px;
-  font-weight:900;
-  letter-spacing:.5px;
-}
-#step5Panel .decision-sub{
-  font-size:12px;
-  color:var(--muted);
-  margin-top:8px;
-}
-#step5Targets .target-row{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px 14px;
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:12px;
-  margin-bottom:12px;
-  background:rgba(255,255,255,.02);
-}
-#step5Targets .left,#step5Targets .right{display:flex;flex-direction:column;gap:4px}
-#step5Targets .right{text-align:right}
-#step5Checklist .check-row,
-#step5Risk .risk-row{
-  display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)
-}
-#step5Checklist .check-row:last-child,#step5Risk .risk-row:last-child{border-bottom:none}
-#step6Panel .panel-body{padding:20px}
-#positionsBox{
-  display:grid !important;
-  grid-template-columns:repeat(auto-fit, minmax(320px,1fr)) !important;
-  gap:14px !important;
-}
-#detailCandidatesPanel .panel-head{
-  position:static;
-}
-@media (max-width: 1200px){
-  .layout{
-    grid-template-columns:1fr !important;
-    grid-template-areas:
-      "left"
-      "right"
-      "step5"
-      "step6"
-      "detail";
-  }
-  #step5Panel .hero-decision{
-    grid-template-columns:1fr;
-  }
-}
-
-
-/* ===== v9.9.1 真修正：讓中下段真正滿版 ===== */
-.layout{
-  display:grid !important;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
-  grid-template-areas:
-    "left rightTop"
-    "step5 step5"
-    "detail detail"
-    "step6 step6"
-    "logs logs"
-    "risk risk";
-  gap:18px !important;
-  align-items:start;
-}
-.layout>.col{min-width:0}
-.layout>.col:nth-child(1){
-  grid-area:left;
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-}
-.layout>.col:nth-child(2),
-.layout>.col:nth-child(3){
-  display:contents !important;
-}
-#step2Panel,#step4Panel,#step45Panel{
-  grid-area:rightTop;
-}
-#step4Panel,#step45Panel{margin-top:18px}
-#step5Panel{grid-area:step5;width:100% !important}
-#detailCandidatesPanel{grid-area:detail;width:100% !important}
-#step6Panel{grid-area:step6;width:100% !important}
-#logsPanel{grid-area:logs;width:100% !important}
-#riskPanel{grid-area:risk;width:100% !important}
-#step5Panel,#detailCandidatesPanel,#step6Panel,#logsPanel,#riskPanel{
-  min-width:0;
-}
-#step5Panel .panel-body,
-#detailCandidatesPanel .panel-body,
-#step6Panel .panel-body,
-#logsPanel .panel-body,
-#riskPanel .panel-body{
-  width:100%;
-}
-#positionsBox{
-  display:grid !important;
-  grid-template-columns:repeat(auto-fit, minmax(320px,1fr)) !important;
-  gap:14px !important;
-}
-@media (max-width: 1200px){
-  .layout{
-    grid-template-columns:1fr !important;
-    grid-template-areas:
-      "left"
-      "rightTop"
-      "step5"
-      "detail"
-      "step6"
-      "logs"
-      "risk";
-  }
-}
-
-
-/* ===== v9.9.2 穩定工作流：全部順序滿版 ===== */
-.layout{display:block !important;}
-.layout > .col{display:contents !important;}
-.layout section.panel{width:100% !important;margin-bottom:18px !important;}
-#step5Panel,#detailCandidatesPanel,#step6Panel,#logsPanel,#riskPanel{width:100% !important;}
-#positionsBox{display:grid !important;grid-template-columns:repeat(auto-fit,minmax(320px,1fr)) !important;gap:14px !important;}
-#step5Targets .target-row{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:12px;background:rgba(255,255,255,.02);}
-#step5Targets .left,#step5Targets .right{display:flex;flex-direction:column;gap:4px;}
-#step5Targets .right{text-align:right;}
 
 </style>
 </head>
@@ -359,7 +129,7 @@
 <div class="topbar">
 <div class="brand">
 <h1>AI 戰艦 Pro Max v9.6.3 STEP6 彈窗自動預填版</h1>
-<div class="sub">保留原穩定功能核心｜設定艙彈窗化 + STEP6 自動預填停損停利 + 輸入區重整</div>
+<div class="sub">基於 v9.6.3 穩定核心｜全頁順序滿版 + 保留 AI 解析與 STEP6 彈窗自動預填</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -472,40 +242,11 @@
 </section>
 
 <section class="panel" id="step5Panel">
-<div class="panel-head"><div><h2 class="panel-title">STEP 5｜夜間下單確認卡</h2><div class="panel-sub">今晚最重要的區塊：先看結論，再決定要不要掛單</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">STEP 5｜確認明天掛單名單</h2><div class="panel-sub">本地 + AI 看完後，由你自己決定鎖定戰隊與掛單內容</div></div></div>
 <div class="panel-body">
-  <div class="ok-box"><strong>睡前最後流程</strong><br>先確認主攻 / 次選 → 看總風險與檢查清單 → 再看最終判定燈，不要跳過這一步直接掛單。</div>
-
-  <div class="hero-decision">
-    <div class="big-decision">
-      <div class="label" style="margin-bottom:10px">🎯 今日掛單標的</div>
-      <div id="step5Targets"></div>
-      <div class="divider"></div>
-      <div class="grid-2">
-        <div class="card"><div class="label">決策模式</div><div id="step5ModeBox" class="mono">等待判定</div></div>
-        <div class="card"><div class="label">出場模式</div><div id="step5ExitBox" class="mono">等待判定</div></div>
-      </div>
-    </div>
-
-    <div class="big-decision">
-      <div class="label" style="margin-bottom:10px">⚠️ 風控總覽</div>
-      <div id="step5Risk"></div>
-      <div class="divider"></div>
-      <div class="label" style="margin-bottom:10px">🧾 檢查清單</div>
-      <div id="step5Checklist"></div>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="decision-banner" id="step5Decision"></div>
-  <div class="decision-sub" id="step5DecisionNote"></div>
-
-  <div class="btnrow" style="justify-content:center;margin-top:18px">
-    <button class="btn green" id="step5Confirm">✅ 已完成睡前確認</button>
-    <button class="btn secondary" id="step5Recalc">重新檢查</button>
-  </div>
-  <div id="orderSummaryBox" style="display:none"></div><div id="ordersTable" style="display:none"></div>
+<div id="orderSummaryBox"></div>
+<div class="divider"></div>
+<div class="tableWrap" id="ordersTable"></div>
 </div>
 </section>
 
@@ -539,7 +280,7 @@
 </div>
 <div class="col">
 <section class="panel" id="step6Panel">
-<div class="panel-head"><div><h2 class="panel-title">STEP 6｜持倉戰情中心</h2><div class="panel-sub">把手動輸入改成彈窗，不擠在主畫面；桌機版持倉區改為下方全寬顯示，手機版維持自然下移</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">STEP 6｜持倉戰情中心</h2><div class="panel-sub">把手動輸入改成彈窗，不擠在主畫面；主畫面只保留動作與監控結果</div></div></div>
 <div class="panel-body">
 <div class="ok-box"><strong>STEP 6 新動線</strong><br>需要輸入持倉資料時，再打開彈窗填寫。主畫面只保留：快速帶入、重算、匯出、清空，以及持倉監控結果。</div>
 
@@ -553,15 +294,13 @@
 <button class="btn red" id="clearAllPositionsBtn">清空全部持倉</button>
 </div>
 
-
-<div id="positionsBox" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
-
+<div id="positionsBox"></div>
 <div class="divider"></div>
 <div class="tableWrap"><table style="min-width:1200px"><thead><tr><th>狀態</th><th>股票</th><th>成本</th><th>現價</th><th>報酬率</th><th>未實現損益</th><th>停損</th><th>停利1</th><th>停利2</th><th>最高價</th><th>高點回撤</th><th>操作</th></tr></thead><tbody id="positionsTableBody"><tr><td colspan="12" class="muted">尚無持倉資料。</td></tr></tbody></table></div>
 
 </div>
 </section>
-<section class="panel" id="logsPanel">
+<section class="panel">
 <div class="panel-head"><div><h2 class="panel-title">股票戰報艙</h2><div class="panel-sub">只看股票交易紀律與績效，不混基金飛輪</div></div></div>
 <div class="panel-body">
 <div class="grid-5" id="performanceMetrics"></div>
@@ -569,7 +308,7 @@
 <div class="tableWrap" id="logsTable"></div>
 </div>
 </section>
-<section class="panel" id="riskPanel">
+<section class="panel">
 <div class="panel-head"><div><h2 class="panel-title">火控摘要</h2><div class="panel-sub">主畫面只看摘要；要修改總資金、單日風險、連敗次數時，從右上角打開設定視窗</div></div></div>
 <div class="panel-body">
 <div id="riskModeSummary"></div>
@@ -1267,12 +1006,11 @@ ${candidatesText}
 
       let parsed;
       try{
-        let cleanRaw = raw;
-        const start = cleanRaw.indexOf('{'), end = cleanRaw.lastIndexOf('}');
-        if(start !== -1 && end !== -1 && end > start) cleanRaw = cleanRaw.slice(start, end+1);
-        parsed = JSON.parse(cleanRaw);
+        parsed = JSON.parse(normalizeJsonText(raw));
       }catch(e){
-        return alert('AI JSON 解析失敗：JSON 格式不合法。');
+        console.error('AI JSON.parse failed:', e, raw);
+        alert('AI JSON 解析失敗：JSON 格式不合法。');
+        return;
       }
 
       try{
@@ -1286,6 +1024,7 @@ ${candidatesText}
           if(!parsed[k].news_signal) parsed[k].news_signal = '查無明確資料';
           if(!parsed[k].confidence) parsed[k].confidence = '查無明確資料';
         });
+
         if(!parsed.fund_flow_note) parsed.fund_flow_note = 'AI 本次未提供法人摘要';
         if(!parsed.theme_note) parsed.theme_note = 'AI 本次未提供題材摘要';
         if(!parsed.news_note) parsed.news_note = 'AI 本次未提供新聞摘要';
@@ -1295,30 +1034,14 @@ ${candidatesText}
         state.aiReview.rawResponse = raw;
         state.aiReview.parsed = parsed;
         state.aiReview.mode = 'ai_assisted';
-        state.lastSync = new Date().toLocaleString('zh-TW');
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-
-        if($('aiResultBox')) $('aiResultBox').value = '';
-
-        try{ fillInputsFromState(); }catch(e){}
-        try{ renderTopStatusBar(); }catch(e){}
-        try{ renderHero(); }catch(e){}
-        try{ renderMarket(); }catch(e){}
-        try{ renderRiskMode(); }catch(e){}
-        try{ renderMainAttackSummary(); }catch(e){}
-        try{ renderCandidateRanking(); }catch(e){}
-        try{ renderAiPanel(); }catch(e){}
-        try{ if($('step5Targets')) runStep5Engine(); }catch(e){}
-        try{ renderPositions(); }catch(e){}
-        try{ renderPerformance(); }catch(e){}
-
-        alert('✅ AI 覆核結果已解析並載入');
+        saveState();
+        alert('✅ AI 覆核結果已解析並鎖定');
       }catch(e){
-        console.error(e);
+        console.error('AI post-parse/render failed:', e, parsed);
         alert('AI JSON 本身格式正確，但系統在套用/渲染 AI 結果時發生錯誤：' + e.message);
       }
     }
-    function clearAiResult(){{ state.aiReview.rawResponse=''; state.aiReview.parsed=null; state.aiReview.mode='local_only'; $('aiResultBox').value=''; saveState(); }
+    function clearAiResult(){ state.aiReview.rawResponse=''; state.aiReview.parsed=null; state.aiReview.mode='local_only'; $('aiResultBox').value=''; saveState(); }
     function getAiFlags(symbol){ const p = state.aiReview?.parsed; return { isTop: p?.top_pick?.symbol === symbol, isBackup: p?.backup_pick?.symbol === symbol, isAvoid: p?.avoid_pick?.symbol === symbol }; }
 
     function fillInputsFromState(){ $('decisionMode') && ($('decisionMode').value = state.decision?.mode || 'auto'); $('autoHeatThreshold') && ($('autoHeatThreshold').value = state.decision?.autoHeatThreshold ?? 20); $('autoScoreGap') && ($('autoScoreGap').value = state.decision?.autoScoreGap ?? 12); $('advancersInput').value=state.market.advancers; $('declinersInput').value=state.market.decliners; $('limitUpInput').value=state.market.limitUp; $('limitDownInput').value=state.market.limitDown; $('otcChangeInput').value=state.market.otcChange; $('taiexChangeInput').value=state.market.taiexChange; $('capitalInput').value=state.risk.capital; $('availableCashInput').value=state.risk.availableCash; $('dailyRiskPercentInput').value=state.risk.dailyRiskPercent; $('singlePositionCapitalPercentInput').value=state.risk.singlePositionCapitalPercent; $('maxNewPositionsInput').value=state.risk.maxNewPositions; $('lossStreakInput').value=state.risk.lossStreak; $('candidateTextarea').value=state.candidatesRawText||''; $('aiPromptBox').value=state.aiReview?.prompt||''; $('aiResultBox').value=state.aiReview?.rawResponse||''; }
@@ -1535,27 +1258,7 @@ ${candidatesText}
       saveState();
       $('addPosModal') && $('addPosModal').classList.remove('show');
     }
-    
-function renderPositions(){
-  const box = $('positionsBox');
-  if(!box) return;
-  if(!state.positions || state.positions.length===0){
-    box.innerHTML = '<div class="muted">尚無持倉</div>';
-    return;
-  }
-  box.innerHTML = state.positions.map(p=>{
-    return `<div class="card">
-      <div class="label">${p.symbol} ${p.name||''}</div>
-      <div>成本：${p.buy}</div>
-      <div>現價：${p.current}</div>
-      <div>停損：${p.stop}</div>
-      <div>TP1：${p.tp1}</div>
-      <div>TP2：${p.tp2}</div>
-    </div>`;
-  }).join('');
-}
-
-function renderAdvancedPositionsTable(){
+    function renderAdvancedPositionsTable(){
       if(!$('positionsTableBody')) return;
       if(!state.positions.length){ $('positionsTableBody').innerHTML = '<tr><td colspan="12" class="muted">尚無持倉資料。</td></tr>'; return; }
       $('positionsTableBody').innerHTML = state.positions.filter(p => p.isOpen !== false).map((p, idx) => {
@@ -1723,124 +1426,29 @@ function renderAdvancedPositionsTable(){
     }
 
     function renderOrders(){
-      if(!$('orderSummaryBox') || !$('ordersTable')) return;
       const finalRows = getFinalSelectedRows(2).map(c=>({ ...c, decisionScore:getDecisionScore(c) }));
       if(!finalRows.length){
         $('orderSummaryBox').innerHTML = `<div class="footnote">尚未產生掛單清單。</div>`;
         $('ordersTable').innerHTML = '';
         return;
       }
-
       const exitProfile = getAdaptiveExitProfile();
-      const { effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings();
-      const capital = num(state.risk.capital);
-      const dailyRiskAmount = capital * (effectiveDailyRiskPercent/100);
-
-      let totalInvested = 0;
-      let totalPositionRisk = 0;
-      let targetHtml = '';
-      const notes = [];
-      let hasOverheat = false;
-      let hasLowRR = false;
-
-      finalRows.forEach((row, idx)=>{
-        const invested = num(row.invested, num(row.entry)*num(row.shares));
-        const pRisk = num(row.positionRisk, Math.abs(num(row.entry)-num(row.stop))*num(row.shares));
-        totalInvested += invested;
-        totalPositionRisk += pRisk;
-        if(num(row.rr) < 1.5) hasLowRR = true;
-        if((row.warnings||[]).some(w=>String(w).includes('過熱') || String(w).includes('乖離'))) hasOverheat = true;
-
-        const role = idx===0 ? '🔥 主攻' : '⚡ 次選';
-        targetHtml += `<div class="target-row">
-          <div class="target-role ${idx===0?'green':'yellow'}">${role}</div>
-          <div>
-            <div class="target-main">${row.symbol} ${row.name||''}</div>
-            <div class="footnote">買價 ${fmt(row.entry,2)}｜停損 ${fmt(row.stop,2)}｜停利參考 ${fmt(row.takeProfit,2)}｜決策分 ${fmt(row.decisionScore,1)}</div>
-          </div>
-          <div class="badge ${idx===0?'green':'cyan'}">${row.grade||'-'} 級</div>
-        </div>`;
-      });
-
-      const totalRiskPct = capital>0 ? (totalPositionRisk/capital)*100 : 0;
-      const avgRiskPct = finalRows.length ? totalRiskPct/finalRows.length : 0;
-      const usedSlots = finalRows.length;
-      const rrPass = !hasLowRR;
-      const heatPass = !hasOverheat;
-      const countPass = usedSlots <= Math.max(1,effectiveMaxNewPositions);
-      const riskPass = totalPositionRisk <= dailyRiskAmount && totalRiskPct <= effectiveDailyRiskPercent;
-
-      if(!countPass) notes.push('標的數量超過今晚可開新倉上限。');
-      if(!rrPass) notes.push('至少有一檔 RR 低於 1.5，建議降級成觀察。');
-      if(!heatPass) notes.push('候選中存在過熱 / 高乖離警示，避免睡前追價。');
-      if(!riskPass) notes.push('總風險超過今晚上限，應縮股數或減少檔數。');
-      if(state.market.signal==='red') notes.push('紅燈市場本來就不該開新倉。');
-
-      const status = (!countPass || !riskPass || state.market.signal==='red') ? 'stop' : ((!rrPass || !heatPass) ? 'warn' : 'ok');
-      const bannerText = status==='stop' ? '🔴 今晚不要掛單' : status==='warn' ? '🟡 可掛單，但請降風險' : '🟢 可以掛單';
-
-      const checklist = [
-        {name:'標的數量 ≤ 今晚上限', pass:countPass, value:`${usedSlots} / ${effectiveMaxNewPositions}`},
-        {name:'單檔 RR ≥ 1.5', pass:rrPass, value: rrPass ? '通過' : '需檢查'},
-        {name:'未踩過熱追價', pass:heatPass, value: heatPass ? '安全' : '過熱'},
-        {name:`總風險 ≤ ${fmt(effectiveDailyRiskPercent,1)}%`, pass:riskPass, value:`${fmt(totalRiskPct,2)}%`},
-        {name:'符合市場燈號策略', pass:state.market.signal!=='red', value: state.market.signal.toUpperCase()}
-      ].map(item=>`<div class="check-item"><div class="name">${item.pass?'☑':'✖'} ${item.name}</div><div class="badge ${item.pass?'green':'red'}">${item.value}</div></div>`).join('');
-
-      $('orderSummaryBox').innerHTML = `
-        <div class="sleep-grid">
-          <div class="sleep-card">
-            <div class="sleep-title">🎯 今日掛單標的</div>
-            <div class="target-list">${targetHtml}</div>
-            <div class="divider"></div>
-            <div class="risk-note-list">
-              <div class="risk-note">決策模式：${state.decision?.mode || 'local'}</div>
-              <div class="risk-note">出場模式：${exitProfile.label}｜初始停損 ${fmt(exitProfile.stopLossPct,1)}%｜移動停利 ${fmt(exitProfile.trailGapPct,1)}%</div>
-            </div>
-          </div>
-          <div class="sleep-card">
-            <div class="sleep-title">⚠️ 風控總覽</div>
-            <div class="sleep-kpi">
-              <div class="item"><div class="k">總風險</div><div class="v ${riskPass?'green':'red'}">${fmt(totalRiskPct,2)}%</div></div>
-              <div class="item"><div class="k">單檔平均風險</div><div class="v">${fmt(avgRiskPct,2)}%</div></div>
-              <div class="item"><div class="k">今晚檔數</div><div class="v">${usedSlots} / ${effectiveMaxNewPositions}</div></div>
-            </div>
-            <div class="divider"></div>
-            <div class="checklist">${checklist}</div>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div class="decision-banner ${status}">${bannerText}</div>
-        ${notes.length ? `<div class="divider"></div><div class="warning-box"><strong>睡前提醒</strong><br>${notes.join('<br>')}</div>` : `<div class="divider"></div><div class="ok-box"><strong>睡前提醒</strong><br>今晚檢查項全部通過，可依 STEP 5 清單掛智慧單。</div>`}
-      `;
-
-      $('ordersTable').innerHTML = `<table><thead><tr><th>角色</th><th>股票</th><th>決策分</th><th>本地分</th><th>買價</th><th>停損</th><th>停利參考</th><th>股數</th><th>單檔風險</th><th>資金占用</th><th>理由</th></tr></thead><tbody>${
-        finalRows.map((row,idx)=>{
-          const role = idx===0 ? '🔥 主攻' : '⚡ 次選';
-          const reason = (row.warnings && row.warnings.length) ? row.warnings.join('、') : '結構正常';
-          const invested = num(row.invested, num(row.entry)*num(row.shares));
-          const pRisk = num(row.positionRisk, Math.abs(num(row.entry)-num(row.stop))*num(row.shares));
-          return `<tr>
-            <td>${role}</td>
-            <td><strong>${row.symbol}</strong> ${row.name||''}</td>
-            <td>${fmt(row.decisionScore,1)}</td>
-            <td>${fmt(row.localScore,1)}</td>
-            <td>${fmt(row.entry,2)}</td>
-            <td>${fmt(row.stop,2)}</td>
-            <td>${fmt(row.takeProfit,2)}</td>
-            <td>${fmt(row.shares,0)}</td>
-            <td>${fmt(pRisk,0)}</td>
-            <td>${fmt(invested,0)}</td>
-            <td>${reason}</td>
-          </tr>`;
-        }).join('')
-      }</tbody></table>`;
+      const source = state.decision?.mode ? `決策模式：${state.decision.mode}` : (state.aiReview?.parsed ? 'AI 輔助決策' : '本地模型');
+      const summaryLines = [
+        `<strong>STEP 5 最終掛單清單</strong>`,
+        source,
+        `主攻：${finalRows[0].symbol} ${finalRows[0].name||''}｜決策分 ${fmt(finalRows[0].decisionScore,1)}｜停損 ${fmt(finalRows[0].stop,2)}｜模式 ${exitProfile.label}`
+      ];
+      if(finalRows[1]){
+        summaryLines.push(`次選：${finalRows[1].symbol} ${finalRows[1].name||''}｜決策分 ${fmt(finalRows[1].decisionScore,1)}｜停損 ${fmt(finalRows[1].stop,2)}`);
+      }
+      $('orderSummaryBox').innerHTML = `<div class="decision-pick">${summaryLines.join('<br>')}</div>`;
+      $('ordersTable').innerHTML = `<table><thead><tr><th>角色</th><th>股票</th><th>決策分</th><th>本地分</th><th>買價</th><th>停損</th><th>停利參考</th><th>股數</th><th>理由</th></tr></thead><tbody>${finalRows.map((c,idx)=>`<tr><td>${idx===0?'🔥 主攻':'⚡ 次選'}</td><td><strong>${c.symbol}</strong> ${c.name||''}</td><td>${fmt(c.decisionScore,1)}</td><td>${fmt(c.localScore,1)}</td><td>${fmt(c.entry,2)}</td><td>${fmt(c.stop,2)}</td><td>${fmt(c.takeProfit,2)}</td><td>${fmt(c.shares)}</td><td>${getDecisionTag(c, idx).reason}</td></tr>`).join('')}</tbody></table>`;
     }
 
     function renderPositions(){ const openPositions=getOpenPositions(); if(openPositions.length===0){ $('positionsBox').innerHTML=`<div class="footnote">目前沒有開啟中的持倉。</div>`; return; } const portfolioStats=getPortfolioStats(); const lossMode=getLossMode(state.risk.lossStreak); const profile=getAdaptiveExitProfile(); let topAlert=`<div class="ok-box" style="margin-bottom:12px"><strong>目前出場模式：</strong>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div>`; if(state.market.signal==='red'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 市場紅燈：</strong>禁止新倉，持倉全面進入防守狀態。</div>`; } else if(portfolioStats.drop <= -5){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 組合熔斷：</strong>總回撤 ${pct(portfolioStats.drop,2)}，優先降倉保命，只減不加。</div>`; } else if(lossMode.mode==='冷卻模式'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🧊 冷卻模式：</strong>連敗達標，禁止新倉，只管理舊倉。</div>`; } $('positionsBox').innerHTML=topAlert + openPositions.map(p=>{ const pnl=(p.currentPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((p.currentPrice-p.entryPrice)/p.entryPrice)*100:0; const stopDistance=p.currentPrice-p.trailingStop; const action=getHoldingAction(p, portfolioStats); const risk=getHoldingRiskInfo(p, portfolioStats); return `<div class="card"><div class="card-head"><div><div class="symbol">${p.symbol} ${p.name||''}</div><div class="muted">建倉 ${p.entryDate}</div></div><span class="badge ${p.status.includes('撤退')?'red':(p.status.includes('鎖利')||p.status.includes('防守')?'yellow':'green')}">${p.status}</span></div><div class="mini"><div class="cell"><div class="k">成本</div><div class="v">${fmt(p.entryPrice,2)}</div></div><div class="cell"><div class="k">現價</div><div class="v">${fmt(p.currentPrice,2)}</div></div><div class="cell"><div class="k">浮盈虧</div><div class="v ${pnl>=0?'green':'red'}">NT$ ${fmt(pnl)}</div></div><div class="cell"><div class="k">報酬率</div><div class="v ${returnPct>=0?'green':'red'}">${pct(returnPct,2)}</div></div><div class="cell"><div class="k">歷史高點</div><div class="v">${fmt(p.highestPrice,2)}</div></div><div class="cell"><div class="k">移動停損</div><div class="v red">${fmt(p.trailingStop,2)}</div></div><div class="cell"><div class="k">初始停損</div><div class="v">${fmt(p.initialStop,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(p.shares)}</div></div><div class="cell"><div class="k">距停損空間</div><div class="v ${stopDistance<=0?'red':'yellow'}">${fmt(stopDistance,2)}</div></div><div class="cell"><div class="k">明日動作</div><div class="v">${action}</div></div><div class="cell"><div class="k">風險等級</div><div class="v ${risk.cls}">${risk.level}</div></div><div class="cell"><div class="k">診斷</div><div class="v">${risk.text}</div></div></div>${(state.market.signal==='red' || portfolioStats.drop <= -5 || lossMode.mode==='冷卻模式') ? `<div class="warning-box" style="margin-top:10px">系統防守警報：目前僅建議防守、減碼或平倉，不建議任何加碼動作。</div>` : ''}<div class="btnrow" style="margin-top:10px"><button class="btn small" onclick="updatePositionMarket('${p.id}')">更新收盤 / 高點</button><button class="btn small red" onclick="openClose('${p.id}')">真實平倉</button></div></div>`; }).join(''); }
     function renderPerformance(){ const perf=getPerformance(); $('performanceMetrics').innerHTML=`<div class="metric"><div class="label">總交易筆數</div><div class="value">${fmt(perf.totalTrades)}</div></div><div class="metric"><div class="label">勝率</div><div class="value ${perf.winRate>=50?'green':'yellow'}">${pct(perf.winRate,1)}</div></div><div class="metric"><div class="label">累積損益</div><div class="value ${perf.totalPnl>=0?'green':'red'}">NT$ ${fmt(perf.totalPnl)}</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value ${perf.avgReturn>=0?'green':'red'}">${pct(perf.avgReturn,2)}</div></div><div class="metric"><div class="label">飛輪累積 %</div><div class="value ${perf.flywheelPct>=0?'green':'red'}">${pct(perf.flywheelPct,2)}</div></div>`; if(state.logs.length===0){ $('logsTable').innerHTML=`<div class="footnote">尚無歷史紀錄。</div>`; return; } $('logsTable').innerHTML=`<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>原因</th><th>日期</th></tr></thead><tbody>${state.logs.slice(0,12).map(l=>`<tr><td class="mono">${l.symbol}</td><td>${fmt(l.entryPrice,2)}</td><td>${fmt(l.exitPrice,2)}</td><td>${fmt(l.shares)}</td><td class="${l.pnl>=0?'green':'red'}">NT$ ${fmt(l.pnl)}</td><td class="${l.returnPct>=0?'green':'red'}">${pct(l.returnPct,2)}</td><td class="${l.result==='win'?'green':(l.result==='loss'?'red':'yellow')}">${l.result}</td><td>${l.reason||'-'}</td><td class="mono">${l.exitDate}</td></tr>`).join('')}</tbody></table>`; }
-    function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); renderOrders();
-      if($('step5Targets') && $('step5Risk') && $('step5Checklist') && $('step5Decision')) runStep5Engine(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
+    function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); if($('orderSummaryBox') && $('ordersTable')) renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
       if(btn){ btn.textContent = (state.ui?.candidateCardsExpanded ? '收合候選詳卡' : '展開候選詳卡'); }
       const body=$('candidateCardsPanelBody');
       if(body){ body.classList.toggle('hidden-panel', !state.ui?.candidateCardsExpanded); } }
