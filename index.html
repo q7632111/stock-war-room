@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v9.6.3｜STEP6 彈窗自動預填版</title>
+<title>AI 戰艦 Pro Max v10.1｜半雲端按鈕修正版</title>
 <style>
     :root{
       --bg:#071019;
@@ -189,8 +189,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v9.6.3 STEP6 彈窗自動預填版</h1>
-<div class="sub">共用同步 STEP1 / STEP2 / STEP4 / 決策｜持倉與戰報保留本地</div>
+<h1>AI 戰艦 Pro Max v10.1 半雲端按鈕修正版</h1>
+<div class="sub">修正半雲端設定按鈕 / 讀取 / 同步事件綁定｜持倉與戰報保留本地</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -1746,7 +1746,100 @@ ${candidatesText}
     }
 
 
-    function bindEvents(){ $('calcMarketBtn').addEventListener('click', saveMarketInputs); $('saveMarketBtn').addEventListener('click', saveMarketInputs); $('saveRiskBtn').addEventListener('click', ()=>{ state.risk.capital=num($('capitalInput').value); state.risk.availableCash=num($('availableCashInput').value); state.risk.dailyRiskPercent=num($('dailyRiskPercentInput').value); state.risk.singlePositionCapitalPercent=num($('singlePositionCapitalPercentInput').value); state.risk.maxNewPositions=Math.max(1,num($('maxNewPositionsInput').value,1)); state.risk.lossStreak=Math.max(0,num($('lossStreakInput').value,0)); if(state.candidates.length){ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); return; } saveState(); }); $('parseCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); }); $('clearCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=''; state.candidates=[]; saveState(); }); $('resetAllBtn').addEventListener('click', ()=>{ if(!confirm('確定重置全部資料？')) return; state=clone(defaultState); saveState(); }); $('addHoldBtn').addEventListener('click', addManualHolding); $('loadTopBtn').addEventListener('click', loadTopCandidate); $('loadAiTopBtn').addEventListener('click', loadAiTopCandidate); $('genAiPromptBtn').addEventListener('click', generateAiPrompt); $('copyAiPromptBtn').addEventListener('click', copyAiPrompt); $('parseAiBtn').addEventListener('click', parseAiResult); $('clearAiBtn').addEventListener('click', clearAiResult); $('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false)); $('autoDecisionBtn').addEventListener('click', ()=>{ $('decisionMode').value='auto'; applyDecisionMode(false); }); $('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true)); $('resetLocalBtn').addEventListener('click', resetToLocalSelection); $('calcPositionBtn').addEventListener('click', updatePositionPreview); $('addPositionBtn').addEventListener('click', addOrUpdatePosition); $('loadFromSelectionBtn').addEventListener('click', autoFillFromSelection); $('clearPositionInputsBtn').addEventListener('click', clearPositionInputs); $('refreshAllPositionsBtn').addEventListener('click', refreshAllPositions); $('exportPositionsBtn').addEventListener('click', exportPositions); $('clearAllPositionsBtn').addEventListener('click', ()=>{ state.positions=[]; saveState(); clearPositionInputs(); }); $('confirmCloseBtn').addEventListener('click', confirmClosePosition); $('cancelCloseBtn').addEventListener('click', cancelClosePosition); $('closeOverlay').addEventListener('click', (e)=>{ if(e.target === $('closeOverlay')) cancelClosePosition(); }); ['settingsModal','addPosModal','uiGuideModal','cloudModal'].forEach(id=>{ const el=$(id); if(el){ el.addEventListener('click', (e)=>{ if(e.target===el) el.classList.remove('show'); }); }}); }
+    function bindEvents(){
+      $('calcMarketBtn')?.addEventListener('click', saveMarketInputs);
+      $('saveMarketBtn')?.addEventListener('click', saveMarketInputs);
+
+      $('saveRiskBtn')?.addEventListener('click', ()=>{
+        state.risk.capital = num($('capitalInput')?.value);
+        state.risk.availableCash = num($('availableCashInput')?.value);
+        state.risk.dailyRiskPercent = num($('dailyRiskPercentInput')?.value);
+        state.risk.singlePositionCapitalPercent = num($('singlePositionCapitalPercentInput')?.value);
+        state.risk.maxNewPositions = Math.max(1, num($('maxNewPositionsInput')?.value,1));
+        state.risk.lossStreak = Math.max(0, num($('lossStreakInput')?.value,0));
+        if(state.candidates.length){
+          state.candidatesRawText = $('candidateTextarea')?.value || '';
+          parseTradingViewCsv();
+          return;
+        }
+        saveState();
+      });
+
+      $('parseCandidatesBtn')?.addEventListener('click', ()=>{
+        state.candidatesRawText = $('candidateTextarea')?.value || '';
+        parseTradingViewCsv();
+      });
+      $('clearCandidatesBtn')?.addEventListener('click', ()=>{
+        state.candidatesRawText = '';
+        state.candidates = [];
+        saveState();
+      });
+
+      $('resetAllBtn')?.addEventListener('click', ()=>{
+        if(!confirm('確定重置全部資料？')) return;
+        state = clone(defaultState);
+        saveState();
+      });
+
+      $('addHoldBtn')?.addEventListener('click', addManualHolding);
+      $('loadTopBtn')?.addEventListener('click', loadTopCandidate);
+      $('loadAiTopBtn')?.addEventListener('click', loadAiTopCandidate);
+      $('genAiPromptBtn')?.addEventListener('click', generateAiPrompt);
+      $('copyAiPromptBtn')?.addEventListener('click', copyAiPrompt);
+      $('parseAiBtn')?.addEventListener('click', parseAiResult);
+      $('clearAiBtn')?.addEventListener('click', clearAiResult);
+      $('runDecisionBtn')?.addEventListener('click', ()=>applyDecisionMode(false));
+      $('autoDecisionBtn')?.addEventListener('click', ()=>{
+        if($('decisionMode')) $('decisionMode').value = 'auto';
+        applyDecisionMode(false);
+      });
+      $('showDecisionBtn')?.addEventListener('click', ()=>applyDecisionMode(true));
+      $('resetLocalBtn')?.addEventListener('click', resetToLocalSelection);
+      $('calcPositionBtn')?.addEventListener('click', updatePositionPreview);
+      $('addPositionBtn')?.addEventListener('click', addOrUpdatePosition);
+      $('loadFromSelectionBtn')?.addEventListener('click', autoFillFromSelection);
+      $('clearPositionInputsBtn')?.addEventListener('click', clearPositionInputs);
+      $('refreshAllPositionsBtn')?.addEventListener('click', refreshAllPositions);
+      $('exportPositionsBtn')?.addEventListener('click', exportPositions);
+      $('clearAllPositionsBtn')?.addEventListener('click', ()=>{
+        state.positions = [];
+        saveState();
+        clearPositionInputs();
+      });
+
+      $('confirmCloseBtn')?.addEventListener('click', confirmClosePosition);
+      $('cancelCloseBtn')?.addEventListener('click', cancelClosePosition);
+
+      // 半雲端按鈕修正
+      $('saveCloudConfigBtn')?.addEventListener('click', saveCloudConfig);
+      $('loadSharedBtn')?.addEventListener('click', ()=>{
+        loadSharedFromCloud().catch(err=>{
+          console.error(err);
+          updateCloudBadge('半雲端模式｜讀取失敗');
+          alert('讀取共用資料失敗：' + err.message);
+        });
+      });
+      $('saveSharedBtn')?.addEventListener('click', ()=>{
+        saveSharedToCloud().catch(err=>{
+          console.error(err);
+          updateCloudBadge('半雲端模式｜同步失敗');
+          alert('同步共用資料失敗：' + err.message);
+        });
+      });
+
+      $('closeOverlay')?.addEventListener('click', (e)=>{
+        if(e.target === $('closeOverlay')) cancelClosePosition();
+      });
+
+      ['settingsModal','addPosModal','uiGuideModal','cloudModal'].forEach(id=>{
+        const el = $(id);
+        if(el){
+          el.addEventListener('click', (e)=>{
+            if(e.target === el) el.classList.remove('show');
+          });
+        }
+      });
+    }
 
     function bindUiEvents(){
       $('toggleCandidateCardsBtn')?.addEventListener('click', ()=>{
