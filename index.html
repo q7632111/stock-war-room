@@ -161,6 +161,28 @@
   .help-grid{grid-template-columns:1fr}
 }
 
+
+/* ===== v10 半雲端同步 ===== */
+.cloud-strip{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  margin-bottom:14px;
+  padding:12px 14px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+}
+.cloud-note{font-size:12px;color:var(--muted)}
+.cloud-status{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:999px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  font-size:12px;font-weight:800;
+}
+
 </style>
 </head>
 <body>
@@ -168,7 +190,7 @@
 <div class="topbar">
 <div class="brand">
 <h1>AI 戰艦 Pro Max v9.6.3 STEP6 彈窗自動預填版</h1>
-<div class="sub">穩定主版本｜新增懸浮功能導覽按鈕與 UI 介紹視窗</div>
+<div class="sub">共用同步 STEP1 / STEP2 / STEP4 / 決策｜持倉與戰報保留本地</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -181,6 +203,15 @@
   <a href="#step5Panel">STEP 5｜掛單</a>
   <a href="#step6Panel">STEP 6｜持倉</a>
   <a href="#detailCandidatesPanel">候選詳卡</a>
+</div>
+
+
+<div class="cloud-strip">
+  <span class="cloud-status" id="cloudStatusBadge">半雲端模式｜尚未同步</span>
+  <button class="btn" id="loadSharedBtn">讀取共用資料</button>
+  <button class="btn green" id="saveSharedBtn">同步共用資料</button>
+  <button class="btn secondary" onclick="document.getElementById('cloudModal').classList.add('show')">☁️ 雲端設定</button>
+  <span class="cloud-note">共用：市場、CSV、候選、AI 覆核、決策。保留本地：持倉、戰報、個人火控。</span>
 </div>
 
 <div class="layout">
@@ -474,6 +505,26 @@
   </div>
 </div>
 
+
+<div class="close-overlay" id="cloudModal">
+  <div class="close-modal" style="width:min(860px,95%)">
+    <div class="panel-title" style="margin-bottom:12px">☁️ 半雲端同步設定</div>
+    <div class="ok-box"><strong>同步範圍</strong><br>這個版本只同步：STEP 1 市場戰況、STEP 2 CSV 與候選結果、STEP 4 AI 覆核、決策模式。你的持倉、戰報、個人火控仍然只存在自己的瀏覽器，不會互相覆蓋。</div>
+    <div class="grid-2" style="margin-top:12px">
+      <div><label>共用 API 網址</label><input id="sharedApiUrlInput" placeholder="貼上 Apps Script Web App URL"/></div>
+      <div><label>房間代號 / 空間代號</label><input id="sharedRoomIdInput" placeholder="例如 main_room"/></div>
+      <div><label>寫入金鑰（可留空）</label><input id="sharedTokenInput" placeholder="有需要保護時再填"/></div>
+      <div><label>最後共用同步時間</label><input id="sharedLastSyncInput" readonly/></div>
+    </div>
+    <div class="divider"></div>
+    <div class="warning-box"><strong>建議架構</strong><br>HTML 放 GitHub Pages，共用資料放 Apps Script / Google Sheet。大家開同一個 UI 能看到同一份市場、候選與 AI 判斷，但持倉仍然各自獨立。</div>
+    <div class="toolbar" style="margin-top:18px">
+      <button class="btn secondary" onclick="document.getElementById('cloudModal').classList.remove('show')" style="flex:1">關閉</button>
+      <button class="btn" id="saveCloudConfigBtn" style="flex:1">儲存雲端設定</button>
+    </div>
+  </div>
+</div>
+
 <div class="close-overlay" id="closeOverlay">
 <div class="close-modal">
 <div class="panel-title" style="margin-bottom:10px">📤 執行平倉</div>
@@ -493,6 +544,7 @@
       candidatesRawText:'', candidates:[], positions:[], logs:[], lastSync:'', pendingCloseId:null, isClosing:false, pendingAddCandidateId:null,
       aiReview: { prompt:'', rawResponse:'', parsed:null, mode:'local_only' },
       decision: { mode:'auto', finalSymbols:[], summary:'', autoHeatThreshold:20, autoScoreGap:12 },
+      cloud: { apiUrl:'', roomId:'main_room', token:'', lastSharedSync:'' },
       ui: { candidateCardsExpanded:false, candidateCardsMode:'top5' }
     };
 
@@ -1609,7 +1661,92 @@ ${candidatesText}
       fillPositionFormFromSource(top, { openModal: true });
     }
 
-    function bindEvents(){ $('calcMarketBtn').addEventListener('click', saveMarketInputs); $('saveMarketBtn').addEventListener('click', saveMarketInputs); $('saveRiskBtn').addEventListener('click', ()=>{ state.risk.capital=num($('capitalInput').value); state.risk.availableCash=num($('availableCashInput').value); state.risk.dailyRiskPercent=num($('dailyRiskPercentInput').value); state.risk.singlePositionCapitalPercent=num($('singlePositionCapitalPercentInput').value); state.risk.maxNewPositions=Math.max(1,num($('maxNewPositionsInput').value,1)); state.risk.lossStreak=Math.max(0,num($('lossStreakInput').value,0)); if(state.candidates.length){ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); return; } saveState(); }); $('parseCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); }); $('clearCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=''; state.candidates=[]; saveState(); }); $('resetAllBtn').addEventListener('click', ()=>{ if(!confirm('確定重置全部資料？')) return; state=clone(defaultState); saveState(); }); $('addHoldBtn').addEventListener('click', addManualHolding); $('loadTopBtn').addEventListener('click', loadTopCandidate); $('loadAiTopBtn').addEventListener('click', loadAiTopCandidate); $('genAiPromptBtn').addEventListener('click', generateAiPrompt); $('copyAiPromptBtn').addEventListener('click', copyAiPrompt); $('parseAiBtn').addEventListener('click', parseAiResult); $('clearAiBtn').addEventListener('click', clearAiResult); $('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false)); $('autoDecisionBtn').addEventListener('click', ()=>{ $('decisionMode').value='auto'; applyDecisionMode(false); }); $('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true)); $('resetLocalBtn').addEventListener('click', resetToLocalSelection); $('calcPositionBtn').addEventListener('click', updatePositionPreview); $('addPositionBtn').addEventListener('click', addOrUpdatePosition); $('loadFromSelectionBtn').addEventListener('click', autoFillFromSelection); $('clearPositionInputsBtn').addEventListener('click', clearPositionInputs); $('refreshAllPositionsBtn').addEventListener('click', refreshAllPositions); $('exportPositionsBtn').addEventListener('click', exportPositions); $('clearAllPositionsBtn').addEventListener('click', ()=>{ state.positions=[]; saveState(); clearPositionInputs(); }); $('confirmCloseBtn').addEventListener('click', confirmClosePosition); $('cancelCloseBtn').addEventListener('click', cancelClosePosition); $('closeOverlay').addEventListener('click', (e)=>{ if(e.target === $('closeOverlay')) cancelClosePosition(); }); ['settingsModal','addPosModal','uiGuideModal'].forEach(id=>{ const el=$(id); if(el){ el.addEventListener('click', (e)=>{ if(e.target===el) el.classList.remove('show'); }); }}); }
+
+    function updateCloudBadge(text){
+      const el = $('cloudStatusBadge');
+      if(el) el.textContent = text;
+    }
+
+    function buildSharedPayload(){
+      return {
+        market: clone(state.market),
+        candidatesRawText: state.candidatesRawText || '',
+        candidates: clone(state.candidates || []),
+        aiReview: {
+          prompt: state.aiReview?.prompt || '',
+          rawResponse: state.aiReview?.rawResponse || '',
+          parsed: clone(state.aiReview?.parsed || null),
+          mode: state.aiReview?.mode || 'local_only'
+        },
+        decision: clone(state.decision || {}),
+        sharedUpdatedAt: new Date().toLocaleString('zh-TW')
+      };
+    }
+
+    function applySharedPayload(payload){
+      if(!payload || typeof payload !== 'object') throw new Error('共用資料格式不正確');
+      if(payload.market) state.market = { ...state.market, ...payload.market };
+      if(typeof payload.candidatesRawText === 'string') state.candidatesRawText = payload.candidatesRawText;
+      if(Array.isArray(payload.candidates)) state.candidates = payload.candidates;
+      if(payload.aiReview) state.aiReview = { ...state.aiReview, ...payload.aiReview };
+      if(payload.decision) state.decision = { ...state.decision, ...payload.decision };
+      state.cloud.lastSharedSync = payload.sharedUpdatedAt || new Date().toLocaleString('zh-TW');
+    }
+
+    async function saveSharedToCloud(){
+      const apiUrl = state.cloud?.apiUrl || '';
+      const roomId = state.cloud?.roomId || 'main_room';
+      if(!apiUrl) return alert('請先在雲端設定填入共用 API 網址');
+      updateCloudBadge('半雲端模式｜同步中...');
+      const payload = {
+        roomId: roomId,
+        token: state.cloud?.token || '',
+        action: 'save_shared',
+        shared: buildSharedPayload()
+      };
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error('雲端寫入失敗');
+      let data = {};
+      try{ data = await res.json(); }catch(e){}
+      if(data && data.ok === false) throw new Error(data.error || '雲端寫入失敗');
+      state.cloud.lastSharedSync = new Date().toLocaleString('zh-TW');
+      saveState();
+      updateCloudBadge('半雲端模式｜已同步');
+      alert('✅ 共用資料已同步');
+    }
+
+    async function loadSharedFromCloud(){
+      const apiUrl = state.cloud?.apiUrl || '';
+      const roomId = state.cloud?.roomId || 'main_room';
+      if(!apiUrl) return alert('請先在雲端設定填入共用 API 網址');
+      updateCloudBadge('半雲端模式｜讀取中...');
+      const url = apiUrl + (apiUrl.includes('?') ? '&' : '?') + 'action=load_shared&roomId=' + encodeURIComponent(roomId);
+      const res = await fetch(url, { method: 'GET' });
+      if(!res.ok) throw new Error('雲端讀取失敗');
+      const data = await res.json();
+      if(!data || !data.shared) throw new Error('共用資料不存在');
+      applySharedPayload(data.shared);
+      saveState();
+      updateCloudBadge('半雲端模式｜已載入共用資料');
+      alert('✅ 已讀取共用資料');
+    }
+
+    function saveCloudConfig(){
+      state.cloud.apiUrl = $('sharedApiUrlInput')?.value.trim() || '';
+      state.cloud.roomId = $('sharedRoomIdInput')?.value.trim() || 'main_room';
+      state.cloud.token = $('sharedTokenInput')?.value.trim() || '';
+      saveState();
+      if($('cloudModal')) $('cloudModal').classList.remove('show');
+      updateCloudBadge(state.cloud.apiUrl ? '半雲端模式｜已設定 API' : '半雲端模式｜尚未同步');
+      alert('✅ 雲端設定已儲存');
+    }
+
+
+    function bindEvents(){ $('calcMarketBtn').addEventListener('click', saveMarketInputs); $('saveMarketBtn').addEventListener('click', saveMarketInputs); $('saveRiskBtn').addEventListener('click', ()=>{ state.risk.capital=num($('capitalInput').value); state.risk.availableCash=num($('availableCashInput').value); state.risk.dailyRiskPercent=num($('dailyRiskPercentInput').value); state.risk.singlePositionCapitalPercent=num($('singlePositionCapitalPercentInput').value); state.risk.maxNewPositions=Math.max(1,num($('maxNewPositionsInput').value,1)); state.risk.lossStreak=Math.max(0,num($('lossStreakInput').value,0)); if(state.candidates.length){ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); return; } saveState(); }); $('parseCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); }); $('clearCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=''; state.candidates=[]; saveState(); }); $('resetAllBtn').addEventListener('click', ()=>{ if(!confirm('確定重置全部資料？')) return; state=clone(defaultState); saveState(); }); $('addHoldBtn').addEventListener('click', addManualHolding); $('loadTopBtn').addEventListener('click', loadTopCandidate); $('loadAiTopBtn').addEventListener('click', loadAiTopCandidate); $('genAiPromptBtn').addEventListener('click', generateAiPrompt); $('copyAiPromptBtn').addEventListener('click', copyAiPrompt); $('parseAiBtn').addEventListener('click', parseAiResult); $('clearAiBtn').addEventListener('click', clearAiResult); $('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false)); $('autoDecisionBtn').addEventListener('click', ()=>{ $('decisionMode').value='auto'; applyDecisionMode(false); }); $('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true)); $('resetLocalBtn').addEventListener('click', resetToLocalSelection); $('calcPositionBtn').addEventListener('click', updatePositionPreview); $('addPositionBtn').addEventListener('click', addOrUpdatePosition); $('loadFromSelectionBtn').addEventListener('click', autoFillFromSelection); $('clearPositionInputsBtn').addEventListener('click', clearPositionInputs); $('refreshAllPositionsBtn').addEventListener('click', refreshAllPositions); $('exportPositionsBtn').addEventListener('click', exportPositions); $('clearAllPositionsBtn').addEventListener('click', ()=>{ state.positions=[]; saveState(); clearPositionInputs(); }); $('confirmCloseBtn').addEventListener('click', confirmClosePosition); $('cancelCloseBtn').addEventListener('click', cancelClosePosition); $('closeOverlay').addEventListener('click', (e)=>{ if(e.target === $('closeOverlay')) cancelClosePosition(); }); ['settingsModal','addPosModal','uiGuideModal','cloudModal'].forEach(id=>{ const el=$(id); if(el){ el.addEventListener('click', (e)=>{ if(e.target===el) el.classList.remove('show'); }); }}); }
 
     function bindUiEvents(){
       $('toggleCandidateCardsBtn')?.addEventListener('click', ()=>{
