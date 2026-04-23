@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.5｜最終版</title>
+<title>AI 戰艦 Pro Max v10.5.1｜雲端設定顯示修正版</title>
 <style>
     :root{
       --bg:#071019;
@@ -189,7 +189,7 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.5 最終版</h1>
+<h1>AI 戰艦 Pro Max v10.5.1 雲端設定顯示修正版</h1>
 <div class="sub">強制初始化共用 API / 房間代號｜同步狀態更清楚，半雲端可直接用</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
@@ -210,7 +210,7 @@
   <span class="cloud-status" id="cloudStatusBadge">半雲端模式｜尚未同步</span>
   <button class="btn" id="loadSharedBtn">讀取共用資料</button>
   <button class="btn green" id="saveSharedBtn">同步共用資料</button>
-  <button class="btn secondary" onclick="document.getElementById('cloudModal').classList.add('show')">☁️ 雲端設定</button>
+  <button class="btn secondary" onclick="openCloudModal()">☁️ 雲端設定</button>
   <span class="cloud-note">共用：市場、CSV、候選、AI 覆核、決策。保留本地：持倉、戰報、個人火控。</span>
 </div>
 
@@ -563,14 +563,34 @@ let state = loadState();
     }
 
     function syncCloudInputs(){
-      const apiInput = document.getElementById('sharedApiUrlInput');
-      const roomInput = document.getElementById('sharedRoomIdInput');
-      const tokenInput = document.getElementById('sharedTokenInput');
-      const syncInput = document.getElementById('sharedLastSyncInput');
-      if(apiInput) apiInput.value = state.cloud?.apiUrl || FORCED_CLOUD_API;
-      if(roomInput) roomInput.value = state.cloud?.roomId || FORCED_CLOUD_ROOM;
-      if(tokenInput) tokenInput.value = state.cloud?.token || '';
-      if(syncInput) syncInput.value = state.cloud?.lastSharedSync || '-';
+      const apiIds = ['sharedApiUrlInput','cloudApiUrl'];
+      const roomIds = ['sharedRoomIdInput','cloudRoomId'];
+      const tokenIds = ['sharedTokenInput','cloudToken'];
+      const timeIds = ['sharedLastSyncInput','cloudLastSync'];
+
+      apiIds.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = state.cloud?.apiUrl || FORCED_CLOUD_API || 'https://script.google.com/macros/s/AKfycbxTNAT3bzlh9ZbvzDsW71lgkLWgD9RqoW4L5fYT-VifK5PHvNKSFV2FhAhqEFNhpDxI/exec';
+      });
+      roomIds.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = state.cloud?.roomId || FORCED_CLOUD_ROOM || 'main_room';
+      });
+      tokenIds.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = state.cloud?.token || '';
+      });
+      timeIds.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = state.cloud?.lastSharedSync || '-';
+      });
+    }
+
+    function openCloudModal(){
+      ensureCloudDefaults();
+      syncCloudInputs();
+      const modal = document.getElementById('cloudModal');
+      if(modal) modal.classList.add('show');
     }
 
     function updateCloudBadgeFinal(statusText=''){
@@ -1789,14 +1809,16 @@ ${candidatesText}
 
     function saveCloudConfig(){
       ensureCloudDefaults();
-      const apiInput = $('sharedApiUrlInput');
-      const roomInput = $('sharedRoomIdInput');
-      const tokenInput = $('sharedTokenInput');
+
+      const apiInput = document.getElementById('sharedApiUrlInput') || document.getElementById('cloudApiUrl');
+      const roomInput = document.getElementById('sharedRoomIdInput') || document.getElementById('cloudRoomId');
+      const tokenInput = document.getElementById('sharedTokenInput') || document.getElementById('cloudToken');
 
       state.cloud.apiUrl = (apiInput?.value || FORCED_CLOUD_API).trim() || FORCED_CLOUD_API;
       state.cloud.roomId = (roomInput?.value || FORCED_CLOUD_ROOM).trim() || FORCED_CLOUD_ROOM;
       state.cloud.token = (tokenInput?.value || '').trim();
       saveState();
+      ensureCloudDefaults();
       syncCloudInputs();
       updateCloudBadgeFinal('雲端設定已儲存');
       if($('cloudModal')) $('cloudModal').classList.remove('show');
@@ -1870,6 +1892,7 @@ ${candidatesText}
 
       // 半雲端按鈕修正
       $('saveCloudConfigBtn')?.addEventListener('click', saveCloudConfig);
+      document.querySelectorAll("button[onclick=\"openCloudModal()\"]").forEach(btn=>btn.addEventListener('click', ()=>{ ensureCloudDefaults(); syncCloudInputs(); }));
       $('loadSharedBtn')?.addEventListener('click', ()=>{
         loadSharedFromCloud().catch(err=>{
           console.error(err);
