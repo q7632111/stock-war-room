@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.5.1｜雲端設定顯示修正版</title>
+<title>AI 戰艦 Pro Max v10.6｜自動初始化雲端版</title>
 <style>
     :root{
       --bg:#071019;
@@ -189,7 +189,7 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.5.1 雲端設定顯示修正版</h1>
+<h1>AI 戰艦 Pro Max v10.6 自動初始化雲端版</h1>
 <div class="sub">強制初始化共用 API / 房間代號｜同步狀態更清楚，半雲端可直接用</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
@@ -1791,20 +1791,42 @@ ${candidatesText}
     async function loadSharedFromCloud(){
       ensureCloudDefaults();
       syncCloudInputs();
+
       const apiUrl = state.cloud?.apiUrl || FORCED_CLOUD_API;
       const roomId = state.cloud?.roomId || FORCED_CLOUD_ROOM;
+
       if(!apiUrl) return alert('請先在雲端設定填入共用 API 網址');
+
       updateCloudBadgeFinal('讀取中...');
-      const url = apiUrl + (apiUrl.includes('?') ? '&' : '?') + 'action=load_shared&roomId=' + encodeURIComponent(roomId);
-      const res = await fetch(url, { method: 'GET' });
-      if(!res.ok) throw new Error('雲端讀取失敗');
-      const data = await res.json();
-      if(!data || !data.shared) throw new Error('共用資料不存在');
-      applySharedPayload(data.shared);
-      saveState();
-      syncCloudInputs();
-      updateCloudBadgeFinal('已載入共用資料');
-      alert('✅ 已讀取共用資料');
+
+      try {
+        const url = apiUrl + (apiUrl.includes('?') ? '&' : '?') + 'action=load_shared&roomId=' + encodeURIComponent(roomId);
+        const res = await fetch(url, { method: 'GET' });
+
+        if(!res.ok) throw new Error('雲端讀取失敗');
+
+        const data = await res.json();
+
+        // ⭐ 核心：如果沒資料 → 自動初始化
+        if(!data || !data.shared){
+          updateCloudBadgeFinal('首次初始化中...');
+          await saveSharedToCloud();
+          updateCloudBadgeFinal('初始化完成');
+          alert('🟢 已自動建立共用資料（首次使用）');
+          return;
+        }
+
+        applySharedPayload(data.shared);
+        saveState();
+        syncCloudInputs();
+        updateCloudBadgeFinal('已載入共用資料');
+        alert('✅ 已讀取共用資料');
+
+      } catch(err){
+        console.error(err);
+        updateCloudBadgeFinal('連線失敗');
+        alert('❌ 同步共用資料失敗：' + err.message);
+      }
     }
 
     function saveCloudConfig(){
