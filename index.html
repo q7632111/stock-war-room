@@ -122,6 +122,45 @@
   }
 }
 
+
+/* ===== v9.6.5 功能導覽浮動按鈕 ===== */
+.floating-help-btn{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:1200;
+  padding:12px 16px;
+  border:none;
+  border-radius:999px;
+  background:linear-gradient(180deg,#18324a,#0f2335);
+  color:#eaf7ff;
+  font-weight:900;
+  letter-spacing:.3px;
+  cursor:pointer;
+  box-shadow:var(--glow);
+}
+.floating-help-btn:hover{filter:brightness(1.08)}
+.help-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.help-item{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  padding:12px 14px;
+  background:rgba(255,255,255,.02);
+}
+.help-item strong{
+  display:block;
+  margin-bottom:6px;
+  color:#dff6ff;
+}
+@media (max-width:900px){
+  .floating-help-btn{right:12px;bottom:12px;padding:10px 14px}
+  .help-grid{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
@@ -129,7 +168,7 @@
 <div class="topbar">
 <div class="brand">
 <h1>AI 戰艦 Pro Max v9.6.3 STEP6 彈窗自動預填版</h1>
-<div class="sub">基於 v9.6.3 穩定核心｜全頁順序滿版 + 保留 AI 解析與 STEP6 彈窗自動預填</div>
+<div class="sub">穩定主版本｜新增懸浮功能導覽按鈕與 UI 介紹視窗</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -382,6 +421,58 @@
   </div>
 </div>
 
+
+
+<button class="floating-help-btn" onclick="document.getElementById('uiGuideModal').classList.add('show')">功能導覽</button>
+
+<div class="close-overlay" id="uiGuideModal">
+  <div class="close-modal" style="width:min(980px,95%)">
+    <div class="panel-title" style="margin-bottom:12px">📘 AI 戰艦 UI 功能導覽</div>
+    <div class="ok-box"><strong>這套 UI 的核心好處</strong><br>把「市場判斷、候選篩選、AI 覆核、決策、掛單、持倉監控」整合在同一個工作流裡。你晚上只要照順序往下操作，就能快速完成隔日掛單前的整理與確認。</div>
+
+    <div class="help-grid" style="margin-top:14px">
+      <div class="help-item">
+        <strong>STEP 1｜市場戰況</strong>
+        先判斷今天能不能打。先看大盤，再決定今晚火力，避免在不適合的盤勢亂掛單。
+      </div>
+      <div class="help-item">
+        <strong>STEP 2｜CSV 本地初篩</strong>
+        把 TradingView 候選股快速做本地評分，先把不該打、過熱、風報比差的先排除。
+      </div>
+      <div class="help-item">
+        <strong>STEP 4｜AI 戰術覆核</strong>
+        AI 只負責幫你檢查候選股的題材、法人、新聞與短線風險，不是重新海選市場。
+      </div>
+      <div class="help-item">
+        <strong>STEP 4.5｜決策模式</strong>
+        這區是本地模型和 AI 的仲裁區，可以本地優先、AI 優先、交集模式，或自動判斷。
+      </div>
+      <div class="help-item">
+        <strong>STEP 5｜掛單確認區</strong>
+        睡前最後確認明天要掛的標的、停損、停利和風險，避免來回找資料。
+      </div>
+      <div class="help-item">
+        <strong>STEP 6｜持倉戰情中心</strong>
+        用來管理已進場股票，支援彈窗輸入與自動預填停損停利，節省大量操作時間。
+      </div>
+      <div class="help-item">
+        <strong>候選詳卡總覽</strong>
+        把候選股放到下方獨立區塊，主流程不會被大量卡片塞滿，需要細看時再展開。
+      </div>
+      <div class="help-item">
+        <strong>右上角系統設定</strong>
+        把總資金、單日風險、單檔上限、連敗次數放進彈窗，不占主畫面空間。
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="warning-box"><strong>整體優點</strong><br>這套 UI 不是單純看資料，而是把你晚上真正會做的事排成固定流程：先看盤、再篩股、再看 AI、再做決策、再掛單、最後管持倉。這樣能減少漏看、少切頁、少重複計算，也比較不容易因情緒亂下單。</div>
+
+    <div class="toolbar" style="margin-top:18px">
+      <button class="btn secondary" onclick="document.getElementById('uiGuideModal').classList.remove('show')" style="flex:1">關閉導覽</button>
+    </div>
+  </div>
+</div>
 
 <div class="close-overlay" id="closeOverlay">
 <div class="close-modal">
@@ -1518,7 +1609,7 @@ ${candidatesText}
       fillPositionFormFromSource(top, { openModal: true });
     }
 
-    function bindEvents(){ $('calcMarketBtn').addEventListener('click', saveMarketInputs); $('saveMarketBtn').addEventListener('click', saveMarketInputs); $('saveRiskBtn').addEventListener('click', ()=>{ state.risk.capital=num($('capitalInput').value); state.risk.availableCash=num($('availableCashInput').value); state.risk.dailyRiskPercent=num($('dailyRiskPercentInput').value); state.risk.singlePositionCapitalPercent=num($('singlePositionCapitalPercentInput').value); state.risk.maxNewPositions=Math.max(1,num($('maxNewPositionsInput').value,1)); state.risk.lossStreak=Math.max(0,num($('lossStreakInput').value,0)); if(state.candidates.length){ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); return; } saveState(); }); $('parseCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); }); $('clearCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=''; state.candidates=[]; saveState(); }); $('resetAllBtn').addEventListener('click', ()=>{ if(!confirm('確定重置全部資料？')) return; state=clone(defaultState); saveState(); }); $('addHoldBtn').addEventListener('click', addManualHolding); $('loadTopBtn').addEventListener('click', loadTopCandidate); $('loadAiTopBtn').addEventListener('click', loadAiTopCandidate); $('genAiPromptBtn').addEventListener('click', generateAiPrompt); $('copyAiPromptBtn').addEventListener('click', copyAiPrompt); $('parseAiBtn').addEventListener('click', parseAiResult); $('clearAiBtn').addEventListener('click', clearAiResult); $('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false)); $('autoDecisionBtn').addEventListener('click', ()=>{ $('decisionMode').value='auto'; applyDecisionMode(false); }); $('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true)); $('resetLocalBtn').addEventListener('click', resetToLocalSelection); $('calcPositionBtn').addEventListener('click', updatePositionPreview); $('addPositionBtn').addEventListener('click', addOrUpdatePosition); $('loadFromSelectionBtn').addEventListener('click', autoFillFromSelection); $('clearPositionInputsBtn').addEventListener('click', clearPositionInputs); $('refreshAllPositionsBtn').addEventListener('click', refreshAllPositions); $('exportPositionsBtn').addEventListener('click', exportPositions); $('clearAllPositionsBtn').addEventListener('click', ()=>{ state.positions=[]; saveState(); clearPositionInputs(); }); $('confirmCloseBtn').addEventListener('click', confirmClosePosition); $('cancelCloseBtn').addEventListener('click', cancelClosePosition); $('closeOverlay').addEventListener('click', (e)=>{ if(e.target === $('closeOverlay')) cancelClosePosition(); }); ['settingsModal','addPosModal'].forEach(id=>{ const el=$(id); if(el){ el.addEventListener('click', (e)=>{ if(e.target===el) el.classList.remove('show'); }); }}); }
+    function bindEvents(){ $('calcMarketBtn').addEventListener('click', saveMarketInputs); $('saveMarketBtn').addEventListener('click', saveMarketInputs); $('saveRiskBtn').addEventListener('click', ()=>{ state.risk.capital=num($('capitalInput').value); state.risk.availableCash=num($('availableCashInput').value); state.risk.dailyRiskPercent=num($('dailyRiskPercentInput').value); state.risk.singlePositionCapitalPercent=num($('singlePositionCapitalPercentInput').value); state.risk.maxNewPositions=Math.max(1,num($('maxNewPositionsInput').value,1)); state.risk.lossStreak=Math.max(0,num($('lossStreakInput').value,0)); if(state.candidates.length){ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); return; } saveState(); }); $('parseCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=$('candidateTextarea').value; parseTradingViewCsv(); }); $('clearCandidatesBtn').addEventListener('click', ()=>{ state.candidatesRawText=''; state.candidates=[]; saveState(); }); $('resetAllBtn').addEventListener('click', ()=>{ if(!confirm('確定重置全部資料？')) return; state=clone(defaultState); saveState(); }); $('addHoldBtn').addEventListener('click', addManualHolding); $('loadTopBtn').addEventListener('click', loadTopCandidate); $('loadAiTopBtn').addEventListener('click', loadAiTopCandidate); $('genAiPromptBtn').addEventListener('click', generateAiPrompt); $('copyAiPromptBtn').addEventListener('click', copyAiPrompt); $('parseAiBtn').addEventListener('click', parseAiResult); $('clearAiBtn').addEventListener('click', clearAiResult); $('runDecisionBtn').addEventListener('click', ()=>applyDecisionMode(false)); $('autoDecisionBtn').addEventListener('click', ()=>{ $('decisionMode').value='auto'; applyDecisionMode(false); }); $('showDecisionBtn').addEventListener('click', ()=>applyDecisionMode(true)); $('resetLocalBtn').addEventListener('click', resetToLocalSelection); $('calcPositionBtn').addEventListener('click', updatePositionPreview); $('addPositionBtn').addEventListener('click', addOrUpdatePosition); $('loadFromSelectionBtn').addEventListener('click', autoFillFromSelection); $('clearPositionInputsBtn').addEventListener('click', clearPositionInputs); $('refreshAllPositionsBtn').addEventListener('click', refreshAllPositions); $('exportPositionsBtn').addEventListener('click', exportPositions); $('clearAllPositionsBtn').addEventListener('click', ()=>{ state.positions=[]; saveState(); clearPositionInputs(); }); $('confirmCloseBtn').addEventListener('click', confirmClosePosition); $('cancelCloseBtn').addEventListener('click', cancelClosePosition); $('closeOverlay').addEventListener('click', (e)=>{ if(e.target === $('closeOverlay')) cancelClosePosition(); }); ['settingsModal','addPosModal','uiGuideModal'].forEach(id=>{ const el=$(id); if(el){ el.addEventListener('click', (e)=>{ if(e.target===el) el.classList.remove('show'); }); }}); }
 
     function bindUiEvents(){
       $('toggleCandidateCardsBtn')?.addEventListener('click', ()=>{
