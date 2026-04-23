@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.1｜半雲端按鈕修正版</title>
+<title>AI 戰艦 Pro Max v10.2｜預設雲端版</title>
 <style>
     :root{
       --bg:#071019;
@@ -189,8 +189,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.1 半雲端按鈕修正版</h1>
-<div class="sub">修正半雲端設定按鈕 / 讀取 / 同步事件綁定｜持倉與戰報保留本地</div>
+<h1>AI 戰艦 Pro Max v10.2 預設雲端版</h1>
+<div class="sub">預設帶入共用 API 與房間代號｜打開即可用半雲端同步，持倉與戰報保留本地</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -509,7 +509,7 @@
 <div class="close-overlay" id="cloudModal">
   <div class="close-modal" style="width:min(860px,95%)">
     <div class="panel-title" style="margin-bottom:12px">☁️ 半雲端同步設定</div>
-    <div class="ok-box"><strong>同步範圍</strong><br>這個版本只同步：STEP 1 市場戰況、STEP 2 CSV 與候選結果、STEP 4 AI 覆核、決策模式。你的持倉、戰報、個人火控仍然只存在自己的瀏覽器，不會互相覆蓋。</div>
+    <div class="ok-box"><strong>同步範圍</strong><br>這個版本只同步：STEP 1 市場戰況、STEP 2 CSV 與候選結果、STEP 4 AI 覆核、決策模式。你的持倉、戰報、個人火控仍然只存在自己的瀏覽器，不會互相覆蓋。</div><div class="footnote" style="margin-top:10px">已內建預設共用 API 與房間代號。正常情況下不用手動輸入，只有你要切換別的同步空間時才需要修改。</div>
     <div class="grid-2" style="margin-top:12px">
       <div><label>共用 API 網址</label><input id="sharedApiUrlInput" placeholder="貼上 Apps Script Web App URL"/></div>
       <div><label>房間代號 / 空間代號</label><input id="sharedRoomIdInput" placeholder="例如 main_room"/></div>
@@ -544,7 +544,7 @@
       candidatesRawText:'', candidates:[], positions:[], logs:[], lastSync:'', pendingCloseId:null, isClosing:false, pendingAddCandidateId:null,
       aiReview: { prompt:'', rawResponse:'', parsed:null, mode:'local_only' },
       decision: { mode:'auto', finalSymbols:[], summary:'', autoHeatThreshold:20, autoScoreGap:12 },
-      cloud: { apiUrl:'', roomId:'main_room', token:'', lastSharedSync:'' },
+      cloud: { apiUrl:'https://script.google.com/macros/s/AKfycbxTNAT3bzlh9ZbvzDsW71lgkLWgD9RqoW4L5fYT-VifK5PHvNKSFV2FhAhqEFNhpDxI/exec', roomId:'main_room', token:'', lastSharedSync:'' },
       ui: { candidateCardsExpanded:false, candidateCardsMode:'top5' }
     };
 
