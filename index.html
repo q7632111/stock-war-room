@@ -117,7 +117,7 @@
     .detail-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
     .detail-tools .ghost{appearance:none;border:1px solid rgba(86,215,255,.2);background:rgba(255,255,255,.03);color:#dff6ff;padding:8px 12px;border-radius:999px;font-weight:800;cursor:pointer}
     .detail-tools .ghost:hover{filter:brightness(1.08)}
-    .detail-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px;position:sticky;top:76px;z-index:8;background:linear-gradient(180deg,rgba(10,20,31,.94),rgba(7,15,24,.94));padding:10px 12px;border:1px solid rgba(86,215,255,.12);border-radius:12px;box-shadow:var(--shadow)}
+    .detail-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px;position:static;background:linear-gradient(180deg,rgba(10,20,31,.94),rgba(7,15,24,.94));padding:10px 12px;border:1px solid rgba(86,215,255,.12);border-radius:12px;box-shadow:var(--shadow)}
     .detail-toolbar .left,.detail-toolbar .right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
     .micro-note{font-size:12px;color:var(--muted)}
     .inline-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:11px;font-weight:800;color:#dff6ff}
@@ -260,9 +260,7 @@
   gap:14px !important;
 }
 #detailCandidatesPanel .panel-head{
-  position:sticky;
-  top:0;
-  z-index:5;
+  position:static;
 }
 @media (max-width: 1200px){
   .layout{
@@ -342,6 +340,17 @@
       "risk";
   }
 }
+
+
+/* ===== v9.9.2 穩定工作流：全部順序滿版 ===== */
+.layout{display:block !important;}
+.layout > .col{display:contents !important;}
+.layout section.panel{width:100% !important;margin-bottom:18px !important;}
+#step5Panel,#detailCandidatesPanel,#step6Panel,#logsPanel,#riskPanel{width:100% !important;}
+#positionsBox{display:grid !important;grid-template-columns:repeat(auto-fit,minmax(320px,1fr)) !important;gap:14px !important;}
+#step5Targets .target-row{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:12px;background:rgba(255,255,255,.02);}
+#step5Targets .left,#step5Targets .right{display:flex;flex-direction:column;gap:4px;}
+#step5Targets .right{text-align:right;}
 
 </style>
 </head>
@@ -1258,11 +1267,12 @@ ${candidatesText}
 
       let parsed;
       try{
-        parsed = JSON.parse(normalizeJsonText(raw));
+        let cleanRaw = raw;
+        const start = cleanRaw.indexOf('{'), end = cleanRaw.lastIndexOf('}');
+        if(start !== -1 && end !== -1 && end > start) cleanRaw = cleanRaw.slice(start, end+1);
+        parsed = JSON.parse(cleanRaw);
       }catch(e){
-        console.error('AI JSON.parse failed:', e, raw);
-        alert('AI JSON 解析失敗：JSON 格式不合法。');
-        return;
+        return alert('AI JSON 解析失敗：JSON 格式不合法。');
       }
 
       try{
@@ -1276,7 +1286,6 @@ ${candidatesText}
           if(!parsed[k].news_signal) parsed[k].news_signal = '查無明確資料';
           if(!parsed[k].confidence) parsed[k].confidence = '查無明確資料';
         });
-
         if(!parsed.fund_flow_note) parsed.fund_flow_note = 'AI 本次未提供法人摘要';
         if(!parsed.theme_note) parsed.theme_note = 'AI 本次未提供題材摘要';
         if(!parsed.news_note) parsed.news_note = 'AI 本次未提供新聞摘要';
@@ -1286,14 +1295,30 @@ ${candidatesText}
         state.aiReview.rawResponse = raw;
         state.aiReview.parsed = parsed;
         state.aiReview.mode = 'ai_assisted';
-        saveState();
-        alert('✅ AI 覆核結果已解析並鎖定');
+        state.lastSync = new Date().toLocaleString('zh-TW');
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+        if($('aiResultBox')) $('aiResultBox').value = '';
+
+        try{ fillInputsFromState(); }catch(e){}
+        try{ renderTopStatusBar(); }catch(e){}
+        try{ renderHero(); }catch(e){}
+        try{ renderMarket(); }catch(e){}
+        try{ renderRiskMode(); }catch(e){}
+        try{ renderMainAttackSummary(); }catch(e){}
+        try{ renderCandidateRanking(); }catch(e){}
+        try{ renderAiPanel(); }catch(e){}
+        try{ if($('step5Targets')) runStep5Engine(); }catch(e){}
+        try{ renderPositions(); }catch(e){}
+        try{ renderPerformance(); }catch(e){}
+
+        alert('✅ AI 覆核結果已解析並載入');
       }catch(e){
-        console.error('AI post-parse/render failed:', e, parsed);
+        console.error(e);
         alert('AI JSON 本身格式正確，但系統在套用/渲染 AI 結果時發生錯誤：' + e.message);
       }
     }
-    function clearAiResult(){ state.aiReview.rawResponse=''; state.aiReview.parsed=null; state.aiReview.mode='local_only'; $('aiResultBox').value=''; saveState(); }
+    function clearAiResult(){{ state.aiReview.rawResponse=''; state.aiReview.parsed=null; state.aiReview.mode='local_only'; $('aiResultBox').value=''; saveState(); }
     function getAiFlags(symbol){ const p = state.aiReview?.parsed; return { isTop: p?.top_pick?.symbol === symbol, isBackup: p?.backup_pick?.symbol === symbol, isAvoid: p?.avoid_pick?.symbol === symbol }; }
 
     function fillInputsFromState(){ $('decisionMode') && ($('decisionMode').value = state.decision?.mode || 'auto'); $('autoHeatThreshold') && ($('autoHeatThreshold').value = state.decision?.autoHeatThreshold ?? 20); $('autoScoreGap') && ($('autoScoreGap').value = state.decision?.autoScoreGap ?? 12); $('advancersInput').value=state.market.advancers; $('declinersInput').value=state.market.decliners; $('limitUpInput').value=state.market.limitUp; $('limitDownInput').value=state.market.limitDown; $('otcChangeInput').value=state.market.otcChange; $('taiexChangeInput').value=state.market.taiexChange; $('capitalInput').value=state.risk.capital; $('availableCashInput').value=state.risk.availableCash; $('dailyRiskPercentInput').value=state.risk.dailyRiskPercent; $('singlePositionCapitalPercentInput').value=state.risk.singlePositionCapitalPercent; $('maxNewPositionsInput').value=state.risk.maxNewPositions; $('lossStreakInput').value=state.risk.lossStreak; $('candidateTextarea').value=state.candidatesRawText||''; $('aiPromptBox').value=state.aiReview?.prompt||''; $('aiResultBox').value=state.aiReview?.rawResponse||''; }
