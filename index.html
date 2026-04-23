@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.4｜UI同步版</title>
+<title>AI 戰艦 Pro Max v10.5｜最終版</title>
 <style>
     :root{
       --bg:#071019;
@@ -189,8 +189,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.4 UI同步版</h1>
-<div class="sub">預設帶入共用 API 與房間代號｜打開即可用半雲端同步，持倉與戰報保留本地</div>
+<h1>AI 戰艦 Pro Max v10.5 最終版</h1>
+<div class="sub">強制初始化共用 API / 房間代號｜同步狀態更清楚，半雲端可直接用</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -517,7 +517,7 @@
       <div><label>最後共用同步時間</label><input id="sharedLastSyncInput" readonly/></div>
     </div>
     <div class="divider"></div>
-    <div class="warning-box"><strong>建議架構</strong><br>HTML 放 GitHub Pages，共用資料放 Apps Script / Google Sheet。大家開同一個 UI 能看到同一份市場、候選與 AI 判斷，但持倉仍然各自獨立。</div>
+    <div class="warning-box"><strong>建議架構</strong><br>HTML 放 GitHub Pages，共用資料放 Apps Script / Google Sheet。大家開同一個 UI 能看到同一份市場、候選與 AI 判斷，但持倉仍然各自獨立。</div><div class="footnote" style="margin-top:10px">這版會強制補上預設 API 與房間代號。就算舊的 localStorage 沒有填值，也會自動帶入，不需要手動輸入。</div>
     <div class="toolbar" style="margin-top:18px">
       <button class="btn secondary" onclick="document.getElementById('cloudModal').classList.remove('show')" style="flex:1">關閉</button>
       <button class="btn" id="saveCloudConfigBtn" style="flex:1">儲存雲端設定</button>
@@ -548,7 +548,46 @@
       ui: { candidateCardsExpanded:false, candidateCardsMode:'top5' }
     };
 
-    let state = loadState();
+    
+let state = loadState();
+
+    const FORCED_CLOUD_API = 'https://script.google.com/macros/s/AKfycbxTNAT3bzlh9ZbvzDsW71lgkLWgD9RqoW4L5fYT-VifK5PHvNKSFV2FhAhqEFNhpDxI/exec';
+    const FORCED_CLOUD_ROOM = 'main_room';
+
+    function ensureCloudDefaults(){
+      if(!state.cloud) state.cloud = {};
+      if(!state.cloud.apiUrl || !String(state.cloud.apiUrl).trim()) state.cloud.apiUrl = FORCED_CLOUD_API;
+      if(!state.cloud.roomId || !String(state.cloud.roomId).trim()) state.cloud.roomId = FORCED_CLOUD_ROOM;
+      if(state.cloud.token === undefined || state.cloud.token === null) state.cloud.token = '';
+      if(state.cloud.lastSharedSync === undefined || state.cloud.lastSharedSync === null) state.cloud.lastSharedSync = '';
+    }
+
+    function syncCloudInputs(){
+      const apiInput = document.getElementById('sharedApiUrlInput');
+      const roomInput = document.getElementById('sharedRoomIdInput');
+      const tokenInput = document.getElementById('sharedTokenInput');
+      const syncInput = document.getElementById('sharedLastSyncInput');
+      if(apiInput) apiInput.value = state.cloud?.apiUrl || FORCED_CLOUD_API;
+      if(roomInput) roomInput.value = state.cloud?.roomId || FORCED_CLOUD_ROOM;
+      if(tokenInput) tokenInput.value = state.cloud?.token || '';
+      if(syncInput) syncInput.value = state.cloud?.lastSharedSync || '-';
+    }
+
+    function updateCloudBadgeFinal(statusText=''){
+      const el = document.getElementById('cloudStatusBadge');
+      if(!el) return;
+      const base = state.cloud?.roomId || FORCED_CLOUD_ROOM;
+      if(statusText) {
+        el.textContent = `半雲端模式｜${statusText}`;
+      } else if(state.cloud?.lastSharedSync) {
+        el.textContent = `半雲端模式｜${base}｜上次同步 ${state.cloud.lastSharedSync}`;
+      } else {
+        el.textContent = `半雲端模式｜${base}｜已連線`;
+      }
+    }
+
+    ensureCloudDefaults();
+
     // 🔒 強制預設 API（防 localStorage 覆蓋）
     try {
       if (!state.cloud) state.cloud = {};
@@ -1701,10 +1740,12 @@ ${candidatesText}
     }
 
     async function saveSharedToCloud(){
-      const apiUrl = state.cloud?.apiUrl || '';
-      const roomId = state.cloud?.roomId || 'main_room';
+      ensureCloudDefaults();
+      syncCloudInputs();
+      const apiUrl = state.cloud?.apiUrl || FORCED_CLOUD_API;
+      const roomId = state.cloud?.roomId || FORCED_CLOUD_ROOM;
       if(!apiUrl) return alert('請先在雲端設定填入共用 API 網址');
-      updateCloudBadge('半雲端模式｜同步中...');
+      updateCloudBadgeFinal('同步中...');
       const payload = {
         roomId: roomId,
         token: state.cloud?.token || '',
@@ -1722,15 +1763,18 @@ ${candidatesText}
       if(data && data.ok === false) throw new Error(data.error || '雲端寫入失敗');
       state.cloud.lastSharedSync = new Date().toLocaleString('zh-TW');
       saveState();
-      updateCloudBadge('半雲端模式｜已同步');
+      syncCloudInputs();
+      updateCloudBadgeFinal('同步成功');
       alert('✅ 共用資料已同步');
     }
 
     async function loadSharedFromCloud(){
-      const apiUrl = state.cloud?.apiUrl || '';
-      const roomId = state.cloud?.roomId || 'main_room';
+      ensureCloudDefaults();
+      syncCloudInputs();
+      const apiUrl = state.cloud?.apiUrl || FORCED_CLOUD_API;
+      const roomId = state.cloud?.roomId || FORCED_CLOUD_ROOM;
       if(!apiUrl) return alert('請先在雲端設定填入共用 API 網址');
-      updateCloudBadge('半雲端模式｜讀取中...');
+      updateCloudBadgeFinal('讀取中...');
       const url = apiUrl + (apiUrl.includes('?') ? '&' : '?') + 'action=load_shared&roomId=' + encodeURIComponent(roomId);
       const res = await fetch(url, { method: 'GET' });
       if(!res.ok) throw new Error('雲端讀取失敗');
@@ -1738,17 +1782,24 @@ ${candidatesText}
       if(!data || !data.shared) throw new Error('共用資料不存在');
       applySharedPayload(data.shared);
       saveState();
-      updateCloudBadge('半雲端模式｜已載入共用資料');
+      syncCloudInputs();
+      updateCloudBadgeFinal('已載入共用資料');
       alert('✅ 已讀取共用資料');
     }
 
     function saveCloudConfig(){
-      state.cloud.apiUrl = $('sharedApiUrlInput')?.value.trim() || '';
-      state.cloud.roomId = $('sharedRoomIdInput')?.value.trim() || 'main_room';
-      state.cloud.token = $('sharedTokenInput')?.value.trim() || '';
+      ensureCloudDefaults();
+      const apiInput = $('sharedApiUrlInput');
+      const roomInput = $('sharedRoomIdInput');
+      const tokenInput = $('sharedTokenInput');
+
+      state.cloud.apiUrl = (apiInput?.value || FORCED_CLOUD_API).trim() || FORCED_CLOUD_API;
+      state.cloud.roomId = (roomInput?.value || FORCED_CLOUD_ROOM).trim() || FORCED_CLOUD_ROOM;
+      state.cloud.token = (tokenInput?.value || '').trim();
       saveState();
+      syncCloudInputs();
+      updateCloudBadgeFinal('雲端設定已儲存');
       if($('cloudModal')) $('cloudModal').classList.remove('show');
-      updateCloudBadge(state.cloud.apiUrl ? '半雲端模式｜已設定 API' : '半雲端模式｜尚未同步');
       alert('✅ 雲端設定已儲存');
     }
 
