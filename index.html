@@ -186,6 +186,99 @@
   }
 }
 
+
+/* ===== v9.9 真戰神 UI 重構 ===== */
+.layout{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  grid-template-areas:
+    "left right"
+    "step5 step5"
+    "step6 step6"
+    "detail detail";
+  gap:18px !important;
+  align-items:start;
+}
+.layout>.col{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.layout>.col:nth-child(1){grid-area:left}
+.layout>.col:nth-child(2){grid-area:right}
+.layout>.col:nth-child(3){grid-area:step6; width:100% !important}
+#step5Panel{grid-area:step5; width:100% !important}
+#detailCandidatesPanel{grid-area:detail; width:100% !important; margin-top:18px}
+#step6Panel{width:100% !important}
+#step5Panel .panel-body{padding:20px}
+#step5Panel .hero-decision{
+  display:grid;
+  grid-template-columns:1.2fr .9fr;
+  gap:16px;
+}
+#step5Panel .big-decision{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
+}
+#step5Panel .decision-banner{
+  border-radius:16px;
+  padding:18px;
+  text-align:center;
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:.5px;
+}
+#step5Panel .decision-sub{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:8px;
+}
+#step5Targets .target-row{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;
+  margin-bottom:12px;
+  background:rgba(255,255,255,.02);
+}
+#step5Targets .left,#step5Targets .right{display:flex;flex-direction:column;gap:4px}
+#step5Targets .right{text-align:right}
+#step5Checklist .check-row,
+#step5Risk .risk-row{
+  display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)
+}
+#step5Checklist .check-row:last-child,#step5Risk .risk-row:last-child{border-bottom:none}
+#step6Panel .panel-body{padding:20px}
+#positionsBox{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit, minmax(320px,1fr)) !important;
+  gap:14px !important;
+}
+#detailCandidatesPanel .panel-head{
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+@media (max-width: 1200px){
+  .layout{
+    grid-template-columns:1fr !important;
+    grid-template-areas:
+      "left"
+      "right"
+      "step5"
+      "step6"
+      "detail";
+  }
+  #step5Panel .hero-decision{
+    grid-template-columns:1fr;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -306,11 +399,39 @@
 </section>
 
 <section class="panel" id="step5Panel">
-<div class="panel-head"><div><h2 class="panel-title">STEP 5｜睡前最後確認卡</h2><div class="panel-sub">把掛單區變成真正的夜間下單檢查表：先過風控，再決定要不要掛單</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">STEP 5｜夜間下單確認卡</h2><div class="panel-sub">今晚最重要的區塊：先看結論，再決定要不要掛單</div></div></div>
 <div class="panel-body">
-<div id="orderSummaryBox"></div>
-<div class="divider"></div>
-<div class="tableWrap" id="ordersTable"></div>
+  <div class="ok-box"><strong>睡前最後流程</strong><br>先確認主攻 / 次選 → 看總風險與檢查清單 → 再看最終判定燈，不要跳過這一步直接掛單。</div>
+
+  <div class="hero-decision">
+    <div class="big-decision">
+      <div class="label" style="margin-bottom:10px">🎯 今日掛單標的</div>
+      <div id="step5Targets"></div>
+      <div class="divider"></div>
+      <div class="grid-2">
+        <div class="card"><div class="label">決策模式</div><div id="step5ModeBox" class="mono">等待判定</div></div>
+        <div class="card"><div class="label">出場模式</div><div id="step5ExitBox" class="mono">等待判定</div></div>
+      </div>
+    </div>
+
+    <div class="big-decision">
+      <div class="label" style="margin-bottom:10px">⚠️ 風控總覽</div>
+      <div id="step5Risk"></div>
+      <div class="divider"></div>
+      <div class="label" style="margin-bottom:10px">🧾 檢查清單</div>
+      <div id="step5Checklist"></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="decision-banner" id="step5Decision"></div>
+  <div class="decision-sub" id="step5DecisionNote"></div>
+
+  <div class="btnrow" style="justify-content:center;margin-top:18px">
+    <button class="btn green" id="step5Confirm">✅ 已完成睡前確認</button>
+    <button class="btn secondary" id="step5Recalc">重新檢查</button>
+  </div>
 </div>
 </section>
 
