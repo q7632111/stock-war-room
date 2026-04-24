@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.7.5｜CSV按鈕修復版</title>
+<title>AI 戰艦 Pro Max v10.8.2｜平衡戰神版</title>
 <style>
     :root{
       --bg:#071019;
@@ -228,8 +228,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.8.3</h1>
-<div class="sub">新手讀取共用資料版｜CSV解析｜雙引擎過濾｜AI絕對物理隔離</div>
+<h1>AI 戰艦 Pro Max v10.8.2</h1>
+<div class="sub">平衡戰神版｜基本面扣分不硬殺｜過熱雙條件硬鎖</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -557,7 +557,7 @@
 </div>
 <script>
     const $ = id => document.getElementById(id);
-    const STORAGE_KEY = 'warroom_v10_7_6_csv_safe';
+    const STORAGE_KEY = 'warroom_v10_8_2_balanced_wargod';
 
     const defaultState = {
       market: { advancers:0, decliners:0, limitUp:0, limitDown:0, otcChange:0, taiexChange:0, breadthScore:0, sentimentScore:0, totalScore:0, signal:'yellow', maxNewPositionsAllowed:1, instruction:'等待市場狀態更新', explainParts:[], radar:{} },
@@ -830,7 +830,7 @@ let state = loadState();
 
       if(dev === null) { score -= 10; engineA = false; risks.push("無法計算20MA乖離"); rejectReasons.push("缺乖離資料"); }
       else if(dev <= L) { score += 14; reasons.push(`20MA乖離 ${dev.toFixed(1)}% < ${L}%`); }
-      else { score -= 25; engineA = false; risks.push(`20MA乖離 ${dev.toFixed(1)}% > ${L}%`); rejectReasons.push(`乖離大於${L}%`); }
+      else { score -= 15; engineA = false; risks.push(`20MA乖離 ${dev.toFixed(1)}% > ${L}%，降權觀察`); rejectReasons.push(`乖離大於${L}%`); }
 
       if(Number.isNaN(rvol)) { score -= 10; engineA = false; risks.push("量比資料缺漏"); rejectReasons.push("缺量比資料"); }
       else if(rvol < 1.5) { score -= 12; engineA = false; risks.push("量比低於1.5，未發動"); rejectReasons.push("動能不足"); }
@@ -842,17 +842,17 @@ let state = loadState();
       else if(rsi < 60) { score -= 8; engineA = false; risks.push("RSI <60，尚未發動"); rejectReasons.push("RSI未發動"); }
       else if(rsi <= 70) { score += 15; reasons.push("RSI 60~70，最佳攻擊區"); }
       else if(rsi <= 75) { score -= 4; reasons.push("RSI 70~75，偏熱警戒"); }
-      else { score -= 22; engineA = false; risks.push("RSI >75，過熱禁止"); rejectReasons.push("RSI過熱"); }
+      else { score -= 8; engineA = false; risks.push("RSI >75，過熱降權"); rejectReasons.push("RSI偏熱"); }
 
       // Engine B
       if(Number.isNaN(pe)) { score -= 4; reasons.push("PE缺漏，基本面透明度降權"); }
       else if(pe < 50) { score += 10; reasons.push("PE <50，估值未失控"); }
       else if(pe <= 100) { score -= 6; reasons.push("PE 50~100，估值偏高"); }
-      else { score -= 24; engineB = false; risks.push("PE >100，高風險題材股"); rejectReasons.push("PE異常"); }
+      else { score -= 12; risks.push("PE >100，高風險題材股，僅扣分不硬殺"); rejectReasons.push("PE偏高"); }
 
       if(Number.isNaN(epsGrowthYoy)) { score -= 3; reasons.push("EPS成長資料缺漏，降權"); }
       else if(epsGrowthYoy > 0) { score += 8; reasons.push("EPS成長為正，具實質支撐"); }
-      else { score -= 8; engineB = false; risks.push("EPS成長為負，基本面扣分"); rejectReasons.push("EPS衰退"); }
+      else { score -= 8; risks.push("EPS成長為負，基本面扣分"); rejectReasons.push("EPS衰退"); }
 
       if(analystRating.includes("強力買入")) { score += 10; reasons.push("評級：強力買入"); }
       else if(analystRating.includes("買入")) { score += 8; reasons.push("評級：買入"); }
@@ -876,21 +876,15 @@ let state = loadState();
       else if(localScore >= 45) grade = "C";
       else grade = "X";
 
-      // v10.7 戰神鎖死：這些條件不准被 AI 或後續決策覆蓋
+      // v10.8.2 平衡戰神：只硬鎖真正危險條件；基本面問題改為扣分，不直接殺死好牌
       const hardReject =
         (Number.isFinite(rvol) && rvol > 5) ||
-        (Number.isFinite(rsi) && rsi > 75) ||
-        (dev !== null && dev > L) ||
-        (Number.isFinite(pe) && pe > 100) ||
-        (Number.isFinite(epsGrowthYoy) && epsGrowthYoy < 0) ||
+        ((dev !== null && dev > L) && (Number.isFinite(rsi) && rsi > 75)) ||
         (market.signal === 'red');
       if(hardReject){
         grade = "X";
-        if(Number.isFinite(rvol) && rvol > 5) rejectReasons.push("v10.8硬鎖：量比>5");
-        if(Number.isFinite(rsi) && rsi > 75) rejectReasons.push("v10.8硬鎖：RSI>75");
-        if(dev !== null && dev > L) rejectReasons.push("v10.8硬鎖：乖離超標");
-        if(Number.isFinite(pe) && pe > 100) rejectReasons.push("v10.8硬鎖：PE>100");
-        if(Number.isFinite(epsGrowthYoy) && epsGrowthYoy < 0) rejectReasons.push("v10.8硬鎖：EPS衰退");
+        if(Number.isFinite(rvol) && rvol > 5) rejectReasons.push("v10.8.2硬鎖：量比>5");
+        if((dev !== null && dev > L) && (Number.isFinite(rsi) && rsi > 75)) rejectReasons.push("v10.8.2硬鎖：乖離超標且RSI過熱");
       }
 
       const rejected = hardReject || (grade === "C" || grade === "X") || (market.signal === 'red');
