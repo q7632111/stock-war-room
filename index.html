@@ -1398,7 +1398,7 @@ let state = loadState();
       if(!top.length) return alert('目前沒有可供 AI 覆核的候選股（僅允許 S+ 或 強勢盤的 A 級）。');
       
       const m = state.market;
-      const candidatesText = top.map((c,idx)=>`${idx+1}. ${c.symbol} ${c.name || ''}\n   本地分數:${c.localScore}\n   級別:${c.grade}\n   主攻資格:${c.isMainAttackCandidate}\n   買價:${c.entry}\n   停損:${c.stop}\n   RR:${c.rr}\n   漲幅:${c.changePct}\n   RSI:${Number.isFinite(c.rsi14)?c.rsi14:'NA'}\n   量比:${Number.isFinite(c.volumeRatio)?c.volumeRatio:'NA'}\n   SMA20:${Number.isFinite(c.sma20)?c.sma20:'NA'}\n   SMA60:${Number.isFinite(c.sma60)?c.sma60:'NA'}\n   警示:${(c.warnings || []).join('、') || '無'}`).join('\n\n');
+      const candidatesText = top.map((c,idx)=>`${idx+1}. ${c.symbol} ${c.name || ''}\n   本地分數:${c.localScore}\n   級別:${c.grade}\n   主攻資格:${c.isMainAttackCandidate}\n   買價:${c.entry}\n   停損:${c.stop}\n   RR:${c.rr}\n   漲幅:${c.changePct}\n   RSI:${Number.isFinite(c.rsi14)?c.rsi14:'NA'}\n   量比:${Number.isFinite(c.volumeRatio)?c.volumeRatio:'NA'}\n   PE:${Number.isFinite(c.pe)?c.pe:'NA'}\n   EPS成長率:${Number.isFinite(c.epsGrowthYoy)?c.epsGrowthYoy:'NA'}\n   SMA20:${Number.isFinite(c.sma20)?c.sma20:'NA'}\n   SMA60:${Number.isFinite(c.sma60)?c.sma60:'NA'}\n   警示:${(c.warnings || []).join('、') || '無'}`).join('\n\n');
 
       const prompt = `你是一名台股衛星飆股短線戰術教練，現在請你扮演「AI嚴選官」。
 
