@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.7.5｜CSV按鈕修復版</title>
+<title>AI 戰艦 Pro Max v10.8.4｜自動切模式整合版</title>
 <style>
     :root{
       --bg:#071019;
@@ -228,8 +228,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.8.3</h1>
-<div class="sub">完全整合版｜平衡戰神邏輯｜CSV解析｜AI完整視野</div>
+<h1>AI 戰艦 Pro Max v10.8.4</h1>
+<div class="sub">自動切模式整合版｜市場分數自動決策｜平衡戰神邏輯</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -297,7 +297,7 @@
 <div class="col">
 <section class="panel" id="step2Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 2｜貼 CSV 做雙引擎初篩</h2><div class="panel-sub">先貼資料做本地排雷，再往下看候選結果</div></div></div>
-<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地評級 (S+/A/B/C/X) → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v10.7.7 修復：補齊 normalizeSymbol，避免 CSV 解析與同步流程中斷。</div>
+<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地評級 (S+/A/B/C/X) → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v10.8.4 整合：自動切模式會依市場分數與情緒，自動切換交集 / 本地 / AI 優先。</div>
 <label>貼上 TradingView CSV（保留標題列）</label>
 <div class="footnote" style="margin-bottom:8px">這格只負責貼入資料，貼完通常就不需要再看，已縮成短框避免佔畫面。</div>
 <textarea id="candidateTextarea" placeholder="直接貼上 TradingView CSV，例如：商品,描述,價格,價格變化 % 1天,相對成交量 1天,本益比,..."></textarea>
@@ -336,16 +336,18 @@
 <div class="panel-head"><div><h2 class="panel-title">STEP 4.5｜AI 決策模式區</h2><div class="panel-sub">交集 / 本地優先 / AI優先 / 自動判斷，讓 AI 輔助但不搶主控權</div></div></div>
 <div class="panel-body">
 <div class="grid-3">
-<div><label>決策模式</label><select id="decisionMode"><option value="auto" selected>自動判斷（推薦）</option><option value="intersection">交集模式</option><option value="local">本地優先</option><option value="ai">AI優先</option></select></div>
+<div><label>決策模式</label><select id="decisionMode"><option value="auto" selected>自動切模式（推薦）</option><option value="intersection">交集模式</option><option value="local">本地優先</option><option value="ai">AI優先</option></select></div>
 <div><label>過熱乖離門檻 %</label><input id="autoHeatThreshold" type="number" value="20"/></div>
 <div><label>本地分數優勢門檻</label><input id="autoScoreGap" type="number" value="12"/></div>
 </div>
 <div class="btnrow" style="margin-top:10px">
 <button class="btn purple" id="runDecisionBtn">套用決策模式</button>
-<button class="btn secondary" id="autoDecisionBtn">一鍵自動判斷</button>
+<button class="btn secondary" id="autoDecisionBtn">一鍵自動切模式</button>
 <button class="btn secondary" id="showDecisionBtn">只看判斷不套用</button>
 <button class="btn secondary" id="resetLocalBtn">切回本地結果</button>
 </div>
+<div class="divider"></div>
+<div class="ok-box" id="autoModeHint">自動切模式會依市場分數、情緒熱度、AI交集與過熱風險，自動在交集 / 本地 / AI 優先之間切換。</div>
 <div class="divider"></div>
 <div id="decisionBox" class="card mono">尚未執行決策模式。</div>
 </div>
@@ -1043,38 +1045,117 @@ let state = loadState();
       }
       return getLocalDecisionTop(limit);
     }
+    function getAutoDecisionProfile(localTop, aiTop, intersection){
+      const total = num(state.market?.totalScore, 0);
+      const sentiment = num(state.market?.sentimentScore, 0);
+      const signal = state.market?.signal || 'yellow';
+      const otc = num(state.market?.otcChange, 0);
+      const taiex = num(state.market?.taiexChange, 0);
+      const breadth = num(state.market?.breadthScore, 0);
+      const validAiCount = (aiTop || []).length;
+      const hasIntersection = (intersection || []).length > 0;
+
+      if(signal === 'red' || total < 40){
+        return {
+          suggestedMode:'local',
+          fireLevel:'休兵 / 僅管理持倉',
+          rule:'市場紅燈或總分低於 40，禁止主動放大風險；若仍有候選，只能保留本地最乾淨標的供觀察。'
+        };
+      }
+
+      if(total >= 70 || signal === 'green'){
+        return {
+          suggestedMode:'local',
+          fireLevel:'強勢盤 / 動能優先',
+          rule:'市場進入綠燈或總分大於 70，短線主升段以本地量化動能優先，AI 只做題材覆核，不拖慢進攻。'
+        };
+      }
+
+      if(signal === 'yellow' && sentiment >= 80){
+        return {
+          suggestedMode: hasIntersection ? 'intersection' : 'local',
+          fireLevel:'黃燈高情緒 / 防隔日沖',
+          rule: hasIntersection
+            ? '黃燈但情緒高於 80，市場容易追題材過熱，強制採交集模式，只做本地與 AI 同時認可的股票。'
+            : '黃燈高情緒但沒有 AI 交集，避免 AI 追題材，退回本地最乾淨候選並降低火力。'
+        };
+      }
+
+      if(signal === 'yellow' && total >= 55 && otc > 0.4){
+        return {
+          suggestedMode: hasIntersection ? 'intersection' : 'local',
+          fireLevel:'黃燈偏多 / 精準打擊',
+          rule: hasIntersection
+            ? '黃燈偏多且 OTC 仍有題材動能，優先採交集模式，兼顧題材與風控。'
+            : '黃燈偏多但沒有 AI 交集，採本地優先，避免為了配合 AI 放寬紀律。'
+        };
+      }
+
+      if(validAiCount && hasIntersection){
+        return {
+          suggestedMode:'intersection',
+          fireLevel:'正常盤 / 雙引擎共振',
+          rule:'市場沒有明顯過熱或主升，若本地與 AI 有交集，優先採交集模式。'
+        };
+      }
+
+      return {
+        suggestedMode:'local',
+        fireLevel:'正常盤 / 本地防守優先',
+        rule:'沒有明確 AI 優勢或交集時，以本地雙引擎分數為主，避免 AI 主觀越權。'
+      };
+    }
+
     function buildDecisionAnalysis(mode='auto'){
       const localTop = getLocalDecisionTop(2);
       const aiTop = getAiDecisionTop(2);
       const heatThreshold = num($('autoHeatThreshold')?.value, state.decision?.autoHeatThreshold ?? 20);
       const scoreGap = num($('autoScoreGap')?.value, state.decision?.autoScoreGap ?? 12);
-      if(!localTop.length) return { modeUsed:mode, chosen:[], summary:'目前沒有可用的本地候選。', autoHeatThreshold:heatThreshold, autoScoreGap:scoreGap };
+      if(!localTop.length) return { modeUsed:mode, chosen:[], summary:'目前沒有可用的本地候選。\n自動切模式結論：不開新倉，等待下一批候選或只管理既有持倉。', autoHeatThreshold:heatThreshold, autoScoreGap:scoreGap };
       const intersection = localTop.filter(r => aiTop.some(a => normalizeSymbol(a.symbol)===normalizeSymbol(r.symbol)));
       const hotAi = aiTop.filter(r => num(r.deviation20) > heatThreshold);
       const localAvg = localTop.length ? localTop.reduce((a,b)=>a+num(b.decisionScore),0)/localTop.length : 0;
       const aiAvg = aiTop.length ? aiTop.reduce((a,b)=>a+num(b.decisionScore),0)/aiTop.length : 0;
       let modeUsed = mode;
       const lines = [];
+      lines.push(`市場燈號：${state.market?.signal || 'unknown'}｜總分：${fmt(state.market?.totalScore,1)}｜情緒：${fmt(state.market?.sentimentScore,1)}｜廣度：${fmt(state.market?.breadthScore,1)}`);
       lines.push(`本地候選：${localTop.map(r=>r.symbol).join('、') || '無'}`);
       lines.push(`AI候選（已套用防呆後）：${aiTop.map(r=>r.symbol).join('、') || '無'}`);
-      lines.push('v10.7鐵律：C/X/A/B(正常盤)不進最終掛單；AI若推薦非S+，自動作廢。');
+      lines.push('鐵律：C/X 不進最終掛單；AI 若推薦非可交易候選，自動作廢。');
       lines.push(`交集：${intersection.map(r=>r.symbol).join('、') || '無'}`);
       lines.push(`本地平均決策分：${localAvg.toFixed(1)}｜AI平均決策分：${aiAvg.toFixed(1)}`);
+
       if(mode === 'auto'){
-        if(!aiTop.length){
-          modeUsed = 'local'; lines.push('判定：目前尚無有效 AI 主攻 / 次選，先採本地優先。');
-        } else if(intersection.length >= 1){
-          modeUsed = 'intersection'; lines.push('判定：本地與 AI 有交集，優先採交集模式。');
-        } else if(hotAi.length){
-          modeUsed = 'local'; lines.push(`判定：AI 候選存在過熱風險（>${heatThreshold}% 乖離），改採本地優先。`);
-        } else if((localAvg - aiAvg) >= scoreGap){
-          modeUsed = 'local'; lines.push(`判定：本地平均決策分明顯領先 AI（差 ${(localAvg-aiAvg).toFixed(1)} 分），採本地優先。`);
-        } else if(aiAvg > localAvg){
-          modeUsed = 'ai'; lines.push('判定：AI 候選分數更佳且無明顯過熱，採 AI 優先。');
-        } else {
-          modeUsed = 'local'; lines.push('判定：沒有形成明確 AI 優勢，維持本地優先。');
+        const profile = getAutoDecisionProfile(localTop, aiTop, intersection);
+        modeUsed = profile.suggestedMode;
+        lines.push(`自動切模式：${profile.fireLevel}`);
+        lines.push(`切換理由：${profile.rule}`);
+
+        if(hotAi.length && modeUsed === 'ai'){
+          modeUsed = 'local';
+          lines.push(`安全覆寫：AI 候選存在過熱風險（>${heatThreshold}% 乖離），禁止 AI 優先，改採本地優先。`);
+        }
+        if(modeUsed === 'intersection' && !intersection.length){
+          modeUsed = 'local';
+          lines.push('安全覆寫：交集為空，改採本地優先，不硬湊 AI 標的。');
+        }
+      } else {
+        lines.push(`手動指定模式：${mode === 'intersection' ? '交集模式' : mode === 'ai' ? 'AI優先' : '本地優先'}`);
+        if(mode === 'ai' && hotAi.length){
+          lines.push(`警示：AI 候選存在過熱風險（>${heatThreshold}% 乖離），請確認不是追高。`);
         }
       }
+
+      if(mode !== 'auto'){
+        if(!aiTop.length && modeUsed === 'ai'){
+          modeUsed = 'local'; lines.push('防呆：目前尚無有效 AI 主攻 / 次選，改採本地優先。');
+        } else if(modeUsed === 'intersection' && !intersection.length){
+          modeUsed = 'local'; lines.push('防呆：交集模式沒有交集，改採本地優先。');
+        }
+      }
+
+      if(modeUsed !== 'intersection' && modeUsed !== 'ai' && modeUsed !== 'local') modeUsed = 'local';
+
       let chosen = [];
       if(modeUsed === 'intersection'){
         chosen = intersection.slice(0,2);
@@ -1085,8 +1166,11 @@ let state = loadState();
       } else {
         chosen = localTop.slice(0,2);
       }
+
+      chosen = chosen.filter(isTradableCandidate).slice(0,2);
       lines.push(`最終模式：${modeUsed === 'intersection' ? '交集模式' : modeUsed === 'ai' ? 'AI優先' : '本地優先'}`);
       lines.push(`最終標的：${chosen.map(r=>`${r.symbol} ${r.name||''}`).join('、') || '無'}`);
+      lines.push(chosen.length ? '執行建議：依 STEP 5 檢查停損 / 停利 / 股數後再掛智慧單。' : '執行建議：今日無可掛標的，不硬做。');
       return { modeUsed, chosen, summary: lines.join('\n'), autoHeatThreshold:heatThreshold, autoScoreGap:scoreGap };
     }
     function renderDecisionPanel(){
