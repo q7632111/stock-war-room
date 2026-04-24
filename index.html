@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.7.1｜雙引擎融合版</title>
+<title>AI 戰艦 Pro Max v10.7.3｜終極定案版</title>
 <style>
     :root{
       --bg:#071019;
@@ -189,8 +189,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.7.1 雙引擎融合版</h1>
-<div class="sub">引擎 A (動能) × 引擎 B (排雷) ｜ S+ 強制模式 ｜ AI 防呆 ｜ C/X 禁入</div>
+<h1>AI 戰艦 Pro Max v10.7.3 終極定案版</h1>
+<div class="sub">CSV 彈性防呆 ｜ 雙引擎過濾 ｜ AI 絕對物理隔離</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -256,7 +256,7 @@
 <div class="col">
 <section class="panel" id="step2Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 2｜貼 CSV 做雙引擎初篩</h2><div class="panel-sub">先貼資料做本地排雷，再往下看候選結果</div></div></div>
-<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地評級 (S+/A/B/C/X) → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v10.7 戰神強化：S+ 強制模式，自動排除 PE 過高、EPS 衰退、量比失控、RSI 過熱與高乖離標的。</div>
+<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地評級 (S+/A/B/C/X) → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v10.7.3 終極版：已包含 CSV 中文欄位彈性解析與 AI 絕對防呆隔離機制。</div>
 <label>貼上 TradingView CSV（保留標題列）</label>
 <div class="footnote" style="margin-bottom:8px">這格只負責貼入資料，貼完通常就不需要再看，已縮成短框避免佔畫面。</div>
 <textarea id="candidateTextarea" placeholder="直接貼上 TradingView CSV，例如：商品,描述,價格,價格變化 % 1天,相對成交量 1天,本益比,..."></textarea>
@@ -702,9 +702,24 @@ let state = loadState();
       return result.map(x => String(x ?? '').replace(/^"|"$/g,'').replace(/\r?\n|\r/g,'').trim());
     }
 
-    function normalizeHeader(h){ return String(h).replace(/^"|"$/g,'').trim(); }
-    function getCsvIndexMap(headers){ const map={}; headers.forEach((h,idx)=>{ map[normalizeHeader(h)] = idx; }); return map; }
-    function valAt(row,map,key){ const idx = map[key]; if(idx===undefined) return ''; return row[idx] ?? ''; }
+    // ===== v10.7.2 修正：過濾 TradingView 隱藏 BOM 編碼 =====
+    function normalizeHeader(h){ 
+      return String(h).replace(/^\uFEFF/, '').replace(/^"|"$/g,'').trim(); 
+    }
+    
+    // ===== v10.7.2 修正：彈性模糊比對欄位 =====
+    function getColIdx(headers, exactNames, partialNames = []) {
+      for (let i = 0; i < headers.length; i++) {
+        if (exactNames.includes(headers[i])) return i;
+      }
+      for (let i = 0; i < headers.length; i++) {
+        for (let p of partialNames) {
+          if (headers[i].includes(p)) return i;
+        }
+      }
+      return -1;
+    }
+
     function analystScore(rating){ const t = String(rating || '').trim(); if(t.includes('強力買入')) return 5; if(t.includes('買入')) return 4; if(t.includes('中立')) return 2; return 2; }
     function marketSignalNumeric(signal){ if(signal==='green') return 8; if(signal==='yellow') return 5; return 1; }
 
@@ -844,14 +859,42 @@ let state = loadState();
 
     function parseTradingViewCsv(){
       const text = state.candidatesRawText || ''; const lines = text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean); if(lines.length < 2){ state.candidates=[]; saveState(); return; }
-      const headers = splitCsvLine(lines[0]).map(normalizeHeader); const map = getCsvIndexMap(headers); const parsed=[];
+      
+      const headers = splitCsvLine(lines[0]).map(normalizeHeader);
+      
+      // ===== v10.7.2 修正：彈性對位（防呆 TradingView 亂改欄位名） =====
+      const idxSymbol = getColIdx(headers, ['商品', 'ticker', '代號']);
+      const idxName = getColIdx(headers, ['描述', '名稱']);
+      const idxClose = getColIdx(headers, ['價格', '收盤價']);
+      const idxChange = getColIdx(headers, ['價格變化 % 1天', '價格變化%', '漲跌幅'], ['變化 %', '漲跌幅']);
+      const idxVolume = getColIdx(headers, ['成交量 1天', '成交量'], []);
+      const idxRvol = getColIdx(headers, ['相對成交量 1天', '相對成交量'], ['相對成交量']);
+      const idxPe = getColIdx(headers, ['本益比'], ['本益比']);
+      const idxEpsGrowth = getColIdx(headers, ['稀釋每股盈餘成長率 %, TTM年增率', '每股盈餘成長率'], ['每股盈餘成長', 'EPS成長']);
+      const idxRating = getColIdx(headers, ['分析師評級'], ['評級']);
+      const idxSma20 = getColIdx(headers, ['簡單移動平均線 (20) 1天'], ['(20)']);
+      const idxSma60 = getColIdx(headers, ['簡單移動平均線 (60) 1天'], ['(60)']);
+      const idxRsi = getColIdx(headers, ['相對強弱指標 (14) 1天'], ['(14)', 'RSI']);
+
+      const parsed=[];
       for(let i=1;i<lines.length;i++){
         const row = splitCsvLine(lines[i]); if(!row.length) continue;
-        const symbol = valAt(row,map,'商品') || valAt(row,map,'ticker') || row[0]; const name = valAt(row,map,'描述') || '';
-        const close = num(valAt(row,map,'價格') || row[2], NaN); if(!symbol || Number.isNaN(close)) continue;
-        const changePct = num(valAt(row,map,'價格變化 % 1天'), 0); const volume = num(valAt(row,map,'成交量 1天'), NaN); const volumeRatio = num(valAt(row,map,'相對成交量 1天'), NaN); const analystRating = valAt(row,map,'分析師評級'); const sma20 = num(valAt(row,map,'簡單移動平均線 (20) 1天'), NaN); const sma60 = num(valAt(row,map,'簡單移動平均線 (60) 1天'), NaN); const rsi14 = num(valAt(row,map,'相對強弱指標 (14) 1天'), NaN); const epsGrowthYoy = num(valAt(row,map,'稀釋每股盈餘成長率 %, TTM年增率'), NaN);
-        // 新增解析本益比
-        const pe = num(valAt(row,map,'本益比'), NaN);
+        
+        const symbol = idxSymbol >= 0 ? row[idxSymbol] : row[0];
+        const name = idxName >= 0 ? row[idxName] : '';
+        const close = num(idxClose >= 0 ? row[idxClose] : row[2], NaN);
+        
+        if(!symbol || Number.isNaN(close)) continue;
+
+        const changePct = num(idxChange >= 0 ? row[idxChange] : NaN, 0);
+        const volume = num(idxVolume >= 0 ? row[idxVolume] : NaN, NaN);
+        const volumeRatio = num(idxRvol >= 0 ? row[idxRvol] : NaN, NaN);
+        const analystRating = idxRating >= 0 ? row[idxRating] : '';
+        const sma20 = num(idxSma20 >= 0 ? row[idxSma20] : NaN, NaN);
+        const sma60 = num(idxSma60 >= 0 ? row[idxSma60] : NaN, NaN);
+        const rsi14 = num(idxRsi >= 0 ? row[idxRsi] : NaN, NaN);
+        const epsGrowthYoy = num(idxEpsGrowth >= 0 ? row[idxEpsGrowth] : NaN, NaN);
+        const pe = num(idxPe >= 0 ? row[idxPe] : NaN, NaN);
         
         const entry=close, stop=Number((close*0.97).toFixed(2)), takeProfit=Number((close*1.05).toFixed(2)); const fire = calcShares(entry,stop); const rr = calcRR(entry,stop,takeProfit); const riskPct = entry > stop ? ((entry-stop)/entry)*100 : 999;
         parsed.push({ id:uid(symbol), symbol, name, close, high:close, changePct, volume, volumeRatio, analystRating, sma20, sma60, rsi14, epsGrowthYoy, pe, entry, stop, takeProfit, rr, riskPct, shares:fire.shares, boardLots:fire.boardLots, oddLots:fire.oddLots, invested:fire.invested, positionRisk:fire.positionRisk, sharesByRisk:fire.sharesByRisk, sharesByCapital:fire.sharesByCapital, singleRiskAmount:fire.singleRiskAmount, selected:false, createdAt:nowString() });
@@ -879,337 +922,7 @@ let state = loadState();
     }
 
 
-    
-
-// ===== 智慧鎖倉版 =====
-
-function getSmartLockExecution(row, qty){
-  const q = Number(qty || row.qty || row.shares || 0);
-  const lock = getLockPlan(row);
-
-  if(!q || q <= 0){
-    return { ...lock, totalQty: 0, sellQty: 0, keepQty: 0, executionNote: '股數不足' };
-  }
-
-  // 零股或混合股數：照百分比精準分批
-  if(q % 1000 !== 0){
-    const sellQty = Math.max(1, Math.round(q * lock.firstSellPct / 100));
-    const keepQty = Math.max(0, q - sellQty);
-    return {
-      ...lock,
-      totalQty: q,
-      sellQty,
-      keepQty,
-      executionNote: `零股模式：先賣 ${sellQty.toLocaleString('zh-TW')} 股，續抱 ${keepQty.toLocaleString('zh-TW')} 股`
-    };
-  }
-
-  // 整張模式：自動換算成可執行張數
-  const lots = Math.floor(q / 1000);
-
-  if(lots <= 1){
-    return {
-      ...lock,
-      totalQty: q,
-      sellQty: 0,
-      keepQty: q,
-      executionNote: '1 張整股：不分批，直接用 Runner 續抱'
-    };
-  }
-
-  let sellLots = 0;
-  if(lock.mode === 'trend_lock'){
-    sellLots = Math.max(1, Math.round(lots * 0.3));
-  } else {
-    sellLots = Math.max(1, Math.round(lots * 0.5));
-  }
-
-  sellLots = Math.min(sellLots, lots - 1);
-
-  const sellQty = sellLots * 1000;
-  const keepQty = q - sellQty;
-
-  return {
-    ...lock,
-    totalQty: q,
-    sellQty,
-    keepQty,
-    executionNote: `整張模式：先賣 ${sellLots} 張（${sellQty.toLocaleString('zh-TW')} 股），續抱 ${keepQty.toLocaleString('zh-TW')} 股`
-  };
-}
-
-function getLockPlan(row){
-  const engine = getDualExitEngine(row);
-  const price = num(row.price);
-  if(!price) return { mode:'none', firstSellPct:0, runnerPct:0, lockTrigger:null, runnerTrail:null, note:'價格不足' };
-
-  if(engine.mode === 'trend'){
-    return {
-      mode: 'trend_lock',
-      firstSellPct: 30,
-      runnerPct: 70,
-      lockTrigger: +(price * 1.12).toFixed(2),
-      runnerTrail: 10,
-      note: '先落袋 30%，剩餘 70% 用趨勢追蹤'
-    };
-  }
-
-  return {
-    mode: 'normal_lock',
-    firstSellPct: 50,
-    runnerPct: 50,
-    lockTrigger: +(price * 1.10).toFixed(2),
-    runnerTrail: 6,
-    note: '先落袋 50%，剩餘 50% 續抱到第二停利或回撤'
-  };
-}
-
-// ===== 雙引擎停利系統 =====
-function getDualExitEngine(row){
-  const rsi = num(row.rsi14);
-  const volRatio = num(row.volumeRatio);
-  const deviation = num(row.deviation20);
-
-  // 判斷是否為飆股模式
-  const isTrend = (rsi > 70 && volRatio > 2 && deviation < 20);
-
-  if(isTrend){
-    return {
-      mode: 'trend',
-      label: '🚀 趨勢追蹤（抱飆股）',
-      stopLoss: -5,
-      trail: 12,
-      tightenTrail: 6
-    };
-  }else{
-    return {
-      mode: 'normal',
-      label: '📊 短線套利',
-      stopLoss: -7,
-      tp1: 10,
-      tp2: 15,
-      trail: 8
-    };
-  }
-}
-
-
-function getAdaptiveFilterProfile(){
-      const signal = state?.market?.signal || 'yellow';
-      const totalScore = num(state?.market?.totalScore, 50);
-
-      if(signal === 'green' && totalScore >= 75){
-        return {
-          label: '強勢進攻',
-          minVolume: 1500000,
-          minRelVolume: 1.3,
-          rsiMin: 62,
-          rsiMax: 80,
-          maxDeviation20: 18
-        };
-      }
-
-      if(signal === 'red' || totalScore <= 39){
-        return {
-          label: '防守過濾',
-          minVolume: 3000000,
-          minRelVolume: 1.8,
-          rsiMin: 60,
-          rsiMax: 72,
-          maxDeviation20: 10
-        };
-      }
-
-      return {
-        label: '平衡過濾',
-        minVolume: 2000000,
-        minRelVolume: 1.5,
-        rsiMin: 65,
-        rsiMax: 78,
-        maxDeviation20: 15
-      };
-    }
-
-function getAdaptiveExitProfile(){
-      const signal = state?.market?.signal || 'yellow';
-      if(signal==='green') return { label:'綠燈進攻', stopLossPct:4, trailGapPct:5.5, lock1:4, lock2:10 };
-      if(signal==='red') return { label:'紅燈防守', stopLossPct:2.5, trailGapPct:3.5, lock1:2.5, lock2:5 };
-      return { label:'黃燈平衡', stopLossPct:3.5, trailGapPct:4.5, lock1:3.5, lock2:7 };
-    }
-
-    function getHoldingAction(p, portfolioStats){
-      const lossMode = getLossMode(state.risk.lossStreak);
-      if(state.market.signal==='red') return '🔴 只准防守，不開新倉';
-      if(portfolioStats?.drop <= -5) return '🚨 強制降倉 / 只減不加';
-      if(lossMode.mode==='冷卻模式') return '🧊 冷卻觀察，優先防守';
-      if(num(p.currentPrice) <= num(p.trailingStop)) return '🔴 明日優先撤退';
-      if(num(p.trailingStop) >= num(p.entryPrice)) return '🟡 已保本，續抱觀察';
-      if(num(p.currentPrice) > num(p.entryPrice)) return '🟢 趨勢續抱';
-      return '🟡 觀察收斂';
-    }
-
-    function getHoldingRiskInfo(p, portfolioStats){
-      if(state.market.signal==='red') return { level:'高', cls:'red', text:'市場紅燈，全面防守' };
-      if(portfolioStats?.drop <= -5) return { level:'高', cls:'red', text:'組合熔斷，優先保命' };
-      const distancePct = num(p.currentPrice) > 0 ? ((num(p.currentPrice)-num(p.trailingStop))/num(p.currentPrice))*100 : 0;
-      if(distancePct <= 1) return { level:'高', cls:'red', text:'距停損很近' };
-      if(distancePct <= 3) return { level:'中', cls:'yellow', text:'需盯緊移動停損' };
-      return { level:'低', cls:'green', text:'風險可控' };
-    }
-
-function updateTrailingStop(p){
-      const profile = getAdaptiveExitProfile();
-      const filterProfile = getAdaptiveFilterProfile();
-      const entry = num(p.entryPrice);
-      const initialStop = num(p.initialStop);
-      const currentPrice = num(p.currentPrice);
-      const highestPrice = Math.max(num(p.highestPrice), currentPrice);
-      const highPnl = ((highestPrice - entry) / entry) * 100;
-
-      let stopPct = -profile.stopLossPct;
-      let status = `初始防守｜${profile.label}`;
-
-      if(highPnl >= profile.lock2){
-        stopPct = Math.max(10, profile.lock1);
-        status = `強勢鎖利｜${profile.label}`;
-      } else if(highPnl >= profile.lock1){
-        stopPct = 0;
-        status = `保本防守｜${profile.label}`;
-      }
-
-      const stepStop = entry * (1 + stopPct / 100);
-      const followStop = highestPrice > entry ? highestPrice * (1 - profile.trailGapPct / 100) : stepStop;
-      const newStop = Math.max(num(p.trailingStop, initialStop), stepStop, followStop, initialStop);
-
-      if(currentPrice <= newStop){
-        status = `🔴 明日必須平倉撤退｜${profile.label}`;
-      } else if(newStop > entry){
-        status = status.includes('強勢鎖利') || status.includes('保本防守') ? status : `趨勢鎖利｜${profile.label}`;
-      }
-
-      p.highestPrice = highestPrice;
-      p.trailingStop = Number(newStop.toFixed(2));
-      p.status = status;
-    }
-
-    function updatePositionMarket(id){ const p = state.positions.find(x=>x.id===id && x.isOpen); if(!p) return; const promptVal = prompt(`[夜間重算] 更新 ${p.symbol} 今日「收盤現價」：\n(若欲同時輸入最高價，請用逗號隔開，例如: 100,105)`, p.currentPrice); if(promptVal===null) return; let val_cur, val_hi; if(promptVal.includes(',')){ const parts=promptVal.split(','); val_cur=num(parts[0]); val_hi=num(parts[1]); } else { val_cur=num(promptVal); val_hi=val_cur; } if(!val_cur) return alert('輸入格式錯誤'); p.currentPrice=val_cur; p.lastClose=val_cur; p.highestPrice=Math.max(p.highestPrice, val_hi||0, val_cur); updateTrailingStop(p); saveState(); }
-    function openClose(id){ const p = state.positions.find(x=>x.id===id && x.isOpen); if(!p) return; state.pendingCloseId=id; $('closeInfo').textContent=`${p.symbol} ${p.name||''}｜成本 ${fmt(p.entryPrice,2)}｜現價 ${fmt(p.currentPrice,2)}｜股數 ${fmt(p.shares)}`; $('closePrice').value=p.currentPrice; $('closeReason').value='Manual'; $('closeOverlay').classList.add('show'); }
-    function confirmClosePosition(){ if(state.isClosing) return; state.isClosing=true; $('confirmCloseBtn').disabled=true; $('cancelCloseBtn').disabled=true; const id=state.pendingCloseId; const p=state.positions.find(x=>x.id===id&&x.isOpen); if(!p){ state.isClosing=false; $('confirmCloseBtn').disabled=false; $('cancelCloseBtn').disabled=false; return cancelClosePosition(); } const exitPrice=num($('closePrice').value,NaN); if(!Number.isFinite(exitPrice)||exitPrice<=0){ state.isClosing=false; $('confirmCloseBtn').disabled=false; $('cancelCloseBtn').disabled=false; return alert('賣出價無效。'); } const reason=$('closeReason').value||'Manual'; const pnl=(exitPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((exitPrice-p.entryPrice)/p.entryPrice)*100:0; const result=pnl>0?'win':(pnl<0?'loss':'flat'); state.logs.unshift({ id:uid('log'), symbol:p.symbol, name:p.name||'', entryDate:p.entryDate, exitDate:nowString(), entryPrice:p.entryPrice, exitPrice, shares:p.shares, pnl, returnPct, highestPrice:p.highestPrice, trailingStop:p.trailingStop, result, reason }); state.logs = state.logs.slice(0, 100); p.isOpen=false; p.exitPrice=exitPrice; p.exitDate=nowString(); p.status='已出場'; if(result==='loss') state.risk.lossStreak += 1; else if(result==='win') state.risk.lossStreak = 0; state.pendingCloseId=null; state.isClosing=false; $('confirmCloseBtn').disabled=false; $('cancelCloseBtn').disabled=false; $('closeOverlay').classList.remove('show'); saveState(); }
-    function cancelClosePosition(){ if(state.isClosing) return; state.pendingCloseId=null; $('closeOverlay').classList.remove('show'); }
-
-    function getOpenPositions(){ return state.positions.filter(p=>p.isOpen); }
-    function getPerformance(){ const logs=state.logs; const totalTrades=logs.length; const wins=logs.filter(x=>x.result==='win').length; const losses=logs.filter(x=>x.result==='loss').length; const winRate=totalTrades>0?(wins/totalTrades)*100:0; const totalPnl=logs.reduce((s,x)=>s+num(x.pnl),0); const avgPnl=totalTrades>0?totalPnl/totalTrades:0; const avgReturn=totalTrades>0?logs.reduce((s,x)=>s+num(x.returnPct),0)/totalTrades:0; const weight = num(state.risk.singlePositionCapitalPercent) / 100; const flywheel=logs.reduce((acc,t)=>acc*(1+((num(t.returnPct)/100)*weight)),1); const flywheelPct=logs.length?(flywheel-1)*100:0; return { totalTrades, wins, losses, winRate, totalPnl, avgPnl, avgReturn, flywheelPct }; }
-    function getDashboardSummary(){ const { effectiveDailyRiskPercent, effectiveMaxNewPositions, lossMode } = getEffectiveSettings(); const capital=num(state.risk.capital); const dailyRiskAmount=capital*(effectiveDailyRiskPercent/100); const openPositions=getOpenPositions(); const usedCapital=getUsedCapitalFromOpenPositions(); const remainingCash=Math.max(0, num(state.risk.availableCash)-usedCapital); return { dailyRiskAmount, effectiveDailyRiskPercent, effectiveMaxNewPositions, lossMode, openPositions, usedCapital, remainingCash }; }
-
-    function generateAiPrompt(){
-      const top = guardTradableRows(state.candidates).slice(0,5);
-      if(!top.length) return alert('目前沒有可供 AI 覆核的候選股（僅允許 S+ 或 強勢盤的 A 級）。');
-      const m = state.market;
-      
-      const candidatesText = top.map((c,idx)=>`${idx+1}. ${c.symbol} ${c.name || ''}\n   本地分數:${c.localScore}\n   級別:${c.grade}\n   主攻資格:${c.isMainAttackCandidate}\n   買價:${c.entry}\n   停損:${c.stop}\n   RR:${c.rr}\n   漲幅:${c.changePct}\n   RSI:${Number.isFinite(c.rsi14)?c.rsi14:'NA'}\n   量比:${Number.isFinite(c.volumeRatio)?c.volumeRatio:'NA'}\n   SMA20:${Number.isFinite(c.sma20)?c.sma20:'NA'}\n   SMA60:${Number.isFinite(c.sma60)?c.sma60:'NA'}\n   警示:${(c.warnings || []).join('、') || '無'}`).join('\n\n');
-
-      const prompt = `你是一名台股衛星飆股短線戰術教練，現在請你扮演「AI嚴選官」。
-
-任務要求：
-1. 你必須只根據以下候選股做比較，不可推薦清單外股票。
-2. 請優先參考每檔股票最近 3 個交易日的法人動向、最近 7 天熱門題材與相關新聞，作為短線戰術覆核依據。
-3. 你要輸出：1 檔主攻、1 檔次選、1 檔應避開標的。
-4. 你要重點考慮：
-   - 法人是否連買 / 連賣
-   - 題材是否持續發酵
-   - 新聞屬於利多延續、利多出盡、還是雜訊
-   - 是否有過熱、爆量、乖離過大風險
-5. 請只輸出 JSON，不要加前言、不要加 Markdown、不要加 \`\`\`json。
-6. 以下欄位不可留空：fund_flow_note、theme_note、news_note，以及 top_pick / backup_pick / avoid_pick 內的 topic、institutional_flow、news_signal、confidence。若查無明確資料，請填「查無明確資料」，不要留空白、不要只填符號。
-
-交易風格：
-- 台股衛星飆股
-- 夜間決策、隔日掛智慧單
-- 盤中不干預
-- 重視結構、量能、過熱風險與隔日可打性
-- 火控與股數由系統決定，你只負責戰術覆核
-
-市場狀態：
-- 燈號：${m.signal}
-- 總分：${fmt(m.totalScore,1)}
-- 廣度：${fmt(m.breadthScore,1)}
-- 情緒：${fmt(m.sentimentScore,1)}
-- 說明：${(m.explainParts || []).join('；')}
-
-候選股：
-${candidatesText}
-
-請只輸出 JSON，格式如下：
-{
-  "market_view":"",
-  "top_pick":{"symbol":"","reason":"","ai_score":0,"topic":"","institutional_flow":"","news_signal":"","confidence":""},
-  "backup_pick":{"symbol":"","reason":"","ai_score":0,"topic":"","institutional_flow":"","news_signal":"","confidence":""},
-  "avoid_pick":{"symbol":"","reason":"","ai_score":0,"topic":"","institutional_flow":"","news_signal":"","confidence":""},
-  "fund_flow_note":"",
-  "theme_note":"",
-  "news_note":"",
-  "risk_note":""
-}`;
-      state.aiReview.prompt = prompt;
-      $('aiPromptBox').value = prompt;
-      saveState();
-    }
-    async function copyAiPrompt(){ const txt = state.aiReview.prompt || $('aiPromptBox').value || ''; if(!txt) return alert('目前沒有可複製的 Prompt'); try{ await navigator.clipboard.writeText(txt); alert('AI Prompt 已複製'); }catch(e){ alert('複製失敗，請手動複製'); } }
-    function normalizeSymbol(v){
-      return String(v || '')
-        .trim()
-        .replace(/\.TW$/i,'')
-        .replace(/\s+/g,' ')
-        .split(' ')[0]
-        .replace(/^"|"$/g,'');
-    }
-
-    function normalizeJsonText(raw){ const trimmed = raw.trim(); const start = trimmed.indexOf('{'); const end = trimmed.lastIndexOf('}'); if(start !== -1 && end !== -1 && end > start) return trimmed.slice(start, end+1); return trimmed; }
-    function parseAiResult(){
-      const raw = $('aiResultBox').value.trim();
-      if(!raw) return alert('請先貼上 AI JSON');
-
-      let parsed;
-      try{
-        parsed = JSON.parse(normalizeJsonText(raw));
-      }catch(e){
-        console.error('AI JSON.parse failed:', e, raw);
-        alert('AI JSON 解析失敗：JSON 格式不合法。');
-        return;
-      }
-
-      try{
-        ['top_pick','backup_pick','avoid_pick'].forEach(k=>{
-          if(!parsed[k] || typeof parsed[k] !== 'object') parsed[k] = {};
-          if(parsed[k].symbol) parsed[k].symbol = normalizeSymbol(parsed[k].symbol);
-          if(!parsed[k].reason) parsed[k].reason = '';
-          if(typeof parsed[k].ai_score !== 'number') parsed[k].ai_score = 0;
-          if(!parsed[k].topic) parsed[k].topic = '查無明確資料';
-          if(!parsed[k].institutional_flow) parsed[k].institutional_flow = '查無明確資料';
-          if(!parsed[k].news_signal) parsed[k].news_signal = '查無明確資料';
-          if(!parsed[k].confidence) parsed[k].confidence = '查無明確資料';
-        });
-
-        if(!parsed.fund_flow_note) parsed.fund_flow_note = 'AI 本次未提供法人摘要';
-        if(!parsed.theme_note) parsed.theme_note = 'AI 本次未提供題材摘要';
-        if(!parsed.news_note) parsed.news_note = 'AI 本次未提供新聞摘要';
-        if(!parsed.market_view) parsed.market_view = '';
-        if(!parsed.risk_note) parsed.risk_note = '';
-
-        state.aiReview.rawResponse = raw;
-        state.aiReview.parsed = parsed;
-        state.aiReview.mode = 'ai_assisted';
-        saveState();
-        alert('✅ AI 覆核結果已解析並鎖定');
-      }catch(e){
-        console.error('AI post-parse/render failed:', e, parsed);
-        alert('AI JSON 本身格式正確，但系統在套用/渲染 AI 結果時發生錯誤：' + e.message);
-      }
-    }
-    function clearAiResult(){ state.aiReview.rawResponse=''; state.aiReview.parsed=null; state.aiReview.mode='local_only'; $('aiResultBox').value=''; saveState(); }
-    function getAiFlags(symbol){ const p = state.aiReview?.parsed; return { isTop: p?.top_pick?.symbol === symbol, isBackup: p?.backup_pick?.symbol === symbol, isAvoid: p?.avoid_pick?.symbol === symbol }; }
-
-    // ===== v10.7 戰神強化：紀律鎖死核心 =====
+    // ===== v10.7.3 戰神強化：絕對物理隔離核心 =====
     function isHardForbidden(c){
       if(!c) return true;
       if(c.hardReject) return true;
@@ -1560,6 +1273,62 @@ ${candidatesText}
 
       const cardList = mode === 'all' ? list : list.slice(0,5);
       $('candidateCards').innerHTML = cardList.map((c,idx)=>{ const realIndex = list.findIndex(x=>x.id===c.id); const tag=getDecisionTag(c, realIndex); const ai=getAiFlags(c.symbol); return `<div class="card ${realIndex===0?'mainAttackGlow':''}"><div class="card-head"><div><div class="symbol">#${realIndex+1} ${c.symbol} ${c.name||''} <span class="badge ${badgeClass(c.grade)}">${c.grade}</span></div><div class="muted">價格 ${fmt(c.close,2)}｜漲幅 ${pct(c.changePct,2)}｜RSI ${Number.isFinite(c.rsi14)?fmt(c.rsi14,2):'-'}｜量比 ${Number.isFinite(c.volumeRatio)?fmt(c.volumeRatio,2):'-'}</div></div><div class="btnrow"><span class="badge ${tag.cls}">${tag.text}</span>${ai.isTop?'<span class="badge green">AI主攻</span>':''}${ai.isBackup?'<span class="badge cyan">AI次選</span>':''}${ai.isAvoid?'<span class="badge red">AI避開</span>':''}<span class="badge ${c.selected?'green':'cyan'}">${c.selected?'已鎖定戰隊':'候選中'}</span></div></div><div class="mini"><div class="cell"><div class="k">決策分</div><div class="v">${fmt(c.decisionScore,1)}</div></div><div class="cell"><div class="k">本地分</div><div class="v">${fmt(c.localScore,1)}</div></div><div class="cell"><div class="k">買價</div><div class="v">${fmt(c.entry,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(c.shares)}</div></div><div class="cell"><div class="k">RR</div><div class="v">${fmt(c.rr,2)}</div></div><div class="cell"><div class="k">PE</div><div class="v">${fmt(c.pe)}</div></div></div><div style="margin-top:10px">${tag.reason}${(c.warnings||[]).length?`<br>警示：${c.warnings.join('、')}`:''}${(c.rejectReasons||[]).length?`<br><span class="red">淘汰：${c.rejectReasons.join('、')}</span>`:''}</div><div class="btnrow" style="margin-top:10px"><button class="btn small ${c.selected?'green':''}" onclick="toggleSelectCandidate('${c.id}')">${c.selected?'取消鎖定':'鎖定戰隊'}</button><button class="btn small secondary" onclick="addPositionFromCandidate('${c.id}')">直接建倉</button></div></div>`; }).join('');
+    }
+
+    // ===== v10.7.3 AI 隔離機制 =====
+    function generateAiPrompt(){
+      // 鐵血物理隔離：只送符合條件的標的給 AI
+      const top = guardTradableRows(state.candidates).slice(0,5);
+      if(!top.length) return alert('目前沒有可供 AI 覆核的候選股（僅允許 S+ 或 強勢盤的 A 級）。');
+      
+      const m = state.market;
+      const candidatesText = top.map((c,idx)=>`${idx+1}. ${c.symbol} ${c.name || ''}\n   本地分數:${c.localScore}\n   級別:${c.grade}\n   主攻資格:${c.isMainAttackCandidate}\n   買價:${c.entry}\n   停損:${c.stop}\n   RR:${c.rr}\n   漲幅:${c.changePct}\n   RSI:${Number.isFinite(c.rsi14)?c.rsi14:'NA'}\n   量比:${Number.isFinite(c.volumeRatio)?c.volumeRatio:'NA'}\n   SMA20:${Number.isFinite(c.sma20)?c.sma20:'NA'}\n   SMA60:${Number.isFinite(c.sma60)?c.sma60:'NA'}\n   警示:${(c.warnings || []).join('、') || '無'}`).join('\n\n');
+
+      const prompt = `你是一名台股衛星飆股短線戰術教練，現在請你扮演「AI嚴選官」。
+
+任務要求：
+1. 你必須只根據以下候選股做比較，不可推薦清單外股票。
+2. 請優先參考每檔股票最近 3 個交易日的法人動向、最近 7 天熱門題材與相關新聞，作為短線戰術覆核依據。
+3. 你要輸出：1 檔主攻、1 檔次選、1 檔應避開標的。
+4. 你要重點考慮：
+   - 法人是否連買 / 連賣
+   - 題材是否持續發酵
+   - 新聞屬於利多延續、利多出盡、還是雜訊
+   - 是否有過熱、爆量、乖離過大風險
+5. 請只輸出 JSON，不要加前言、不要加 Markdown、不要加 \`\`\`json。
+6. 以下欄位不可留空：fund_flow_note、theme_note、news_note，以及 top_pick / backup_pick / avoid_pick 內的 topic、institutional_flow、news_signal、confidence。若查無明確資料，請填「查無明確資料」，不要留空白、不要只填符號。
+
+交易風格：
+- 台股衛星飆股
+- 夜間決策、隔日掛智慧單
+- 盤中不干預
+- 重視結構、量能、過熱風險與隔日可打性
+- 火控與股數由系統決定，你只負責戰術覆核
+
+市場狀態：
+- 燈號：${m.signal}
+- 總分：${fmt(m.totalScore,1)}
+- 廣度：${fmt(m.breadthScore,1)}
+- 情緒：${fmt(m.sentimentScore,1)}
+- 說明：${(m.explainParts || []).join('；')}
+
+候選股：
+${candidatesText}
+
+請只輸出 JSON，格式如下：
+{
+  "market_view":"",
+  "top_pick":{"symbol":"","reason":"","ai_score":0,"topic":"","institutional_flow":"","news_signal":"","confidence":""},
+  "backup_pick":{"symbol":"","reason":"","ai_score":0,"topic":"","institutional_flow":"","news_signal":"","confidence":""},
+  "avoid_pick":{"symbol":"","reason":"","ai_score":0,"topic":"","institutional_flow":"","news_signal":"","confidence":""},
+  "fund_flow_note":"",
+  "theme_note":"",
+  "news_note":"",
+  "risk_note":""
+}`;
+      state.aiReview.prompt = prompt;
+      $('aiPromptBox').value = prompt;
+      saveState();
     }
 
     function renderAiPanel(){
