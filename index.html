@@ -190,7 +190,7 @@
 <div class="topbar">
 <div class="brand">
 <h1>AI 戰艦 Pro Max v10.7.5 CSV按鈕修復版</h1>
-<div class="sub">CSV 彈性防呆 ｜ 雙引擎過濾 ｜ AI 絕對物理隔離</div>
+<div class="sub">CSV 硬綁定解析 ｜ 錯誤提示 ｜ 雙引擎過濾 ｜ AI 絕對物理隔離</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -261,7 +261,7 @@
 <div class="footnote" style="margin-bottom:8px">這格只負責貼入資料，貼完通常就不需要再看，已縮成短框避免佔畫面。</div>
 <textarea id="candidateTextarea" placeholder="直接貼上 TradingView CSV，例如：商品,描述,價格,價格變化 % 1天,相對成交量 1天,本益比,..."></textarea>
 <div class="btnrow">
-<button class="btn" id="parseCandidatesBtn">解析 CSV + 雙引擎評分</button>
+<button class="btn" id="parseCandidatesBtn" type="button" onclick="runCsvParseSafe()">解析 CSV + 雙引擎評分</button>
 <button class="btn secondary" id="clearCandidatesBtn">清空候選</button>
 </div>
 <div class="divider"></div>
@@ -535,7 +535,7 @@
 </div>
 <script>
     const $ = id => document.getElementById(id);
-    const STORAGE_KEY = 'warroom_v10_7_wargod_locked';
+    const STORAGE_KEY = 'warroom_v10_7_6_csv_safe';
 
     const defaultState = {
       market: { advancers:0, decliners:0, limitUp:0, limitDown:0, otcChange:0, taiexChange:0, breadthScore:0, sentimentScore:0, totalScore:0, signal:'yellow', maxNewPositionsAllowed:1, instruction:'等待市場狀態更新', explainParts:[], radar:{} },
@@ -1725,6 +1725,34 @@ ${candidatesText}
     }
 
 
+    function runCsvParseSafe(){
+      try{
+        const box = $('candidateTextarea');
+        const raw = box ? box.value : '';
+        state.candidatesRawText = raw || '';
+        if(!state.candidatesRawText.trim()){
+          const msg = '請先貼上 TradingView CSV；目前欄位是空的。';
+          if($('candidateWarnings')) $('candidateWarnings').innerHTML = '<div class="warning-box">' + msg + '</div>';
+          alert(msg);
+          return;
+        }
+        parseTradingViewCsv();
+        const count = (state.candidates || []).length;
+        if($('candidateWarnings')){
+          $('candidateWarnings').innerHTML = count
+            ? '<div class="ok-box">✅ CSV 已解析成功，共 ' + count + ' 檔候選股。</div>'
+            : '<div class="warning-box">⚠️ CSV 有讀到，但沒有產生候選股。請確認至少有：商品、描述、價格、相對成交量、MA20、MA60、RSI。</div>';
+        }
+        if(!count) alert('CSV 有讀到，但沒有產生候選股；請檢查欄位名稱或數值。');
+      }catch(err){
+        console.error('CSV parse failed', err);
+        const msg = 'CSV 解析失敗：' + (err && err.message ? err.message : err);
+        if($('candidateWarnings')) $('candidateWarnings').innerHTML = '<div class="warning-box">' + msg + '</div>';
+        alert(msg);
+      }
+    }
+    window.runCsvParseSafe = runCsvParseSafe;
+
     function bindEvents(){
       $('calcMarketBtn')?.addEventListener('click', saveMarketInputs);
       $('saveMarketBtn')?.addEventListener('click', saveMarketInputs);
@@ -1744,10 +1772,7 @@ ${candidatesText}
         saveState();
       });
 
-      $('parseCandidatesBtn')?.addEventListener('click', ()=>{
-        state.candidatesRawText = $('candidateTextarea')?.value || '';
-        parseTradingViewCsv();
-      });
+      $('parseCandidatesBtn')?.addEventListener('click', (e)=>{ runCsvParseSafe(); });
       $('clearCandidatesBtn')?.addEventListener('click', ()=>{
         state.candidatesRawText = '';
         state.candidates = [];
