@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.6.1｜同步修正版</title>
+<title>AI 戰艦 Pro Max v10.7.1｜雙引擎融合版</title>
 <style>
     :root{
       --bg:#071019;
@@ -50,20 +50,26 @@
     .btn.secondary{background:linear-gradient(180deg,#162231,#101c29);border-color:#29465f}.btn.green{background:linear-gradient(180deg,#154537,#103226);border-color:#2d7d64}.btn.red{background:linear-gradient(180deg,#4a1b1b,#331212);border-color:#8b3e3e}.btn.purple{background:linear-gradient(180deg,#39245b,#221337);border-color:#6f4fa8}.btn.small{padding:7px 10px;border-radius:10px;font-size:12px}
     .card{background:linear-gradient(180deg,rgba(15,26,38,.98),rgba(8,15,23,.98));border:1px solid rgba(86,215,255,.12);border-radius:14px;padding:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}.card+.card{margin-top:10px}.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
     .symbol{font-size:20px;font-weight:900;letter-spacing:.5px;color:#eef8ff}.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid transparent;background:rgba(255,255,255,.04)}.badge.green{border-color:rgba(52,211,153,.4);color:#dcfff3}.badge.yellow{border-color:rgba(251,191,36,.4);color:#fff4d2}.badge.red{border-color:rgba(248,113,113,.4);color:#ffe2e2}.badge.cyan{border-color:rgba(86,215,255,.4);color:#def8ff}.badge.purple{border-color:rgba(167,139,250,.4);color:#efe8ff}
+    
+    /* 雙引擎戰術標籤 */
+    .badge.splus{background:rgba(34,197,94,.15);color:var(--green);border:1px solid var(--green)}
+    .badge.a{background:rgba(56,189,248,.15);color:var(--blue);border:1px solid var(--blue)}
+    .badge.b{background:rgba(250,204,21,.15);color:var(--yellow);border:1px solid var(--yellow)}
+    .badge.c{background:rgba(251,146,60,.15);color:var(--orange);border:1px solid var(--orange)}
+    .badge.x{background:rgba(239,68,68,.15);color:var(--red);border:1px solid var(--red)}
+
     .mini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}@media (max-width:1100px){.mini{grid-template-columns:repeat(2,minmax(0,1fr))}} .mini .cell{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:10px;padding:8px}.cell .k{font-size:10px;color:var(--muted)}.cell .v{font-size:14px;font-weight:800;margin-top:4px}
     .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(86,215,255,.14),transparent);margin:12px 0}.warning-box{border:1px solid rgba(248,113,113,.35);background:linear-gradient(180deg,rgba(80,25,25,.22),rgba(43,14,14,.16));color:#ffd8d8;border-radius:12px;padding:10px 12px;font-size:13px}.ok-box{border:1px solid rgba(52,211,153,.3);background:linear-gradient(180deg,rgba(18,74,54,.18),rgba(12,43,31,.15));color:#d9fff1;border-radius:12px;padding:10px 12px;font-size:13px}.footnote{font-size:11px;color:var(--muted);line-height:1.5}
     .tableWrap{overflow-x:auto;max-width:100%} table{width:100%;border-collapse:collapse;min-width:1550px;font-size:13px} th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;vertical-align:top} th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px} tr:last-child td{border-bottom:none}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     .decision-big { font-size: 18px; font-weight: 900; }
     .decision-pick { border: 1px solid rgba(167,139,250,0.35); background: linear-gradient(180deg, rgba(55,35,88,0.22), rgba(28,18,44,0.18)); color: #efe8ff; border-radius: 12px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px; }
-
     .scoreA{color:var(--green);font-weight:900}.scoreB{color:var(--yellow);font-weight:900}.scoreC{color:var(--red);font-weight:900}.rankTop{font-size:18px;font-weight:900;color:#fff}.rank1{color:#7dd3fc}.rank2{color:#c4b5fd}.rank3{color:#fbbf24}.mainAttackGlow{box-shadow:0 0 0 1px rgba(167,139,250,.3),0 0 22px rgba(167,139,250,.18),inset 0 1px 0 rgba(255,255,255,.03)}
     .close-overlay{position:fixed;inset:0;background:rgba(3,7,18,0.85);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}.close-overlay.show{display:flex}.close-modal{width:min(560px,100%);background:var(--panel);border:1px solid var(--line2);border-radius:22px;padding:20px;box-shadow:var(--shadow)}
     .toolbar{display:flex;gap:10px;flex-wrap:wrap}
     .radar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.radar-item{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:10px}.radar-title{font-size:11px;color:var(--muted);margin-bottom:8px}.radar-bar{height:10px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden}.radar-fill{height:100%;background:linear-gradient(90deg,var(--cyan2),var(--purple));border-radius:999px}.radar-score{font-size:13px;font-weight:800;margin-top:6px}
     .explain-list{display:flex;flex-direction:column;gap:8px}.explain-item{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);font-size:13px}
     .ai-result-grid{display:grid;grid-template-columns:1fr;gap:10px}.ai-box{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:10px}.ai-label{font-size:11px;color:var(--muted);margin-bottom:6px}.ai-value{font-size:14px;font-weight:800}.ai-top{color:#d8fff1}.ai-backup{color:#dbeafe}.ai-avoid{color:#fecaca}.highlight-ai-top{outline:2px solid rgba(52,211,153,.45)}.highlight-ai-avoid{outline:2px solid rgba(248,113,113,.35)}
-  
     .badge-status{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700}
     .badge-green{background:rgba(34,197,94,.18);color:#86efac}
     .badge-yellow{background:rgba(250,204,21,.16);color:#fde68a}
@@ -74,10 +80,8 @@
     .kpi .label{font-size:12px;color:#94a3b8;margin-bottom:4px}
     .kpi .value{font-size:20px;font-weight:800}
     .action-btn{padding:6px 10px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,255,255,.08);color:#e5e7eb}
-
-  
     .quicknav{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:76px;z-index:25;margin-bottom:14px;padding:10px 12px;background:linear-gradient(180deg,rgba(10,20,31,.94),rgba(7,15,24,.94));border:1px solid rgba(86,215,255,.12);border-radius:14px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
-    .quicknav a,.quicknav button{appearance:none;text-decoration:none;border:none;cursor:pointer;color:#dff6ff;font-weight:800;font-size:12px;padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,#17304a,#0f2234);border:1px solid #315676}
+    .quicknav a,.quicknav button{appearance:none;text-decoration:none;border:none;cursor:pointer;color:#dff6ff;font-weight:800;font-size:12px;padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,#17304a,#0f2335);border:1px solid #315676}
     .quicknav .ghost{background:linear-gradient(180deg,#162231,#101c29);border-color:#29465f}
     .compact-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
     .hidden-panel{display:none}
@@ -91,8 +95,6 @@
     .micro-note{font-size:12px;color:var(--muted)}
     .inline-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:11px;font-weight:800;color:#dff6ff}
 
-
-  
 /* ===== v9.6.4 穩定滿版修正 ===== */
 .layout{
   display:block !important;
@@ -121,7 +123,6 @@
     grid-template-columns:1fr !important;
   }
 }
-
 
 /* ===== v9.6.5 功能導覽浮動按鈕 ===== */
 .floating-help-btn{
@@ -161,7 +162,6 @@
   .help-grid{grid-template-columns:1fr}
 }
 
-
 /* ===== v10 半雲端同步 ===== */
 .cloud-strip{
   display:flex;
@@ -189,8 +189,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.6.1 同步修正版</h1>
-<div class="sub">強制初始化共用 API / 房間代號｜同步狀態更清楚，半雲端可直接用</div>
+<h1>AI 戰艦 Pro Max v10.7.1 雙引擎融合版</h1>
+<div class="sub">引擎 A (動能) × 引擎 B (排雷) ｜ S+ 強制模式 ｜ AI 防呆 ｜ C/X 禁入</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -204,7 +204,6 @@
   <a href="#step6Panel">STEP 6｜持倉</a>
   <a href="#detailCandidatesPanel">候選詳卡</a>
 </div>
-
 
 <div class="cloud-strip">
   <span class="cloud-status" id="cloudStatusBadge">半雲端模式｜尚未同步</span>
@@ -256,13 +255,13 @@
 </div>
 <div class="col">
 <section class="panel" id="step2Panel">
-<div class="panel-head"><div><h2 class="panel-title">STEP 2｜貼 CSV 做本地初篩</h2><div class="panel-sub">先貼資料做本地評分，再往下看候選結果</div></div></div>
-<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地排序 → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v9.4.5 已改成「組合過熱」優先處理：不是單一 RSI 或單一漲幅就亂砍，而是爆量 + 高乖離 + 高漲幅等組合才重罰或淘汰。</div>
-<label>貼上 TradingView CSV（保留標題列）</label><div class="footnote" style="margin-bottom:8px">這格只負責貼資料，貼完就往下看，不需要一直盯著它。</div>
+<div class="panel-head"><div><h2 class="panel-title">STEP 2｜貼 CSV 做雙引擎初篩</h2><div class="panel-sub">先貼資料做本地排雷，再往下看候選結果</div></div></div>
+<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地評級 (S+/A/B/C/X) → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v10.7 戰神強化：S+ 強制模式，自動排除 PE 過高、EPS 衰退、量比失控、RSI 過熱與高乖離標的。</div>
+<label>貼上 TradingView CSV（保留標題列）</label>
 <div class="footnote" style="margin-bottom:8px">這格只負責貼入資料，貼完通常就不需要再看，已縮成短框避免佔畫面。</div>
-<textarea id="candidateTextarea" placeholder="直接貼上 TradingView CSV，例如：商品,描述,價格,價格變化 % 1天,相對成交量 1天,..."></textarea>
+<textarea id="candidateTextarea" placeholder="直接貼上 TradingView CSV，例如：商品,描述,價格,價格變化 % 1天,相對成交量 1天,本益比,..."></textarea>
 <div class="btnrow">
-<button class="btn" id="parseCandidatesBtn">解析 CSV + 本地評分</button>
+<button class="btn" id="parseCandidatesBtn">解析 CSV + 雙引擎評分</button>
 <button class="btn secondary" id="clearCandidatesBtn">清空候選</button>
 </div>
 <div class="divider"></div>
@@ -536,7 +535,7 @@
 </div>
 <script>
     const $ = id => document.getElementById(id);
-    const STORAGE_KEY = 'warroom_v9_4_2_stable_wargod';
+    const STORAGE_KEY = 'warroom_v10_7_wargod_locked';
 
     const defaultState = {
       market: { advancers:0, decliners:0, limitUp:0, limitDown:0, otcChange:0, taiexChange:0, breadthScore:0, sentimentScore:0, totalScore:0, signal:'yellow', maxNewPositionsAllowed:1, instruction:'等待市場狀態更新', explainParts:[], radar:{} },
@@ -709,172 +708,125 @@ let state = loadState();
     function analystScore(rating){ const t = String(rating || '').trim(); if(t.includes('強力買入')) return 5; if(t.includes('買入')) return 4; if(t.includes('中立')) return 2; return 2; }
     function marketSignalNumeric(signal){ if(signal==='green') return 8; if(signal==='yellow') return 5; return 1; }
 
+    // ===== v9.9 雙引擎共振核心 =====
+    function badgeClass(g){
+      if(g === "S+") return "splus";
+      if(g === "A") return "a";
+      if(g === "B") return "b";
+      if(g === "C") return "c";
+      return "x";
+    }
+
     function scoreCandidateCsv(stock, market){
       const close = safeNum(stock.close);
       const sma20 = safeNum(stock.sma20, NaN);
       const sma60 = safeNum(stock.sma60, NaN);
       const changePct = safeNum(stock.changePct, 0);
-      const volumeRatio = safeNum(stock.volumeRatio, NaN);
-      const rsi14 = safeNum(stock.rsi14, NaN);
+      const rvol = safeNum(stock.volumeRatio, NaN);
+      const rsi = safeNum(stock.rsi14, NaN);
+      const pe = safeNum(stock.pe, NaN);
       const epsGrowthYoy = safeNum(stock.epsGrowthYoy, NaN);
       const analystRating = stock.analystRating || '';
       const rr = safeNum(stock.rr);
       const riskPct = safeNum(stock.riskPct);
 
-      let maStructureScore = 0;
-      if(close > sma20 && sma20 > sma60) maStructureScore = 22;
-      else if(close > sma20 && close > sma60) maStructureScore = 17;
-      else if(close > sma20) maStructureScore = 11;
-      else maStructureScore = 3;
+      let L = 15;
+      if(market.signal === 'red') L = 10;
+      else if(market.signal === 'green' && num(market.totalScore) >= 75) L = 18;
 
-      let momentumScore = 0;
-      if(changePct >= 2 && changePct <= 5.5) momentumScore = 12;
-      else if(changePct > 5.5 && changePct <= 7.5) momentumScore = 8;
-      else if(changePct >= 0 && changePct < 2) momentumScore = 6;
-      else if(changePct > 7.5) momentumScore = 4;
-      else momentumScore = 1;
+      const dev = (close && sma20) ? ((close - sma20) / sma20 * 100) : null;
+      const trend = close > sma20 && sma20 > sma60;
 
-      let rsiScore = 4;
-      if(!Number.isNaN(rsi14)){
-        if(rsi14 >= 60 && rsi14 <= 74) rsiScore = 10;
-        else if(rsi14 > 74 && rsi14 <= 78) rsiScore = 8;
-        else if(rsi14 >= 55 && rsi14 < 60) rsiScore = 7;
-        else if(rsi14 > 78 && rsi14 <= 82) rsiScore = 5;
-        else if(rsi14 > 82) rsiScore = 3;
+      let score = 50, engineA = true, engineB = true, reasons = [], risks = [], rejectReasons = [];
+
+      // Engine A
+      if(trend) { score += 12; reasons.push("多頭排列成立"); }
+      else { score -= 18; engineA = false; risks.push("多頭排列不完整"); rejectReasons.push("非多頭結構"); }
+
+      if(dev === null) { score -= 10; engineA = false; risks.push("無法計算20MA乖離"); rejectReasons.push("缺乖離資料"); }
+      else if(dev <= L) { score += 14; reasons.push(`20MA乖離 ${dev.toFixed(1)}% < ${L}%`); }
+      else { score -= 25; engineA = false; risks.push(`20MA乖離 ${dev.toFixed(1)}% > ${L}%`); rejectReasons.push(`乖離大於${L}%`); }
+
+      if(Number.isNaN(rvol)) { score -= 10; engineA = false; risks.push("量比資料缺漏"); rejectReasons.push("缺量比資料"); }
+      else if(rvol < 1.5) { score -= 12; engineA = false; risks.push("量比低於1.5，未發動"); rejectReasons.push("動能不足"); }
+      else if(rvol <= 3) { score += 16; reasons.push("量比1.5~3，健康放量主攻區"); }
+      else if(rvol <= 5) { score -= 6; reasons.push("量比3~5，進入降權區"); }
+      else { score -= 26; engineA = false; risks.push("量比>5，隔日沖戰場"); rejectReasons.push("量比失控"); }
+
+      if(Number.isNaN(rsi)) { score -= 10; engineA = false; risks.push("RSI資料缺漏"); rejectReasons.push("缺RSI資料"); }
+      else if(rsi < 60) { score -= 8; engineA = false; risks.push("RSI <60，尚未發動"); rejectReasons.push("RSI未發動"); }
+      else if(rsi <= 70) { score += 15; reasons.push("RSI 60~70，最佳攻擊區"); }
+      else if(rsi <= 75) { score -= 4; reasons.push("RSI 70~75，偏熱警戒"); }
+      else { score -= 22; engineA = false; risks.push("RSI >75，過熱禁止"); rejectReasons.push("RSI過熱"); }
+
+      // Engine B
+      if(Number.isNaN(pe)) { score -= 4; reasons.push("PE缺漏，基本面透明度降權"); }
+      else if(pe < 50) { score += 10; reasons.push("PE <50，估值未失控"); }
+      else if(pe <= 100) { score -= 6; reasons.push("PE 50~100，估值偏高"); }
+      else { score -= 24; engineB = false; risks.push("PE >100，高風險題材股"); rejectReasons.push("PE異常"); }
+
+      if(Number.isNaN(epsGrowthYoy)) { score -= 3; reasons.push("EPS成長資料缺漏，降權"); }
+      else if(epsGrowthYoy > 0) { score += 8; reasons.push("EPS成長為正，具實質支撐"); }
+      else { score -= 8; engineB = false; risks.push("EPS成長為負，基本面扣分"); rejectReasons.push("EPS衰退"); }
+
+      if(analystRating.includes("強力買入")) { score += 10; reasons.push("評級：強力買入"); }
+      else if(analystRating.includes("買入")) { score += 8; reasons.push("評級：買入"); }
+      else if(analystRating.includes("中立")) { score += 1; reasons.push("評級：中立"); }
+      else { score -= 2; reasons.push("無分析師評級"); }
+
+      if(changePct >= 9) { score -= 12; risks.push("單日漲幅接近漲停，隔日震盪風險高"); rejectReasons.push("單日漲幅極端"); }
+      else if(changePct >= 6) { score -= 6; reasons.push("單日漲幅偏大，需防短線獲利了結"); }
+      else { score += 5; reasons.push("單日漲幅未失控"); }
+
+      if(rr < 1.5) { score -= 6; risks.push("風報比偏低"); rejectReasons.push("RR不足"); }
+      if(riskPct > 6) { score -= 6; risks.push("停損距離偏大"); rejectReasons.push("停損過大"); }
+      if(market.signal === 'red') { rejectReasons.push("大盤紅燈"); }
+
+      let localScore = Math.max(0, Math.min(100, Math.round(score)));
+
+      let grade = "X";
+      if(engineA && engineB && localScore >= 80) grade = "S+";
+      else if(engineA && localScore >= 70) grade = "A";
+      else if(engineB && localScore >= 60) grade = "B";
+      else if(localScore >= 45) grade = "C";
+      else grade = "X";
+
+      // v10.7 戰神鎖死：這些條件不准被 AI 或後續決策覆蓋
+      const hardReject =
+        (Number.isFinite(rvol) && rvol > 5) ||
+        (Number.isFinite(rsi) && rsi > 75) ||
+        (dev !== null && dev > L) ||
+        (Number.isFinite(pe) && pe > 100) ||
+        (Number.isFinite(epsGrowthYoy) && epsGrowthYoy < 0) ||
+        (market.signal === 'red');
+      if(hardReject){
+        grade = "X";
+        if(Number.isFinite(rvol) && rvol > 5) rejectReasons.push("v10.7硬鎖：量比>5");
+        if(Number.isFinite(rsi) && rsi > 75) rejectReasons.push("v10.7硬鎖：RSI>75");
+        if(dev !== null && dev > L) rejectReasons.push("v10.7硬鎖：乖離超標");
+        if(Number.isFinite(pe) && pe > 100) rejectReasons.push("v10.7硬鎖：PE>100");
+        if(Number.isFinite(epsGrowthYoy) && epsGrowthYoy < 0) rejectReasons.push("v10.7硬鎖：EPS衰退");
       }
 
-      let volumeScore = 9;
-      if(!Number.isNaN(volumeRatio)){
-        if(volumeRatio >= 1.2 && volumeRatio <= 2.3) volumeScore = 18;
-        else if(volumeRatio > 2.3 && volumeRatio <= 3.2) volumeScore = 14;
-        else if(volumeRatio >= 1.0 && volumeRatio < 1.2) volumeScore = 10;
-        else if(volumeRatio > 3.2 && volumeRatio <= 4.2) volumeScore = 9;
-        else if(volumeRatio > 4.2) volumeScore = 7;
-        else volumeScore = 6;
-      }
-
-      const deviation20 = sma20 > 0 ? ((close - sma20) / sma20) * 100 : 0;
-
-      let heatControlScore = 0;
-      if(deviation20 >= 0 && deviation20 <= 10) heatControlScore = 16;
-      else if(deviation20 > 10 && deviation20 <= 18) heatControlScore = 13;
-      else if(deviation20 > 18 && deviation20 <= 25) heatControlScore = 9;
-      else if(deviation20 > 25 && deviation20 <= 35) heatControlScore = 5;
-      else if(deviation20 > 35) heatControlScore = 2;
-      else heatControlScore = 4;
-
-      const spread = num(market.limitUp) - num(market.limitDown);
-      let breadthPart = 1;
-      if(num(market.totalScore) >= 80) breadthPart = 5;
-      else if(num(market.totalScore) >= 70) breadthPart = 4;
-      else if(num(market.totalScore) >= 55) breadthPart = 3;
-
-      let spreadPart = 0;
-      if(spread >= 20) spreadPart = 3;
-      else if(spread >= 10) spreadPart = 2;
-      else if(spread >= 0) spreadPart = 1;
-
-      let marketResonanceScore = clamp(marketSignalNumeric(market.signal) + breadthPart + spreadPart, 0, 18);
-
-      let rrQualityScore = 0;
-      if(rr >= 2.0 && riskPct >= 2 && riskPct <= 4) rrQualityScore = 12;
-      else if(rr >= 1.8 && riskPct >= 2 && riskPct <= 4.5) rrQualityScore = 10;
-      else if(rr >= 1.5 && riskPct >= 1.5 && riskPct <= 5) rrQualityScore = 8;
-      else if(rr >= 1.3) rrQualityScore = 5;
-      else rrQualityScore = 1;
-
-      const analystPart = analystScore(analystRating)*0.5;
-      let epsPart = 1;
-      if(!Number.isNaN(epsGrowthYoy)){
-        if(epsGrowthYoy > 30) epsPart = 2;
-        else if(epsGrowthYoy >= 10) epsPart = 1.5;
-        else if(epsGrowthYoy >= 0) epsPart = 1;
-        else epsPart = 0;
-      }
-
-      const baseScore = maStructureScore + momentumScore + rsiScore + volumeScore + heatControlScore + marketResonanceScore + rrQualityScore + analystPart + epsPart;
-
-      // ===== v9.4.5 過熱組合濾網 =====
-      let penaltyScore = 0;
-
-      // 單一高漲幅/高RSI/高乖離仍保留懲罰，但不過度誤殺
-      if(changePct > 9.5) penaltyScore += 9;
-      else if(changePct > 8) penaltyScore += 5;
-
-      if(!Number.isNaN(rsi14)){
-        if(rsi14 > 80) penaltyScore += 8;
-        else if(rsi14 > 77) penaltyScore += 4;
-      }
-
-      if(deviation20 > 35) penaltyScore += 12;
-      else if(deviation20 > 25) penaltyScore += 8;
-      else if(deviation20 > 15) penaltyScore += 5;
-
-      if(!Number.isNaN(volumeRatio)){
-        if(volumeRatio > 4.5) penaltyScore += 4;
-        else if(volumeRatio > 3.5) penaltyScore += 2;
-      }
-
-      // 組合過熱：這才是主力出貨/隔日難打的核心條件
-      if(changePct > 8 && !Number.isNaN(rsi14) && rsi14 > 75) penaltyScore += 12;
-      if(deviation20 > 20 && !Number.isNaN(volumeRatio) && volumeRatio > 3) penaltyScore += 10;
-      if(changePct > 9 && !Number.isNaN(volumeRatio) && volumeRatio > 4) penaltyScore += 15;
-      if(!Number.isNaN(rsi14) && rsi14 > 78 && deviation20 > 18) penaltyScore += 10;
-
-      let rawFinalScore = clamp(baseScore - penaltyScore, 0, 112);
-      let localScore = Math.round(((rawFinalScore/112)*100)*10)/10;
-
-      const warnings = [];
-      if(changePct > 7) warnings.push('短線漲幅偏大');
-      if(!Number.isNaN(rsi14) && rsi14 > 77) warnings.push('RSI偏熱');
-      if(!Number.isNaN(volumeRatio) && volumeRatio > 3.5) warnings.push('相對量偏熱');
-      if(deviation20 > 15) warnings.push('⚠️ 乖離 20MA 超過 15%');
-      if(rr < 1.5) warnings.push('風報比偏低');
-      if(riskPct > 4.5) warnings.push('停損距離偏大');
-      if(market.signal === 'yellow') warnings.push('大盤僅黃燈');
-      if(changePct > 8 && !Number.isNaN(rsi14) && rsi14 > 75) warnings.push('組合過熱：漲幅 + RSI 偏熱');
-      if(deviation20 > 20 && !Number.isNaN(volumeRatio) && volumeRatio > 3) warnings.push('組合過熱：乖離 + 量比偏熱');
-
-      const rejectReasons = [];
-      if(close <= sma20) rejectReasons.push('價格跌回SMA20下方');
-      if(rr < 1.2) rejectReasons.push('RR過低');
-      if(riskPct > 6) rejectReasons.push('風險距離過大');
-      if(safeNum(stock.shares) <= 0) rejectReasons.push('可買股數為0');
-      if(market.signal === 'red') rejectReasons.push('大盤紅燈');
-
-      // 組合條件才直接淘汰，避免把剛起漲的健康股誤殺
-      if(changePct > 9.5 && !Number.isNaN(rsi14) && rsi14 > 77) rejectReasons.push('過熱追價風險');
-      if(!Number.isNaN(volumeRatio) && volumeRatio > 4.5 && changePct > 8) rejectReasons.push('爆量過熱');
-      if(deviation20 > 25 && !Number.isNaN(volumeRatio) && volumeRatio > 3.5) rejectReasons.push('高乖離且量比過熱');
-      if(!Number.isNaN(rsi14) && rsi14 > 80 && deviation20 > 20) rejectReasons.push('高 RSI 且高乖離');
-
-      const rejected = rejectReasons.length > 0;
-      let grade = 'C';
-      if(!rejected){
-        if(localScore >= 80) grade='A';
-        else if(localScore >= 70) grade='B';
-      }
-
-      const isMainAttackCandidate = !rejected
-        && grade === 'A'
-        && market.signal !== 'red'
-        && rr >= 1.5
-        && deviation20 <= 25
-        && (!Number.isNaN(rsi14) ? rsi14 <= 78 : true);
+      const rejected = hardReject || (grade === "C" || grade === "X") || (market.signal === 'red');
+      const isMainAttackCandidate = (grade === "S+") && !rejected;
 
       return {
         ...stock,
-        maStructureScore, momentumScore, rsiScore, volumeScore, heatControlScore, marketResonanceScore,
-        rrQualityScore, analystScore:analystPart, epsScore:epsPart,
-        baseScore:Math.round(baseScore*10)/10,
-        penaltyScore:Math.round(penaltyScore*10)/10,
+        deviation20: Math.round((dev||0)*10)/10,
+        engineA,
+        engineB,
         localScore,
-        deviation20:Math.round(deviation20*10)/10,
-        riskPct:Math.round(riskPct*10)/10,
-        rr:Math.round(rr*100)/100,
-        grade, warnings, rejected, rejectReasons, isMainAttackCandidate
+        grade,
+        warnings: risks,
+        rejected,
+        hardReject,
+        rejectReasons,
+        isMainAttackCandidate,
+        reason: reasons.join('；')
       };
     }
+
     function rankCandidates(candidates, market){
       const scored = candidates.map(stock => {
         const s = scoreCandidateCsv(stock, market);
@@ -882,8 +834,9 @@ let state = loadState();
         return s;
       });
       scored.sort((a,b)=>{
+        const order = {"S+":5, "A":4, "B":3, "C":2, "X":1};
         if(a.rejected!==b.rejected) return a.rejected ? 1 : -1;
-        if(a.isMainAttackCandidate!==b.isMainAttackCandidate) return a.isMainAttackCandidate ? -1 : 1;
+        if(order[a.grade] !== order[b.grade]) return order[b.grade] - order[a.grade];
         return b.decisionScore - a.decisionScore;
       });
       return scored.map((item,idx)=>({ ...item, rank:idx+1 }));
@@ -897,8 +850,11 @@ let state = loadState();
         const symbol = valAt(row,map,'商品') || valAt(row,map,'ticker') || row[0]; const name = valAt(row,map,'描述') || '';
         const close = num(valAt(row,map,'價格') || row[2], NaN); if(!symbol || Number.isNaN(close)) continue;
         const changePct = num(valAt(row,map,'價格變化 % 1天'), 0); const volume = num(valAt(row,map,'成交量 1天'), NaN); const volumeRatio = num(valAt(row,map,'相對成交量 1天'), NaN); const analystRating = valAt(row,map,'分析師評級'); const sma20 = num(valAt(row,map,'簡單移動平均線 (20) 1天'), NaN); const sma60 = num(valAt(row,map,'簡單移動平均線 (60) 1天'), NaN); const rsi14 = num(valAt(row,map,'相對強弱指標 (14) 1天'), NaN); const epsGrowthYoy = num(valAt(row,map,'稀釋每股盈餘成長率 %, TTM年增率'), NaN);
+        // 新增解析本益比
+        const pe = num(valAt(row,map,'本益比'), NaN);
+        
         const entry=close, stop=Number((close*0.97).toFixed(2)), takeProfit=Number((close*1.05).toFixed(2)); const fire = calcShares(entry,stop); const rr = calcRR(entry,stop,takeProfit); const riskPct = entry > stop ? ((entry-stop)/entry)*100 : 999;
-        parsed.push({ id:uid(symbol), symbol, name, close, high:close, changePct, volume, volumeRatio, analystRating, sma20, sma60, rsi14, epsGrowthYoy, entry, stop, takeProfit, rr, riskPct, shares:fire.shares, boardLots:fire.boardLots, oddLots:fire.oddLots, invested:fire.invested, positionRisk:fire.positionRisk, sharesByRisk:fire.sharesByRisk, sharesByCapital:fire.sharesByCapital, singleRiskAmount:fire.singleRiskAmount, selected:false, createdAt:nowString() });
+        parsed.push({ id:uid(symbol), symbol, name, close, high:close, changePct, volume, volumeRatio, analystRating, sma20, sma60, rsi14, epsGrowthYoy, pe, entry, stop, takeProfit, rr, riskPct, shares:fire.shares, boardLots:fire.boardLots, oddLots:fire.oddLots, invested:fire.invested, positionRisk:fire.positionRisk, sharesByRisk:fire.sharesByRisk, sharesByCapital:fire.sharesByCapital, singleRiskAmount:fire.singleRiskAmount, selected:false, createdAt:nowString() });
       }
       const marketData = { signal:state.market.signal, totalScore:state.market.totalScore, limitUp:state.market.limitUp, limitDown:state.market.limitDown };
       state.candidates = rankCandidates(parsed, marketData); saveState();
@@ -1146,8 +1102,8 @@ function updateTrailingStop(p){
     function getDashboardSummary(){ const { effectiveDailyRiskPercent, effectiveMaxNewPositions, lossMode } = getEffectiveSettings(); const capital=num(state.risk.capital); const dailyRiskAmount=capital*(effectiveDailyRiskPercent/100); const openPositions=getOpenPositions(); const usedCapital=getUsedCapitalFromOpenPositions(); const remainingCash=Math.max(0, num(state.risk.availableCash)-usedCapital); return { dailyRiskAmount, effectiveDailyRiskPercent, effectiveMaxNewPositions, lossMode, openPositions, usedCapital, remainingCash }; }
 
     function generateAiPrompt(){
-      const top = state.candidates.filter(c=>!c.rejected).slice(0,5);
-      if(!top.length) return alert('目前沒有可供 AI 覆核的候選股。');
+      const top = guardTradableRows(state.candidates).slice(0,5);
+      if(!top.length) return alert('目前沒有可供 AI 覆核的候選股（僅允許 S+ 或 強勢盤的 A 級）。');
       const m = state.market;
       
       const candidatesText = top.map((c,idx)=>`${idx+1}. ${c.symbol} ${c.name || ''}\n   本地分數:${c.localScore}\n   級別:${c.grade}\n   主攻資格:${c.isMainAttackCandidate}\n   買價:${c.entry}\n   停損:${c.stop}\n   RR:${c.rr}\n   漲幅:${c.changePct}\n   RSI:${Number.isFinite(c.rsi14)?c.rsi14:'NA'}\n   量比:${Number.isFinite(c.volumeRatio)?c.volumeRatio:'NA'}\n   SMA20:${Number.isFinite(c.sma20)?c.sma20:'NA'}\n   SMA60:${Number.isFinite(c.sma60)?c.sma60:'NA'}\n   警示:${(c.warnings || []).join('、') || '無'}`).join('\n\n');
@@ -1253,21 +1209,49 @@ ${candidatesText}
     function clearAiResult(){ state.aiReview.rawResponse=''; state.aiReview.parsed=null; state.aiReview.mode='local_only'; $('aiResultBox').value=''; saveState(); }
     function getAiFlags(symbol){ const p = state.aiReview?.parsed; return { isTop: p?.top_pick?.symbol === symbol, isBackup: p?.backup_pick?.symbol === symbol, isAvoid: p?.avoid_pick?.symbol === symbol }; }
 
+    // ===== v10.7 戰神強化：紀律鎖死核心 =====
+    function isHardForbidden(c){
+      if(!c) return true;
+      if(c.hardReject) return true;
+      if(c.grade === 'C' || c.grade === 'X') return true;
+      if(c.rejected) return true;
+      if(state.market?.signal === 'red') return true;
+      if(Number.isFinite(num(c.volumeRatio, NaN)) && num(c.volumeRatio, NaN) > 5) return true;
+      if(Number.isFinite(num(c.rsi14, NaN)) && num(c.rsi14, NaN) > 75) return true;
+      return false;
+    }
+    function isTradableCandidate(c){
+      if(!c || isHardForbidden(c)) return false;
+      if(c.grade === 'S+') return true;
+      if(c.grade === 'A' && state.market?.signal === 'green') return true;
+      return false;
+    }
+    function guardTradableRows(rows){
+      return (rows || []).filter(isTradableCandidate);
+    }
+    function findCandidateBySymbol(symbol){
+      const code = normalizeSymbol(symbol || '');
+      return (state.candidates || []).find(c => normalizeSymbol(c.symbol) === code) || null;
+    }
+
     function fillInputsFromState(){ $('decisionMode') && ($('decisionMode').value = state.decision?.mode || 'auto'); $('autoHeatThreshold') && ($('autoHeatThreshold').value = state.decision?.autoHeatThreshold ?? 20); $('autoScoreGap') && ($('autoScoreGap').value = state.decision?.autoScoreGap ?? 12); $('advancersInput').value=state.market.advancers; $('declinersInput').value=state.market.decliners; $('limitUpInput').value=state.market.limitUp; $('limitDownInput').value=state.market.limitDown; $('otcChangeInput').value=state.market.otcChange; $('taiexChangeInput').value=state.market.taiexChange; $('capitalInput').value=state.risk.capital; $('availableCashInput').value=state.risk.availableCash; $('dailyRiskPercentInput').value=state.risk.dailyRiskPercent; $('singlePositionCapitalPercentInput').value=state.risk.singlePositionCapitalPercent; $('maxNewPositionsInput').value=state.risk.maxNewPositions; $('lossStreakInput').value=state.risk.lossStreak; $('candidateTextarea').value=state.candidatesRawText||''; $('aiPromptBox').value=state.aiReview?.prompt||''; $('aiResultBox').value=state.aiReview?.rawResponse||''; }
 
     function getLocalDecisionTop(limit=2){
-      return state.candidates.filter(c=>!c.rejected).map(c=>({ ...c, decisionScore:getDecisionScore(c) })).sort((a,b)=>b.decisionScore-a.decisionScore).slice(0, limit);
+      return guardTradableRows(state.candidates)
+        .map(c=>({ ...c, decisionScore:getDecisionScore(c) }))
+        .sort((a,b)=>b.decisionScore-a.decisionScore)
+        .slice(0, limit);
     }
     function getAiDecisionTop(limit=2){
       const parsed = state.aiReview?.parsed;
       if(!parsed) return [];
       const codes = [parsed?.top_pick?.symbol, parsed?.backup_pick?.symbol].filter(Boolean).map(normalizeSymbol);
-      return codes.map(code => state.candidates.find(c => normalizeSymbol(c.symbol) === code)).filter(Boolean).slice(0, limit);
+      return codes.map(code => state.candidates.find(c => normalizeSymbol(c.symbol) === code)).filter(isTradableCandidate).slice(0, limit);
     }
     function getFinalSelectedRows(limit=2){
       const symbols = state.decision?.finalSymbols || [];
       if(symbols.length){
-        const rows = symbols.map(code => state.candidates.find(c => normalizeSymbol(c.symbol)===normalizeSymbol(code))).filter(Boolean);
+        const rows = symbols.map(code => state.candidates.find(c => normalizeSymbol(c.symbol)===normalizeSymbol(code))).filter(isTradableCandidate);
         if(rows.length) return rows.slice(0, limit);
       }
       return getLocalDecisionTop(limit);
@@ -1285,12 +1269,13 @@ ${candidatesText}
       let modeUsed = mode;
       const lines = [];
       lines.push(`本地候選：${localTop.map(r=>r.symbol).join('、') || '無'}`);
-      lines.push(`AI候選：${aiTop.map(r=>r.symbol).join('、') || '無'}`);
+      lines.push(`AI候選（已套用防呆後）：${aiTop.map(r=>r.symbol).join('、') || '無'}`);
+      lines.push('v10.7鐵律：C/X/A/B(正常盤)不進最終掛單；AI若推薦非S+，自動作廢。');
       lines.push(`交集：${intersection.map(r=>r.symbol).join('、') || '無'}`);
       lines.push(`本地平均決策分：${localAvg.toFixed(1)}｜AI平均決策分：${aiAvg.toFixed(1)}`);
       if(mode === 'auto'){
         if(!aiTop.length){
-          modeUsed = 'local'; lines.push('判定：目前尚無 AI 主攻 / 次選，先採本地優先。');
+          modeUsed = 'local'; lines.push('判定：目前尚無有效 AI 主攻 / 次選，先採本地優先。');
         } else if(intersection.length >= 1){
           modeUsed = 'intersection'; lines.push('判定：本地與 AI 有交集，優先採交集模式。');
         } else if(hotAi.length){
@@ -1392,7 +1377,15 @@ ${candidatesText}
       else if(tp1 !== null && current !== null && current >= tp1){ status='分批停利'; statusClass='badge-yellow'; reason='目前價已達第一停利目標，可先減碼一半。'; }
       else if(toTp1Pct !== null && toTp1Pct <= warnNearPct && toTp1Pct >= 0){ status='接近停利'; statusClass='badge-yellow'; reason=`距離第一停利只差 ${toTp1Pct.toFixed(2)}% 。`; }
       else if(toStopPct !== null && Math.abs(toStopPct) <= warnNearPct){ status='接近停損'; statusClass='badge-red'; reason=`距離停損只剩 ${Math.abs(toStopPct).toFixed(2)}% 。`; }
-      return { ...pos, buyPrice:buy, currentPrice:current, stopLossPrice:stop, takeProfit1Price:tp1, takeProfit2Price:tp2, qty, highestPrice:highest, pnlPct, pnlAmt, toStopPct, toTp1Pct, toTp2Pct, drawdownFromHighPct, trailTriggered, trailPullback, warnNearPct, status, statusClass, reason };
+      const dynamicCandidate = findCandidateBySymbol(pos.symbol);
+      const dynamicGrade = dynamicCandidate?.grade || pos.dynamicGrade || '';
+      const dynamicRejected = dynamicCandidate ? isHardForbidden(dynamicCandidate) : false;
+      if(dynamicRejected){
+        status = '動態降級';
+        statusClass = 'badge-red';
+        reason = `持倉最新評級為 ${dynamicCandidate.grade}，觸發動態排雷：${(dynamicCandidate.rejectReasons||dynamicCandidate.warnings||[]).join('、') || '不符合保留條件'}。`;
+      }
+      return { ...pos, buyPrice:buy, currentPrice:current, stopLossPrice:stop, takeProfit1Price:tp1, takeProfit2Price:tp2, qty, highestPrice:highest, pnlPct, pnlAmt, toStopPct, toTp1Pct, toTp2Pct, drawdownFromHighPct, trailTriggered, trailPullback, warnNearPct, status, statusClass, reason, dynamicGrade, dynamicRejected };
     }
     function renderPositionPreview(metrics){
       if(!$('positionStatusBox')) return;
@@ -1517,54 +1510,6 @@ ${candidatesText}
     function renderTopStatusBar(){ calculateMarket(); const { lossMode, effectiveMaxNewPositions } = getEffectiveSettings(); $('topStatusBar').innerHTML = `<div class="pill ${signalClass(state.market.signal)}">市場燈號：${state.market.signal.toUpperCase()}</div><div class="pill cyan">系統模式：${lossMode.mode}</div><div class="pill">連敗：${state.risk.lossStreak}</div><div class="pill purple">開倉上限：${effectiveMaxNewPositions}</div><div class="pill ${state.aiReview?.parsed ? 'green':'purple'}">AI覆核：${state.aiReview?.parsed ? '已載入':'未載入'}</div>`; }
     function renderHero(){ const summary = getDashboardSummary(); const perf=getPerformance(); const items=[{label:'市場總分',value:fmt(state.market.totalScore,1),color:signalClass(state.market.signal)},{label:'今日可開新倉',value:`${summary.effectiveMaxNewPositions} 檔`},{label:'單日風險額',value:`NT$ ${fmt(summary.dailyRiskAmount)}`},{label:'持倉數量',value:`${summary.openPositions.length} 檔`},{label:'已占用資金',value:`NT$ ${fmt(summary.usedCapital)}`},{label:'剩餘資金',value:`NT$ ${fmt(summary.remainingCash)}`},{label:'飛輪累積 %',value:pct(perf.flywheelPct,2),color:perf.flywheelPct>=0?'green':'red'},{label:'平倉勝率',value:pct(perf.winRate,1),color:perf.winRate>=50?'green':'yellow'}]; $('heroMetrics').innerHTML=items.map(x=>`<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color||''}">${x.value}</div></div>`).join(''); $('todayInstruction').textContent=state.market.instruction; $('lastSyncTime').textContent=state.lastSync||'-'; }
 
-    function getDecisionScore(c){
-      const aiFlags = getAiFlags(c.symbol);
-      const p = state.aiReview?.parsed || {};
-      const code = normalizeSymbol(c.symbol);
-      let aiMeta = null;
-      if(normalizeSymbol(p?.top_pick?.symbol) === code) aiMeta = p.top_pick;
-      else if(normalizeSymbol(p?.backup_pick?.symbol) === code) aiMeta = p.backup_pick;
-      else if(normalizeSymbol(p?.avoid_pick?.symbol) === code) aiMeta = p.avoid_pick;
-
-      let score = num(c.localScore) * 0.6;
-      score += num(aiMeta?.ai_score, 0) * 0.4;
-
-      const topic = `${aiMeta?.topic || ''}`.toUpperCase();
-      const flow = `${aiMeta?.institutional_flow || ''}`;
-      const news = `${aiMeta?.news_signal || ''}`;
-      const confidence = `${aiMeta?.confidence || ''}`;
-
-      if(topic.includes('CPO') || topic.includes('AI')) score += 10;
-      else if(topic.includes('半導體')) score += 8;
-
-      if(flow.includes('外資')) score += 10;
-      if(flow.includes('投信')) score += 8;
-      if(flow.includes('連賣')) score -= 4;
-
-      if(news.includes('偏多') || news.includes('利多延續')) score += 4;
-      if(confidence.includes('高')) score += 3;
-
-      if(normalizeSymbol(p?.top_pick?.symbol) === code) score += 6;
-      else if(normalizeSymbol(p?.backup_pick?.symbol) === code) score += 2;
-      else if(normalizeSymbol(p?.avoid_pick?.symbol) === code) score -= 12;
-
-      if(c.rejected) score -= 20;
-      if(num(c.deviation20) > 25) score -= 8;
-      if(num(c.rr) < 1.5) score -= 6;
-
-      return Math.round(Math.max(0, Math.min(100, score)) * 10) / 10;
-    }
-    function getDecisionTag(c, index){
-      const aiFlags = getAiFlags(c.symbol);
-      const dScore = getDecisionScore(c);
-      if(c.rejected) return { text:'❌ 放棄', cls:'red', reason:'風控淘汰' };
-      if(aiFlags.isAvoid) return { text:'❌ 放棄', cls:'red', reason:'AI避開' };
-      if(index === 0) return { text:'🔥 主攻', cls:'green', reason: aiFlags.isTop ? '本地 + AI 一致' : '本地最優先' };
-      if(index === 1) return { text:'⚡ 次選', cls:'yellow', reason: aiFlags.isBackup ? 'AI次選' : '本地次佳' };
-      if(dScore >= 70) return { text:'🟡 觀察', cls:'yellow', reason:'可列候補' };
-      return { text:'❌ 放棄', cls:'red', reason:'分數不足' };
-    }
-
     function renderMarket(){ const r=state.market.radar||{}; $('marketRadarGrid').innerHTML=`<div class="radar-item"><div class="radar-title">廣度擴散</div><div class="radar-bar"><div class="radar-fill" style="width:${r.breadth||0}%"></div></div><div class="radar-score">${r.breadth||0}</div></div><div class="radar-item"><div class="radar-title">情緒熱度</div><div class="radar-bar"><div class="radar-fill" style="width:${r.sentiment||0}%"></div></div><div class="radar-score">${r.sentiment||0}</div></div><div class="radar-item"><div class="radar-title">加權強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.taiex||0}%"></div></div><div class="radar-score">${pct(state.market.taiexChange,2)}</div></div><div class="radar-item"><div class="radar-title">OTC 強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.otc||0}%"></div></div><div class="radar-score">${pct(state.market.otcChange,2)}</div></div><div class="radar-item"><div class="radar-title">漲跌停優勢</div><div class="radar-bar"><div class="radar-fill" style="width:${r.spread||0}%"></div></div><div class="radar-score">${fmt(num(state.market.limitUp)-num(state.market.limitDown),0)}</div></div><div class="radar-item"><div class="radar-title">最終戰況</div><div class="radar-bar"><div class="radar-fill" style="width:${r.total||0}%"></div></div><div class="radar-score ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()} / ${fmt(state.market.totalScore,1)}</div></div>`; $('marketSummary').innerHTML=`<div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div></div><div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div></div><div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div></div>`; $('marketExplainBox').innerHTML=(state.market.explainParts||[]).length ? state.market.explainParts.map(x=>`<div class="explain-item">${x}</div>`).join('') : `<div class="footnote">尚無燈號判定說明。</div>`; }
     function renderRiskMode(){ const { lossMode, effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings(); const cls = lossMode.mode==='正常模式' ? 'ok-box' : 'warning-box'; $('riskModeSummary').innerHTML=`<div class="${cls}"><div><strong>目前模式：</strong>${lossMode.mode}</div><div><strong>有效單日風險：</strong>${fmt(effectiveDailyRiskPercent,2)}%</div><div><strong>有效新倉上限：</strong>${effectiveMaxNewPositions} 檔</div><div><strong>說明：</strong>${lossMode.note}</div></div>`; }
     function renderMainAttackSummary(){
@@ -1572,9 +1517,9 @@ ${candidatesText}
       const ai=state.aiReview?.parsed;
       const profile = getAdaptiveExitProfile();
       const filterProfile = getAdaptiveFilterProfile();
-      let html=`<div class="ok-box"><strong>自適應停利模式</strong><br>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div><div class="ok-box" style="margin-top:10px"><strong>自適應過濾模式</strong><br>${filterProfile.label}｜量能 ≥ ${filterProfile.minVolume.toLocaleString('zh-TW')}｜相對量 ≥ ${filterProfile.minRelVolume}｜RSI ${filterProfile.rsiMin}~${filterProfile.rsiMax}｜20MA乖離 ≤ ${filterProfile.maxDeviation20}%</div>`;
+      let html=`<div class="ok-box"><strong>自適應停利模式</strong><br>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div><div class="ok-box" style="margin-top:10px"><strong>雙引擎過濾模式</strong><br>${filterProfile.label}｜量能 ≥ ${filterProfile.minVolume.toLocaleString('zh-TW')}｜相對量 ≥ ${filterProfile.minRelVolume}｜RSI ${filterProfile.rsiMin}~${filterProfile.rsiMax}｜20MA乖離 ≤ ${filterProfile.maxDeviation20}%</div>`;
       if(ranked.length){
-        html += `<div class="decision-pick"><strong>今晚決策摘要</strong><br>${ranked.map((c,idx)=>{ const tag=getDecisionTag(c, idx); return `${tag.text}：${c.symbol} ${c.name||''}｜決策分 ${fmt(c.decisionScore,1)}｜本地 ${fmt(c.localScore,1)}｜${tag.reason}`; }).join('<br>')}</div>`;
+        html += `<div class="decision-pick"><strong>今晚決策摘要</strong><br>${ranked.map((c,idx)=>{ const tag=getDecisionTag(c, idx); return `<span class="badge ${badgeClass(c.grade)}">${c.grade}</span> ${c.symbol} ${c.name||''}｜決策分 ${fmt(c.decisionScore,1)}｜本地 ${fmt(c.localScore,1)}｜${tag.reason}`; }).join('<br>')}</div>`;
       } else {
         html += `<div class="footnote">尚未產出可用候選。</div>`;
       }
@@ -1591,7 +1536,12 @@ ${candidatesText}
 
     function renderCandidateRanking(){
       const list = (state.candidates || []).map(c=>({ ...c, decisionScore:getDecisionScore(c) }))
-        .sort((a,b)=>b.decisionScore-a.decisionScore);
+        .sort((a,b)=>{
+          const order = {"S+":5, "A":4, "B":3, "C":2, "X":1};
+          if(a.rejected!==b.rejected) return a.rejected ? 1 : -1;
+          if(order[a.grade] !== order[b.grade]) return order[b.grade] - order[a.grade];
+          return b.decisionScore - a.decisionScore;
+        });
       if(!list.length){
         $('candidateWarnings').innerHTML = `<div class="footnote">尚未解析 CSV。</div>`;
         $('candidateRankingTable').innerHTML = '';
@@ -1601,7 +1551,7 @@ ${candidatesText}
       const selectedCount = list.filter(c=>c.selected).length;
       const finalRows = getFinalSelectedRows(2);
       $('candidateWarnings').innerHTML = `<div class="ok-box">已解析 ${list.length} 檔候選股｜已鎖定 ${selectedCount} 檔｜最終決策 ${finalRows.map(x=>x.symbol).join('、') || '尚未決策'}</div>`;
-      $('candidateRankingTable').innerHTML = `<table><thead><tr><th>排名</th><th>股票</th><th>決策</th><th>決策分</th><th>本地分</th><th>級別</th><th>AI覆核</th><th>警示</th><th>狀態</th></tr></thead><tbody>${list.map((c,idx)=>{ const tag=getDecisionTag(c, idx); const ai=getAiFlags(c.symbol); const aiText=ai.isTop?'AI主攻':(ai.isBackup?'AI次選':(ai.isAvoid?'AI避開':'—')); return `<tr><td>#${idx+1}</td><td><strong>${c.symbol}</strong> ${c.name||''}</td><td class="${tag.cls}">${tag.text}</td><td>${fmt(c.decisionScore,1)}</td><td>${fmt(c.localScore,1)}</td><td>${c.grade||'-'}</td><td>${aiText}</td><td>${(c.warnings||[]).join('、')||'—'}</td><td>${c.rejected?'<span class="red">淘汰</span>':'<span class="green">可評估</span>'}</td></tr>`; }).join('')}</tbody></table>`;
+      $('candidateRankingTable').innerHTML = `<table><thead><tr><th>排名</th><th>股票</th><th>決策</th><th>級別</th><th>決策分</th><th>本地分</th><th>AI覆核</th><th>警示</th><th>狀態</th></tr></thead><tbody>${list.map((c,idx)=>{ const tag=getDecisionTag(c, idx); const ai=getAiFlags(c.symbol); const aiText=ai.isTop?'AI主攻':(ai.isBackup?'AI次選':(ai.isAvoid?'AI避開':'—')); return `<tr><td>#${idx+1}</td><td><strong>${c.symbol}</strong> ${c.name||''}</td><td class="${tag.cls}">${tag.text}</td><td><span class="badge ${badgeClass(c.grade)}">${c.grade||'-'}</span></td><td>${fmt(c.decisionScore,1)}</td><td>${fmt(c.localScore,1)}</td><td>${aiText}</td><td>${(c.warnings||[]).join('、')||'—'}</td><td>${c.rejected?'<span class="red">淘汰</span>':'<span class="green">可評估</span>'}</td></tr>`; }).join('')}</tbody></table>`;
 
       const mode = state.ui?.candidateCardsMode || 'top5';
       const expanded = !!state.ui?.candidateCardsExpanded;
@@ -1609,7 +1559,7 @@ ${candidatesText}
       if(body) body.classList.toggle('hidden-panel', !expanded);
 
       const cardList = mode === 'all' ? list : list.slice(0,5);
-      $('candidateCards').innerHTML = cardList.map((c,idx)=>{ const realIndex = list.findIndex(x=>x.id===c.id); const tag=getDecisionTag(c, realIndex); const ai=getAiFlags(c.symbol); return `<div class="card ${realIndex===0?'mainAttackGlow':''}"><div class="card-head"><div><div class="symbol">#${realIndex+1} ${c.symbol} ${c.name||''}</div><div class="muted">價格 ${fmt(c.close,2)}｜漲幅 ${pct(c.changePct,2)}｜RSI ${Number.isFinite(c.rsi14)?fmt(c.rsi14,2):'-'}｜量比 ${Number.isFinite(c.volumeRatio)?fmt(c.volumeRatio,2):'-'}</div></div><div class="btnrow"><span class="badge ${tag.cls}">${tag.text}</span>${ai.isTop?'<span class="badge green">AI主攻</span>':''}${ai.isBackup?'<span class="badge cyan">AI次選</span>':''}${ai.isAvoid?'<span class="badge red">AI避開</span>':''}<span class="badge ${c.selected?'green':'cyan'}">${c.selected?'已鎖定戰隊':'候選中'}</span></div></div><div class="mini"><div class="cell"><div class="k">決策分</div><div class="v">${fmt(c.decisionScore,1)}</div></div><div class="cell"><div class="k">本地分</div><div class="v">${fmt(c.localScore,1)}</div></div><div class="cell"><div class="k">買價</div><div class="v">${fmt(c.entry,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(c.shares)}</div></div><div class="cell"><div class="k">RR</div><div class="v">${fmt(c.rr,2)}</div></div><div class="cell"><div class="k">級別</div><div class="v">${c.grade||'-'}</div></div></div><div style="margin-top:10px">${tag.reason}${(c.warnings||[]).length?`<br>警示：${c.warnings.join('、')}`:''}</div><div class="btnrow" style="margin-top:10px"><button class="btn small ${c.selected?'green':''}" onclick="toggleSelectCandidate('${c.id}')">${c.selected?'取消鎖定':'鎖定戰隊'}</button><button class="btn small secondary" onclick="addPositionFromCandidate('${c.id}')">直接建倉</button></div></div>`; }).join('');
+      $('candidateCards').innerHTML = cardList.map((c,idx)=>{ const realIndex = list.findIndex(x=>x.id===c.id); const tag=getDecisionTag(c, realIndex); const ai=getAiFlags(c.symbol); return `<div class="card ${realIndex===0?'mainAttackGlow':''}"><div class="card-head"><div><div class="symbol">#${realIndex+1} ${c.symbol} ${c.name||''} <span class="badge ${badgeClass(c.grade)}">${c.grade}</span></div><div class="muted">價格 ${fmt(c.close,2)}｜漲幅 ${pct(c.changePct,2)}｜RSI ${Number.isFinite(c.rsi14)?fmt(c.rsi14,2):'-'}｜量比 ${Number.isFinite(c.volumeRatio)?fmt(c.volumeRatio,2):'-'}</div></div><div class="btnrow"><span class="badge ${tag.cls}">${tag.text}</span>${ai.isTop?'<span class="badge green">AI主攻</span>':''}${ai.isBackup?'<span class="badge cyan">AI次選</span>':''}${ai.isAvoid?'<span class="badge red">AI避開</span>':''}<span class="badge ${c.selected?'green':'cyan'}">${c.selected?'已鎖定戰隊':'候選中'}</span></div></div><div class="mini"><div class="cell"><div class="k">決策分</div><div class="v">${fmt(c.decisionScore,1)}</div></div><div class="cell"><div class="k">本地分</div><div class="v">${fmt(c.localScore,1)}</div></div><div class="cell"><div class="k">買價</div><div class="v">${fmt(c.entry,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(c.shares)}</div></div><div class="cell"><div class="k">RR</div><div class="v">${fmt(c.rr,2)}</div></div><div class="cell"><div class="k">PE</div><div class="v">${fmt(c.pe)}</div></div></div><div style="margin-top:10px">${tag.reason}${(c.warnings||[]).length?`<br>警示：${c.warnings.join('、')}`:''}${(c.rejectReasons||[]).length?`<br><span class="red">淘汰：${c.rejectReasons.join('、')}</span>`:''}</div><div class="btnrow" style="margin-top:10px"><button class="btn small ${c.selected?'green':''}" onclick="toggleSelectCandidate('${c.id}')">${c.selected?'取消鎖定':'鎖定戰隊'}</button><button class="btn small secondary" onclick="addPositionFromCandidate('${c.id}')">直接建倉</button></div></div>`; }).join('');
     }
 
     function renderAiPanel(){
@@ -1644,18 +1594,18 @@ ${candidatesText}
       const exitProfile = getAdaptiveExitProfile();
       const source = state.decision?.mode ? `決策模式：${state.decision.mode}` : (state.aiReview?.parsed ? 'AI 輔助決策' : '本地模型');
       const summaryLines = [
-        `<strong>STEP 5 最終掛單清單</strong>`,
+        `<strong>STEP 5 最終掛單清單｜v10.7 只允許 S+</strong>`,
         source,
-        `主攻：${finalRows[0].symbol} ${finalRows[0].name||''}｜決策分 ${fmt(finalRows[0].decisionScore,1)}｜停損 ${fmt(finalRows[0].stop,2)}｜模式 ${exitProfile.label}`
+        `主攻：${finalRows[0].symbol} ${finalRows[0].name||''} <span class="badge ${badgeClass(finalRows[0].grade)}">${finalRows[0].grade}</span>｜決策分 ${fmt(finalRows[0].decisionScore,1)}｜停損 ${fmt(finalRows[0].stop,2)}｜模式 ${exitProfile.label}`
       ];
       if(finalRows[1]){
-        summaryLines.push(`次選：${finalRows[1].symbol} ${finalRows[1].name||''}｜決策分 ${fmt(finalRows[1].decisionScore,1)}｜停損 ${fmt(finalRows[1].stop,2)}`);
+        summaryLines.push(`次選：${finalRows[1].symbol} ${finalRows[1].name||''} <span class="badge ${badgeClass(finalRows[1].grade)}">${finalRows[1].grade}</span>｜決策分 ${fmt(finalRows[1].decisionScore,1)}｜停損 ${fmt(finalRows[1].stop,2)}`);
       }
       $('orderSummaryBox').innerHTML = `<div class="decision-pick">${summaryLines.join('<br>')}</div>`;
-      $('ordersTable').innerHTML = `<table><thead><tr><th>角色</th><th>股票</th><th>決策分</th><th>本地分</th><th>買價</th><th>停損</th><th>停利參考</th><th>股數</th><th>理由</th></tr></thead><tbody>${finalRows.map((c,idx)=>`<tr><td>${idx===0?'🔥 主攻':'⚡ 次選'}</td><td><strong>${c.symbol}</strong> ${c.name||''}</td><td>${fmt(c.decisionScore,1)}</td><td>${fmt(c.localScore,1)}</td><td>${fmt(c.entry,2)}</td><td>${fmt(c.stop,2)}</td><td>${fmt(c.takeProfit,2)}</td><td>${fmt(c.shares)}</td><td>${getDecisionTag(c, idx).reason}</td></tr>`).join('')}</tbody></table>`;
+      $('ordersTable').innerHTML = `<table><thead><tr><th>角色</th><th>股票</th><th>決策分</th><th>本地分</th><th>買價</th><th>停損</th><th>停利參考</th><th>股數</th><th>理由</th></tr></thead><tbody>${finalRows.map((c,idx)=>`<tr><td>${idx===0?'🔥 主攻':'⚡ 次選'}</td><td><strong>${c.symbol}</strong> ${c.name||''} <span class="badge ${badgeClass(c.grade)}">${c.grade}</span></td><td>${fmt(c.decisionScore,1)}</td><td>${fmt(c.localScore,1)}</td><td>${fmt(c.entry,2)}</td><td>${fmt(c.stop,2)}</td><td>${fmt(c.takeProfit,2)}</td><td>${fmt(c.shares)}</td><td>${getDecisionTag(c, idx).reason}</td></tr>`).join('')}</tbody></table>`;
     }
 
-    function renderPositions(){ const openPositions=getOpenPositions(); if(openPositions.length===0){ $('positionsBox').innerHTML=`<div class="footnote">目前沒有開啟中的持倉。</div>`; return; } const portfolioStats=getPortfolioStats(); const lossMode=getLossMode(state.risk.lossStreak); const profile=getAdaptiveExitProfile(); let topAlert=`<div class="ok-box" style="margin-bottom:12px"><strong>目前出場模式：</strong>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div>`; if(state.market.signal==='red'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 市場紅燈：</strong>禁止新倉，持倉全面進入防守狀態。</div>`; } else if(portfolioStats.drop <= -5){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 組合熔斷：</strong>總回撤 ${pct(portfolioStats.drop,2)}，優先降倉保命，只減不加。</div>`; } else if(lossMode.mode==='冷卻模式'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🧊 冷卻模式：</strong>連敗達標，禁止新倉，只管理舊倉。</div>`; } $('positionsBox').innerHTML=topAlert + openPositions.map(p=>{ const pnl=(p.currentPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((p.currentPrice-p.entryPrice)/p.entryPrice)*100:0; const stopDistance=p.currentPrice-p.trailingStop; const action=getHoldingAction(p, portfolioStats); const risk=getHoldingRiskInfo(p, portfolioStats); return `<div class="card"><div class="card-head"><div><div class="symbol">${p.symbol} ${p.name||''}</div><div class="muted">建倉 ${p.entryDate}</div></div><span class="badge ${p.status.includes('撤退')?'red':(p.status.includes('鎖利')||p.status.includes('防守')?'yellow':'green')}">${p.status}</span></div><div class="mini"><div class="cell"><div class="k">成本</div><div class="v">${fmt(p.entryPrice,2)}</div></div><div class="cell"><div class="k">現價</div><div class="v">${fmt(p.currentPrice,2)}</div></div><div class="cell"><div class="k">浮盈虧</div><div class="v ${pnl>=0?'green':'red'}">NT$ ${fmt(pnl)}</div></div><div class="cell"><div class="k">報酬率</div><div class="v ${returnPct>=0?'green':'red'}">${pct(returnPct,2)}</div></div><div class="cell"><div class="k">歷史高點</div><div class="v">${fmt(p.highestPrice,2)}</div></div><div class="cell"><div class="k">移動停損</div><div class="v red">${fmt(p.trailingStop,2)}</div></div><div class="cell"><div class="k">初始停損</div><div class="v">${fmt(p.initialStop,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(p.shares)}</div></div><div class="cell"><div class="k">距停損空間</div><div class="v ${stopDistance<=0?'red':'yellow'}">${fmt(stopDistance,2)}</div></div><div class="cell"><div class="k">明日動作</div><div class="v">${action}</div></div><div class="cell"><div class="k">風險等級</div><div class="v ${risk.cls}">${risk.level}</div></div><div class="cell"><div class="k">診斷</div><div class="v">${risk.text}</div></div></div>${(state.market.signal==='red' || portfolioStats.drop <= -5 || lossMode.mode==='冷卻模式') ? `<div class="warning-box" style="margin-top:10px">系統防守警報：目前僅建議防守、減碼或平倉，不建議任何加碼動作。</div>` : ''}<div class="btnrow" style="margin-top:10px"><button class="btn small" onclick="updatePositionMarket('${p.id}')">更新收盤 / 高點</button><button class="btn small red" onclick="openClose('${p.id}')">真實平倉</button></div></div>`; }).join(''); }
+    function renderPositions(){ const openPositions=getOpenPositions(); if(openPositions.length===0){ $('positionsBox').innerHTML=`<div class="footnote">目前沒有開啟中的持倉。</div>`; return; } const portfolioStats=getPortfolioStats(); const lossMode=getLossMode(state.risk.lossStreak); const profile=getAdaptiveExitProfile(); let topAlert=`<div class="ok-box" style="margin-bottom:12px"><strong>目前出場模式：</strong>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div>`; if(state.market.signal==='red'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 市場紅燈：</strong>禁止新倉，持倉全面進入防守狀態。</div>`; } else if(portfolioStats.drop <= -5){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 組合熔斷：</strong>總回撤 ${pct(portfolioStats.drop,2)}，優先降倉保命，只減不加。</div>`; } else if(lossMode.mode==='冷卻模式'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🧊 冷卻模式：</strong>連敗達標，禁止新倉，只管理舊倉。</div>`; } $('positionsBox').innerHTML=topAlert + openPositions.map(p=>{ const pnl=(p.currentPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((p.currentPrice-p.entryPrice)/p.entryPrice)*100:0; const stopDistance=p.currentPrice-p.trailingStop; const action=getHoldingAction(p, portfolioStats); const risk=getHoldingRiskInfo(p, portfolioStats); const dynamicCandidate = findCandidateBySymbol(p.symbol); const dynamicGrade = dynamicCandidate?.grade || p.dynamicGrade || ''; const dynamicRejected = dynamicCandidate ? isHardForbidden(dynamicCandidate) : false; return `<div class="card"><div class="card-head"><div><div class="symbol">${p.symbol} ${p.name||''}</div><div class="muted">建倉 ${p.entryDate}</div></div><span class="badge ${p.status.includes('撤退')?'red':(p.status.includes('鎖利')||p.status.includes('防守')?'yellow':'green')}">${p.status}</span></div><div class="mini"><div class="cell"><div class="k">成本</div><div class="v">${fmt(p.entryPrice,2)}</div></div><div class="cell"><div class="k">現價</div><div class="v">${fmt(p.currentPrice,2)}</div></div><div class="cell"><div class="k">浮盈虧</div><div class="v ${pnl>=0?'green':'red'}">NT$ ${fmt(pnl)}</div></div><div class="cell"><div class="k">報酬率</div><div class="v ${returnPct>=0?'green':'red'}">${pct(returnPct,2)}</div></div><div class="cell"><div class="k">歷史高點</div><div class="v">${fmt(p.highestPrice,2)}</div></div><div class="cell"><div class="k">移動停損</div><div class="v red">${fmt(p.trailingStop,2)}</div></div><div class="cell"><div class="k">初始停損</div><div class="v">${fmt(p.initialStop,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(p.shares)}</div></div><div class="cell"><div class="k">距停損空間</div><div class="v ${stopDistance<=0?'red':'yellow'}">${fmt(stopDistance,2)}</div></div><div class="cell"><div class="k">明日動作</div><div class="v">${action}</div></div><div class="cell"><div class="k">風險等級</div><div class="v ${risk.cls}">${risk.level}</div></div><div class="cell"><div class="k">診斷</div><div class="v">${risk.text}</div></div><div class="cell"><div class="k">動態評級</div><div class="v ${dynamicRejected?'red':'green'}">${dynamicGrade || '未同步'}</div></div></div>${dynamicRejected ? `<div class="warning-box" style="margin-top:10px">v10.7 持倉動態風控：此股已不符合 S+ 條件，明日優先防守／減碼／出場，不再加碼。</div>` : ''}${(state.market.signal==='red' || portfolioStats.drop <= -5 || lossMode.mode==='冷卻模式') ? `<div class="warning-box" style="margin-top:10px">系統防守警報：目前僅建議防守、減碼或平倉，不建議任何加碼動作。</div>` : ''}<div class="btnrow" style="margin-top:10px"><button class="btn small" onclick="updatePositionMarket('${p.id}')">更新收盤 / 高點</button><button class="btn small red" onclick="openClose('${p.id}')">真實平倉</button></div></div>`; }).join(''); }
     function renderPerformance(){ const perf=getPerformance(); $('performanceMetrics').innerHTML=`<div class="metric"><div class="label">總交易筆數</div><div class="value">${fmt(perf.totalTrades)}</div></div><div class="metric"><div class="label">勝率</div><div class="value ${perf.winRate>=50?'green':'yellow'}">${pct(perf.winRate,1)}</div></div><div class="metric"><div class="label">累積損益</div><div class="value ${perf.totalPnl>=0?'green':'red'}">NT$ ${fmt(perf.totalPnl)}</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value ${perf.avgReturn>=0?'green':'red'}">${pct(perf.avgReturn,2)}</div></div><div class="metric"><div class="label">飛輪累積 %</div><div class="value ${perf.flywheelPct>=0?'green':'red'}">${pct(perf.flywheelPct,2)}</div></div>`; if(state.logs.length===0){ $('logsTable').innerHTML=`<div class="footnote">尚無歷史紀錄。</div>`; return; } $('logsTable').innerHTML=`<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>原因</th><th>日期</th></tr></thead><tbody>${state.logs.slice(0,12).map(l=>`<tr><td class="mono">${l.symbol}</td><td>${fmt(l.entryPrice,2)}</td><td>${fmt(l.exitPrice,2)}</td><td>${fmt(l.shares)}</td><td class="${l.pnl>=0?'green':'red'}">NT$ ${fmt(l.pnl)}</td><td class="${l.returnPct>=0?'green':'red'}">${pct(l.returnPct,2)}</td><td class="${l.result==='win'?'green':(l.result==='loss'?'red':'yellow')}">${l.result}</td><td>${l.reason||'-'}</td><td class="mono">${l.exitDate}</td></tr>`).join('')}</tbody></table>`; }
     function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); if($('orderSummaryBox') && $('ordersTable')) renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
       if(btn){ btn.textContent = (state.ui?.candidateCardsExpanded ? '收合候選詳卡' : '展開候選詳卡'); }
@@ -1814,7 +1764,6 @@ ${candidatesText}
 
         const data = await res.json();
 
-        // ⭐ 核心：如果沒資料 → 自動初始化
         if(!data || !data.shared){
           updateCloudBadgeFinal('首次初始化中...');
           await saveSharedToCloud();
