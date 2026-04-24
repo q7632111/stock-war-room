@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.12.2｜戰神折衷最終版</title>
+<title>AI 戰艦 Pro Max v10.13｜模式顯示版</title>
 <style>
     :root{
       --bg:#071019;
@@ -229,8 +229,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.12.2</h1>
-<div class="sub">戰神折衷版｜狂牛綁綠燈｜強勢盤允許 A 級｜假突破封鎖</div>
+<h1>AI 戰艦 Pro Max v10.13</h1>
+<div class="sub">模式顯示版｜自動顯示防守 / 精準 / 動能 / 狂牛｜假突破封鎖</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -1407,7 +1407,39 @@ let state = loadState();
       return { level:'正常', cls:'green', text:'未觸發重大警報。' };
     }
 
-    function renderTopStatusBar(){ calculateMarket(); const { lossMode, effectiveMaxNewPositions } = getEffectiveSettings(); const last = state.lastSync || '-'; $('topStatusBar').innerHTML = `<div class="pill ${signalClass(state.market.signal)}">市場燈號：${state.market.signal.toUpperCase()}</div><div class="pill cyan">系統模式：${lossMode.mode}</div><div class="pill">連敗：${state.risk.lossStreak}</div><div class="pill purple">開倉上限：${effectiveMaxNewPositions}</div><div class="pill green">最後同步：${last}</div><div class="pill ${state.aiReview?.parsed ? 'green':'purple'}">AI覆核：${state.aiReview?.parsed ? '已載入':'未載入'}</div>`; }
+    function getStrategyModeDisplay(){
+      calculateMarket();
+      const total = num(state.market && state.market.totalScore, 0);
+      const sentiment = num(state.market && state.market.sentimentScore, 0);
+      const signal = (state.market && state.market.signal) || 'yellow';
+      const localTop = getLocalDecisionTop ? getLocalDecisionTop(2) : [];
+      const aiTop = getAiDecisionTop ? getAiDecisionTop(2) : [];
+      const intersection = localTop.filter(r => aiTop.some(a => normalizeSymbol(a.symbol)===normalizeSymbol(r.symbol)));
+      const profile = getAutoDecisionProfile(localTop, aiTop, intersection);
+      const mode = profile && profile.suggestedMode ? profile.suggestedMode : 'local';
+      const fire = profile && profile.fireLevel ? profile.fireLevel : '正常盤 / 本地防守優先';
+      let label = '📊 平衡模式';
+      let cls = 'cyan';
+      let desc = fire;
+      if(signal === 'red' || total < 40 || fire.includes('休兵') || fire.includes('防守')){
+        label = '🛡 防守模式'; cls = 'red';
+      }else if(fire.includes('狂牛')){
+        label = '🔥 狂牛模式'; cls = 'purple';
+      }else if(fire.includes('強勢') || fire.includes('動能')){
+        label = '🚀 動能模式'; cls = 'green';
+      }else if(mode === 'intersection' || fire.includes('精準') || fire.includes('交集')){
+        label = '⚔ 精準模式'; cls = 'yellow';
+      }
+      return { label, cls, desc, mode, total, sentiment, signal };
+    }
+
+    function renderTopStatusBar(){
+      calculateMarket();
+      const { lossMode, effectiveMaxNewPositions } = getEffectiveSettings();
+      const strategy = getStrategyModeDisplay();
+      const last = state.lastSync || '-';
+      $('topStatusBar').innerHTML = `<div class="pill ${signalClass(state.market.signal)}">市場燈號：${state.market.signal.toUpperCase()}</div><div class="pill ${strategy.cls}">戰術模式：${strategy.label}</div><div class="pill cyan">風控模式：${lossMode.mode}</div><div class="pill">連敗：${state.risk.lossStreak}</div><div class="pill purple">開倉上限：${effectiveMaxNewPositions}</div><div class="pill green">最後同步：${last}</div><div class="pill ${state.aiReview?.parsed ? 'green':'purple'}">AI覆核：${state.aiReview?.parsed ? '已載入':'未載入'}</div>`;
+    }
     function renderHero(){ const summary = getDashboardSummary(); const perf=getPerformance(); const items=[{label:'市場總分',value:fmt(state.market.totalScore,1),color:signalClass(state.market.signal)},{label:'今日可開新倉',value:`${summary.effectiveMaxNewPositions} 檔`},{label:'單日風險額',value:`NT$ ${fmt(summary.dailyRiskAmount)}`},{label:'持倉數量',value:`${summary.openPositions.length} 檔`},{label:'已占用資金',value:`NT$ ${fmt(summary.usedCapital)}`},{label:'剩餘資金',value:`NT$ ${fmt(summary.remainingCash)}`},{label:'飛輪累積 %',value:pct(perf.flywheelPct,2),color:perf.flywheelPct>=0?'green':'red'},{label:'平倉勝率',value:pct(perf.winRate,1),color:perf.winRate>=50?'green':'yellow'}]; $('heroMetrics').innerHTML=items.map(x=>`<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color||''}">${x.value}</div></div>`).join(''); $('todayInstruction').textContent=state.market.instruction; $('lastSyncTime').textContent=state.lastSync||'-'; }
 
     function renderMarket(){ const r=state.market.radar||{}; $('marketRadarGrid').innerHTML=`<div class="radar-item"><div class="radar-title">廣度擴散</div><div class="radar-bar"><div class="radar-fill" style="width:${r.breadth||0}%"></div></div><div class="radar-score">${r.breadth||0}</div></div><div class="radar-item"><div class="radar-title">情緒熱度</div><div class="radar-bar"><div class="radar-fill" style="width:${r.sentiment||0}%"></div></div><div class="radar-score">${r.sentiment||0}</div></div><div class="radar-item"><div class="radar-title">加權強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.taiex||0}%"></div></div><div class="radar-score">${pct(state.market.taiexChange,2)}</div></div><div class="radar-item"><div class="radar-title">OTC 強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.otc||0}%"></div></div><div class="radar-score">${pct(state.market.otcChange,2)}</div></div><div class="radar-item"><div class="radar-title">漲跌停優勢</div><div class="radar-bar"><div class="radar-fill" style="width:${r.spread||0}%"></div></div><div class="radar-score">${fmt(num(state.market.limitUp)-num(state.market.limitDown),0)}</div></div><div class="radar-item"><div class="radar-title">最終戰況</div><div class="radar-bar"><div class="radar-fill" style="width:${r.total||0}%"></div></div><div class="radar-score ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()} / ${fmt(state.market.totalScore,1)}</div></div>`; $('marketSummary').innerHTML=`<div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div></div><div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div></div><div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div></div>`; $('marketExplainBox').innerHTML=(state.market.explainParts||[]).length ? state.market.explainParts.map(x=>`<div class="explain-item">${x}</div>`).join('') : `<div class="footnote">尚無燈號判定說明。</div>`; }
@@ -1417,7 +1449,8 @@ let state = loadState();
       const ai=state.aiReview?.parsed;
       const profile = getAdaptiveExitProfile();
       const filterProfile = getAdaptiveFilterProfile();
-      let html=`<div class="ok-box"><strong>自適應停利模式</strong><br>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div><div class="ok-box" style="margin-top:10px"><strong>雙引擎過濾模式</strong><br>${filterProfile.label}｜量能 ≥ ${filterProfile.minVolume.toLocaleString('zh-TW')}｜相對量 ≥ ${filterProfile.minRelVolume}｜RSI ${filterProfile.rsiMin}~${filterProfile.rsiMax}｜20MA乖離 ≤ ${filterProfile.maxDeviation20}%</div>`;
+      let strategyProfile = getStrategyModeDisplay();
+      let html=`<div class="ok-box"><strong>目前戰術模式</strong><br>${strategyProfile.label}｜${strategyProfile.desc}</div><div class="ok-box" style="margin-top:10px"><strong>自適應停利模式</strong><br>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div><div class="ok-box" style="margin-top:10px"><strong>雙引擎過濾模式</strong><br>${filterProfile.label}｜量能 ≥ ${filterProfile.minVolume.toLocaleString('zh-TW')}｜相對量 ≥ ${filterProfile.minRelVolume}｜RSI ${filterProfile.rsiMin}~${filterProfile.rsiMax}｜20MA乖離 ≤ ${filterProfile.maxDeviation20}%</div>`;
       if(ranked.length){
         html += `<div class="decision-pick"><strong>今晚決策摘要</strong><br>${ranked.map((c,idx)=>{ const tag=getDecisionTag(c, idx); return `<span class="badge ${badgeClass(c.grade)}">${c.grade}</span> ${c.symbol} ${c.name||''}｜決策分 ${fmt(c.decisionScore,1)}｜本地 ${fmt(c.localScore,1)}｜${tag.reason}`; }).join('<br>')}</div>`;
       } else {
