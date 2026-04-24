@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.8.2｜平衡戰神版</title>
+<title>AI 戰艦 Pro Max v10.7.5｜CSV按鈕修復版</title>
 <style>
     :root{
       --bg:#071019;
@@ -228,8 +228,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.8.2</h1>
-<div class="sub">平衡戰神版｜基本面扣分不硬殺｜過熱雙條件硬鎖</div>
+<h1>AI 戰艦 Pro Max v10.8.3</h1>
+<div class="sub">完全整合版｜平衡戰神邏輯｜CSV解析｜AI完整視野</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -557,7 +557,7 @@
 </div>
 <script>
     const $ = id => document.getElementById(id);
-    const STORAGE_KEY = 'warroom_v10_8_2_balanced_wargod';
+    const STORAGE_KEY = 'warroom_v10_7_6_csv_safe';
 
     const defaultState = {
       market: { advancers:0, decliners:0, limitUp:0, limitDown:0, otcChange:0, taiexChange:0, breadthScore:0, sentimentScore:0, totalScore:0, signal:'yellow', maxNewPositionsAllowed:1, instruction:'等待市場狀態更新', explainParts:[], radar:{} },
@@ -815,6 +815,7 @@ let state = loadState();
       const rr = safeNum(stock.rr);
       const riskPct = safeNum(stock.riskPct);
 
+      // 動態乖離上限：紅燈更嚴、強綠燈稍放寬
       let L = 15;
       if(market.signal === 'red') L = 10;
       else if(market.signal === 'green' && num(market.totalScore) >= 75) L = 18;
@@ -822,77 +823,87 @@ let state = loadState();
       const dev = (close && sma20) ? ((close - sma20) / sma20 * 100) : null;
       const trend = close > sma20 && sma20 > sma60;
 
-      let score = 50, engineA = true, engineB = true, reasons = [], risks = [], rejectReasons = [];
+      let score = 50, reasons = [], risks = [], rejectReasons = [];
+      let engineA = false, engineB = false;
 
-      // Engine A
-      if(trend) { score += 12; reasons.push("多頭排列成立"); }
-      else { score -= 18; engineA = false; risks.push("多頭排列不完整"); rejectReasons.push("非多頭結構"); }
+      // ===== 基礎加分區：真正有利於短線隔日單的結構 =====
+      if(trend) { score += 15; reasons.push('多頭排列'); }
+      else { score -= 18; risks.push('非多頭結構'); }
 
-      if(dev === null) { score -= 10; engineA = false; risks.push("無法計算20MA乖離"); rejectReasons.push("缺乖離資料"); }
-      else if(dev <= L) { score += 14; reasons.push(`20MA乖離 ${dev.toFixed(1)}% < ${L}%`); }
-      else { score -= 15; engineA = false; risks.push(`20MA乖離 ${dev.toFixed(1)}% > ${L}%，降權觀察`); rejectReasons.push(`乖離大於${L}%`); }
+      if(dev === null) { score -= 10; risks.push('缺20MA乖離資料'); }
+      else if(dev >= 0 && dev <= L) { score += 15; reasons.push(`乖離 ${dev.toFixed(1)}% 安全`); }
+      else if(dev > L) { score -= 15; risks.push(`⚠️ 乖離率 ${dev.toFixed(1)}% 超過 ${L}% 上限`); }
+      else { score -= 6; risks.push('價格低於20MA，動能不足'); }
 
-      if(Number.isNaN(rvol)) { score -= 10; engineA = false; risks.push("量比資料缺漏"); rejectReasons.push("缺量比資料"); }
-      else if(rvol < 1.5) { score -= 12; engineA = false; risks.push("量比低於1.5，未發動"); rejectReasons.push("動能不足"); }
-      else if(rvol <= 3) { score += 16; reasons.push("量比1.5~3，健康放量主攻區"); }
-      else if(rvol <= 5) { score -= 6; reasons.push("量比3~5，進入降權區"); }
-      else { score -= 26; engineA = false; risks.push("量比>5，隔日沖戰場"); rejectReasons.push("量比失控"); }
+      if(Number.isNaN(rvol)) { score -= 10; risks.push('缺量比資料'); }
+      else if(rvol < 1.5) { score -= 12; risks.push('量比低於1.5，未發動'); }
+      else if(rvol <= 3.5) { score += 15; reasons.push('量能健康放大'); }
+      else if(rvol <= 5) { score -= 6; risks.push('量比3.5~5，短線籌碼偏亂'); }
+      else { score -= 30; risks.push('量比>5，隔日沖戰場'); }
 
-      if(Number.isNaN(rsi)) { score -= 10; engineA = false; risks.push("RSI資料缺漏"); rejectReasons.push("缺RSI資料"); }
-      else if(rsi < 60) { score -= 8; engineA = false; risks.push("RSI <60，尚未發動"); rejectReasons.push("RSI未發動"); }
-      else if(rsi <= 70) { score += 15; reasons.push("RSI 60~70，最佳攻擊區"); }
-      else if(rsi <= 75) { score -= 4; reasons.push("RSI 70~75，偏熱警戒"); }
-      else { score -= 8; engineA = false; risks.push("RSI >75，過熱降權"); rejectReasons.push("RSI偏熱"); }
+      if(Number.isNaN(rsi)) { score -= 10; risks.push('缺RSI資料'); }
+      else if(rsi < 60) { score -= 8; risks.push('RSI<60，攻擊不足'); }
+      else if(rsi <= 70) { score += 15; reasons.push('RSI最佳攻擊區'); }
+      else if(rsi <= 75) { score -= 4; risks.push('RSI 70~75，偏熱警戒'); }
+      else { score -= 10; risks.push(`RSI ${rsi.toFixed(1)} 偏熱`); }
 
-      // Engine B
-      if(Number.isNaN(pe)) { score -= 4; reasons.push("PE缺漏，基本面透明度降權"); }
-      else if(pe < 50) { score += 10; reasons.push("PE <50，估值未失控"); }
-      else if(pe <= 100) { score -= 6; reasons.push("PE 50~100，估值偏高"); }
-      else { score -= 12; risks.push("PE >100，高風險題材股，僅扣分不硬殺"); rejectReasons.push("PE偏高"); }
+      // ===== 引擎 B：基本面排雷採扣分制，不把短線機會錯殺 =====
+      if(Number.isNaN(pe)) { score -= 10; risks.push('缺本益比資料'); }
+      else if(pe > 0 && pe <= 50) { score += 10; reasons.push('估值合理'); }
+      else if(pe <= 100) { score -= 6; risks.push('PE 50~100，估值偏高'); }
+      else { score -= 10; risks.push('PE >100 估值過高'); }
 
-      if(Number.isNaN(epsGrowthYoy)) { score -= 3; reasons.push("EPS成長資料缺漏，降權"); }
-      else if(epsGrowthYoy > 0) { score += 8; reasons.push("EPS成長為正，具實質支撐"); }
-      else { score -= 8; risks.push("EPS成長為負，基本面扣分"); rejectReasons.push("EPS衰退"); }
+      if(Number.isNaN(epsGrowthYoy)) { score -= 10; risks.push('缺EPS資料'); }
+      else if(epsGrowthYoy > 0) { score += 10; reasons.push('EPS正成長'); }
+      else { score -= 10; risks.push('EPS負成長'); }
 
-      if(analystRating.includes("強力買入")) { score += 10; reasons.push("評級：強力買入"); }
-      else if(analystRating.includes("買入")) { score += 8; reasons.push("評級：買入"); }
-      else if(analystRating.includes("中立")) { score += 1; reasons.push("評級：中立"); }
-      else { score -= 2; reasons.push("無分析師評級"); }
+      if(analystRating.includes('強力買入')) { score += 8; reasons.push('評級強力買入'); }
+      else if(analystRating.includes('買入')) { score += 5; reasons.push('評級買入'); }
+      else if(analystRating.includes('中立')) { score += 1; reasons.push('評級中立'); }
+      else { score -= 2; risks.push('無分析師評級'); }
 
-      if(changePct >= 9) { score -= 12; risks.push("單日漲幅接近漲停，隔日震盪風險高"); rejectReasons.push("單日漲幅極端"); }
-      else if(changePct >= 6) { score -= 6; reasons.push("單日漲幅偏大，需防短線獲利了結"); }
-      else { score += 5; reasons.push("單日漲幅未失控"); }
+      if(changePct >= 9) { score -= 12; risks.push('單日漲幅接近漲停，隔日震盪風險高'); }
+      else if(changePct >= 6) { score -= 6; risks.push('單日漲幅偏大，需防獲利了結'); }
+      else { score += 5; reasons.push('單日漲幅未失控'); }
 
-      if(rr < 1.5) { score -= 6; risks.push("風報比偏低"); rejectReasons.push("RR不足"); }
-      if(riskPct > 6) { score -= 6; risks.push("停損距離偏大"); rejectReasons.push("停損過大"); }
-      if(market.signal === 'red') { rejectReasons.push("大盤紅燈"); }
+      if(rr < 1.5) { score -= 10; risks.push('風報比 <1.5 偏低'); }
+      if(riskPct > 6) { score -= 6; risks.push('停損距離偏大'); }
 
-      let localScore = Math.max(0, Math.min(100, Math.round(score)));
+      const localScore = Math.max(0, Math.min(100, Math.round(score)));
 
-      let grade = "X";
-      if(engineA && engineB && localScore >= 80) grade = "S+";
-      else if(engineA && localScore >= 70) grade = "A";
-      else if(engineB && localScore >= 60) grade = "B";
-      else if(localScore >= 45) grade = "C";
-      else grade = "X";
-
-      // v10.8.2 平衡戰神：只硬鎖真正危險條件；基本面問題改為扣分，不直接殺死好牌
+      // ===== 絕對死刑區：只殺真正不可碰的極端風險 =====
       const hardReject =
         (Number.isFinite(rvol) && rvol > 5) ||
-        ((dev !== null && dev > L) && (Number.isFinite(rsi) && rsi > 75)) ||
+        (dev !== null && dev > L && Number.isFinite(rsi) && rsi > 75) ||
+        (!trend) ||
         (market.signal === 'red');
+
       if(hardReject){
-        grade = "X";
-        if(Number.isFinite(rvol) && rvol > 5) rejectReasons.push("v10.8.2硬鎖：量比>5");
-        if((dev !== null && dev > L) && (Number.isFinite(rsi) && rsi > 75)) rejectReasons.push("v10.8.2硬鎖：乖離超標且RSI過熱");
+        if(Number.isFinite(rvol) && rvol > 5) rejectReasons.push('絕對死刑：量比 > 5');
+        if(dev !== null && dev > L && Number.isFinite(rsi) && rsi > 75) rejectReasons.push('絕對死刑：乖離超標 且 RSI 過熱');
+        if(!trend) rejectReasons.push('絕對死刑：非多頭結構');
+        if(market.signal === 'red') rejectReasons.push('大盤紅燈');
       }
 
-      const rejected = hardReject || (grade === "C" || grade === "X") || (market.signal === 'red');
-      const isMainAttackCandidate = (grade === "S+") && !rejected;
+      // ===== 級別判定 =====
+      let grade = 'X';
+      if(hardReject) grade = 'X';
+      else if(localScore >= 80 && dev !== null && dev <= L && Number.isFinite(rsi) && rsi <= 75 && Number.isFinite(rvol) && rvol >= 1.5) grade = 'S+';
+      else if(localScore >= 70) grade = 'A';
+      else if(localScore >= 60) grade = 'B';
+      else if(localScore >= 45) grade = 'C';
+      else grade = 'X';
+
+      engineA = trend && Number.isFinite(rvol) && rvol >= 1.5 && Number.isFinite(rsi) && rsi >= 60;
+      engineB = (!Number.isNaN(pe) && pe <= 100) || (!Number.isNaN(epsGrowthYoy) && epsGrowthYoy > 0);
+
+      const rejected = hardReject || grade === 'X' || (market.signal === 'red');
+      // 完全整合版：S+ 可主攻；強綠燈時 A 可小倉備戰
+      const isMainAttackCandidate = !rejected && (grade === 'S+' || (grade === 'A' && market.signal === 'green'));
 
       return {
         ...stock,
-        deviation20: Math.round((dev||0)*10)/10,
+        deviation20: Math.round((dev || 0) * 10) / 10,
         engineA,
         engineB,
         localScore,
@@ -902,7 +913,7 @@ let state = loadState();
         hardReject,
         rejectReasons,
         isMainAttackCandidate,
-        reason: reasons.join('；')
+        reason: reasons.join('；') || '普普通通'
       };
     }
 
@@ -994,13 +1005,13 @@ let state = loadState();
       if(c.rejected) return true;
       if(state.market?.signal === 'red') return true;
       if(Number.isFinite(num(c.volumeRatio, NaN)) && num(c.volumeRatio, NaN) > 5) return true;
-      if(Number.isFinite(num(c.rsi14, NaN)) && num(c.rsi14, NaN) > 75) return true;
+      // v10.8.3 平衡戰神：單一 RSI 過熱不硬殺，由 scoreCandidateCsv 做扣分；只有「乖離+RSI」聯合過熱才 hardReject。
       return false;
     }
     function isTradableCandidate(c){
-      // v10.8 真·戰神鎖死：掛單與 AI 候選一律只允許 S+
+      // 完全整合版：S+ 為主攻；強綠燈時允許 A 級小倉交給 AI 覆核。
       if(!c || isHardForbidden(c)) return false;
-      return c.grade === 'S+';
+      return c.grade === 'S+' || (c.grade === 'A' && state.market?.signal === 'green');
     }
     function guardTradableRows(rows){
       return (rows || []).filter(isTradableCandidate);
@@ -1412,7 +1423,7 @@ let state = loadState();
     function generateAiPrompt(){
       // 鐵血物理隔離：只送符合條件的標的給 AI
       const top = guardTradableRows(state.candidates).slice(0,5);
-      if(!top.length) return alert('目前沒有可供 AI 覆核的候選股（僅允許 S+ 或 強勢盤的 A 級）。');
+      if(!top.length) return alert('目前沒有可供 AI 覆核的候選股（僅允許 S+，或強綠燈 A 級小倉）。');
       
       const m = state.market;
       const candidatesText = top.map((c,idx)=>`${idx+1}. ${c.symbol} ${c.name || ''}\n   本地分數:${c.localScore}\n   級別:${c.grade}\n   主攻資格:${c.isMainAttackCandidate}\n   買價:${c.entry}\n   停損:${c.stop}\n   RR:${c.rr}\n   漲幅:${c.changePct}\n   RSI:${Number.isFinite(c.rsi14)?c.rsi14:'NA'}\n   量比:${Number.isFinite(c.volumeRatio)?c.volumeRatio:'NA'}\n   PE:${Number.isFinite(c.pe)?c.pe:'NA'}\n   EPS成長率:${Number.isFinite(c.epsGrowthYoy)?c.epsGrowthYoy:'NA'}\n   SMA20:${Number.isFinite(c.sma20)?c.sma20:'NA'}\n   SMA60:${Number.isFinite(c.sma60)?c.sma60:'NA'}\n   警示:${(c.warnings || []).join('、') || '無'}`).join('\n\n');
