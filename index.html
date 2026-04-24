@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.13｜模式顯示版</title>
+<title>AI 戰艦 Pro Max v10.13.1｜微進攻版・已平衡單量</title>
 <style>
     :root{
       --bg:#071019;
@@ -229,7 +229,7 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.13</h1>
+<h1>AI 戰艦 Pro Max v10.13.1</h1>
 <div class="sub">模式顯示版｜自動顯示防守 / 精準 / 動能 / 狂牛｜假突破封鎖</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
@@ -915,7 +915,7 @@ let state = loadState();
       else if(localScore >= 45) grade = 'C';
       else grade = 'X';
       const rejected = hardReject || grade === 'C' || grade === 'X' || grade === 'Fake' || (market && market.signal === 'red');
-      const isMainAttackCandidate = !rejected && (grade === 'S+' || (grade === 'A' && market && market.signal === 'green' && totalScore >= 75));
+      const isMainAttackCandidate = !rejected && (grade === 'S+' || (grade === 'A' && market && market.signal === 'green' && totalScore >= 70));
       return Object.assign({}, stock, { deviation20: Math.round((dev || 0) * 10) / 10, engineA, engineB, localScore, grade, warnings: risks, rejected, hardReject, rejectReasons: Array.from(new Set(rejectReasons)), isMainAttackCandidate, fakeBreakout, reason: reasons.join('；') || '普普通通' });
     }
 
@@ -1012,7 +1012,7 @@ let state = loadState();
     }
     function isTradableCandidate(c){
       if(!c || isHardForbidden(c)) return false;
-      return c.grade === 'S+' || (c.grade === 'A' && state.market && state.market.signal === 'green' && num(state.market.totalScore, 0) >= 75);
+      return c.grade === 'S+' || (c.grade === 'A' && state.market && state.market.signal === 'green' && num(state.market.totalScore, 0) >= 70);
     }
     function guardTradableRows(rows){
       return (rows || []).filter(isTradableCandidate);
