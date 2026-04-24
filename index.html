@@ -183,14 +183,53 @@
   font-size:12px;font-weight:800;
 }
 
+
+/* ===== v10.8.2 手機體驗與同步安全修正 ===== */
+.close-overlay{overflow-y:auto;align-items:flex-start;padding-top:24px;padding-bottom:24px;}
+.close-modal{max-height:calc(100dvh - 48px);overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#uiGuideModal .close-modal{width:min(760px,95%);}
+.sync-danger-zone{margin-top:14px;padding:12px;border-radius:14px;border:1px solid rgba(251,191,36,.32);background:linear-gradient(180deg,rgba(95,71,8,.16),rgba(45,35,5,.12));}
+.cloud-main-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.sync-time-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(52,211,153,.09);border:1px solid rgba(52,211,153,.26);color:#d8fff1;font-size:12px;font-weight:800;}
+@media (max-width:900px){
+  .topbar{position:static !important;top:auto !important;}
+  .quicknav{position:static !important;top:auto !important;}
+  .close-overlay{align-items:flex-start !important;justify-content:center;padding:calc(env(safe-area-inset-top) + 12px) 10px calc(env(safe-area-inset-bottom) + 24px);}
+  .close-modal{width:100% !important;max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 36px);overflow-y:auto;}
+  #uiGuideModal .close-modal{width:100% !important;}
+  .statusbar{justify-content:flex-start;margin-top:10px;}
+  .cloud-strip{align-items:flex-start;}
+}
+
+
+.main-load-btn{
+  background:linear-gradient(180deg,#0f766e,#115e59) !important;
+  border-color:rgba(52,211,153,.65) !important;
+  font-size:15px;
+  padding:12px 18px;
+  box-shadow:0 0 0 1px rgba(52,211,153,.25),0 0 22px rgba(52,211,153,.18) !important;
+}
+.first-use-tip{
+  border:1px solid rgba(52,211,153,.28);
+  background:rgba(52,211,153,.08);
+  color:#d9fff1;
+  border-radius:12px;
+  padding:9px 12px;
+  font-size:12px;
+  line-height:1.45;
+}
+@media (max-width:900px){
+  .cloud-main-actions{width:100%;display:grid;grid-template-columns:1fr;gap:8px}
+  .main-load-btn{width:100%;font-size:16px;padding:14px 16px}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.7.7 normalizeSymbol修復版</h1>
-<div class="sub">CSV 硬綁定解析 ｜ 錯誤提示 ｜ 雙引擎過濾 ｜ AI 絕對物理隔離</div>
+<h1>AI 戰艦 Pro Max v10.8.3</h1>
+<div class="sub">新手讀取共用資料版｜CSV解析｜雙引擎過濾｜AI絕對物理隔離</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -207,10 +246,12 @@
 
 <div class="cloud-strip">
   <span class="cloud-status" id="cloudStatusBadge">半雲端模式｜尚未同步</span>
-  <button class="btn" id="loadSharedBtn">讀取共用資料</button>
-  <button class="btn green" id="saveSharedBtn">同步共用資料</button>
-  <button class="btn secondary" onclick="openCloudModal()">☁️ 雲端設定</button>
-  <span class="cloud-note">共用：市場、CSV、候選、AI 覆核、決策。保留本地：持倉、戰報、個人火控。</span>
+  <span class="sync-time-pill" id="topLastSharedSync">最後同步：尚未同步</span>
+  <div class="cloud-main-actions">
+    <button class="btn main-load-btn" id="loadSharedTopBtn" type="button">📥 讀取共用資料</button>
+    <button class="btn secondary" onclick="openCloudModal()" type="button">☁️ 雲端設定 / 同步管理</button>
+  </div>
+  <div class="first-use-tip">第一次使用請先按「讀取共用資料」，系統會載入共用的市場、CSV、候選與 AI 覆核資料；同步寫回仍放在雲端設定內，避免朋友誤按覆蓋。</div>
 </div>
 
 <div class="layout">
@@ -457,46 +498,20 @@
 
 <div class="close-overlay" id="uiGuideModal">
   <div class="close-modal" style="width:min(980px,95%)">
-    <div class="panel-title" style="margin-bottom:12px">📘 AI 戰艦 UI 功能導覽</div>
-    <div class="ok-box"><strong>這套 UI 的核心好處</strong><br>把「市場判斷、候選篩選、AI 覆核、決策、掛單、持倉監控」整合在同一個工作流裡。你晚上只要照順序往下操作，就能快速完成隔日掛單前的整理與確認。</div>
+    <div class="panel-title" style="margin-bottom:12px">📘 AI 戰艦怎麼幫你作戰</div>
+    <div class="ok-box"><strong>一句話：</strong><br>AI 戰艦會先看市場強弱，再用雙引擎篩出「有動能、但不過熱」的強勢股，最後交給 AI 嚴選官做題材、法人與新聞覆核，幫你把隔日智慧單名單壓到最乾淨。</div>
 
     <div class="help-grid" style="margin-top:14px">
-      <div class="help-item">
-        <strong>STEP 1｜市場戰況</strong>
-        先判斷今天能不能打。先看大盤，再決定今晚火力，避免在不適合的盤勢亂掛單。
-      </div>
-      <div class="help-item">
-        <strong>STEP 2｜CSV 本地初篩</strong>
-        把 TradingView 候選股快速做本地評分，先把不該打、過熱、風報比差的先排除。
-      </div>
-      <div class="help-item">
-        <strong>STEP 4｜AI 戰術覆核</strong>
-        AI 只負責幫你檢查候選股的題材、法人、新聞與短線風險，不是重新海選市場。
-      </div>
-      <div class="help-item">
-        <strong>STEP 4.5｜決策模式</strong>
-        這區是本地模型和 AI 的仲裁區，可以本地優先、AI 優先、交集模式，或自動判斷。
-      </div>
-      <div class="help-item">
-        <strong>STEP 5｜掛單確認區</strong>
-        睡前最後確認明天要掛的標的、停損、停利和風險，避免來回找資料。
-      </div>
-      <div class="help-item">
-        <strong>STEP 6｜持倉戰情中心</strong>
-        用來管理已進場股票，支援彈窗輸入與自動預填停損停利，節省大量操作時間。
-      </div>
-      <div class="help-item">
-        <strong>候選詳卡總覽</strong>
-        把候選股放到下方獨立區塊，主流程不會被大量卡片塞滿，需要細看時再展開。
-      </div>
-      <div class="help-item">
-        <strong>右上角系統設定</strong>
-        把總資金、單日風險、單檔上限、連敗次數放進彈窗，不占主畫面空間。
-      </div>
+      <div class="help-item"><strong>1｜先判斷今天能不能打</strong>系統會依市場分數、漲跌家數、OTC 與加權強弱，決定今天是進攻、保守，還是乾脆休兵。</div>
+      <div class="help-item"><strong>2｜從候選股抓出強勢股</strong>貼上 TradingView CSV 後，戰艦會自動過濾過熱、爆量失控、乖離過大的股票。</div>
+      <div class="help-item"><strong>3｜雙引擎共振</strong>引擎 A 看短線動能，引擎 B 做基本面排雷；同時合格的股票，才有資格進入主攻名單。</div>
+      <div class="help-item"><strong>4｜AI 嚴選官覆核</strong>AI 只在系統篩出的名單內，檢查題材是否延續、法人是否偏多、新聞是否可能利多出盡。</div>
+      <div class="help-item"><strong>5｜隔日智慧單紀律</strong>系統會把可掛單標的、停損、停利與風險整理好，讓你晚上決策、隔天照紀律執行。</div>
+      <div class="help-item"><strong>6｜持倉戰情中心</strong>已進場股票可以追蹤損益、停損、停利與移動停利，避免盤中情緒化亂操作。</div>
     </div>
 
     <div class="divider"></div>
-    <div class="warning-box"><strong>整體優點</strong><br>這套 UI 不是單純看資料，而是把你晚上真正會做的事排成固定流程：先看盤、再篩股、再看 AI、再做決策、再掛單、最後管持倉。這樣能減少漏看、少切頁、少重複計算，也比較不容易因情緒亂下單。</div>
+    <div class="warning-box"><strong>適合誰？</strong><br>適合想做台股短線、但不想每天靠感覺追高的人。它的核心不是叫你一直買，而是幫你把「不能打的盤、不能追的股、不能碰的風險」先擋掉。</div>
 
     <div class="toolbar" style="margin-top:18px">
       <button class="btn secondary" onclick="document.getElementById('uiGuideModal').classList.remove('show')" style="flex:1">關閉導覽</button>
@@ -517,6 +532,13 @@
     </div>
     <div class="divider"></div>
     <div class="warning-box"><strong>建議架構</strong><br>HTML 放 GitHub Pages，共用資料放 Apps Script / Google Sheet。大家開同一個 UI 能看到同一份市場、候選與 AI 判斷，但持倉仍然各自獨立。</div><div class="footnote" style="margin-top:10px">這版會強制補上預設 API 與房間代號。就算舊的 localStorage 沒有填值，也會自動帶入，不需要手動輸入。</div>
+    <div class="sync-danger-zone">
+      <div class="footnote"><strong>同步管理</strong><br>「讀取」會把共用市場與候選資料帶入本機；「同步」會把你目前畫面的共用資料寫回雲端。為避免新手誤按，這兩個按鈕只放在這裡。</div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn" id="loadSharedBtn">讀取共用資料</button>
+        <button class="btn green" id="saveSharedBtn">同步共用資料</button>
+      </div>
+    </div>
     <div class="toolbar" style="margin-top:18px">
       <button class="btn secondary" onclick="document.getElementById('cloudModal').classList.remove('show')" style="flex:1">關閉</button>
       <button class="btn" id="saveCloudConfigBtn" style="flex:1">儲存雲端設定</button>
@@ -594,12 +616,13 @@ let state = loadState();
 
     function updateCloudBadgeFinal(statusText=''){
       const el = document.getElementById('cloudStatusBadge');
-      if(!el) return;
+      const timeEl = document.getElementById('topLastSharedSync');
       const base = state.cloud?.roomId || FORCED_CLOUD_ROOM;
+      const syncText = state.cloud?.lastSharedSync ? `最後同步：${state.cloud.lastSharedSync}` : '最後同步：尚未同步';
+      if(timeEl) timeEl.textContent = syncText;
+      if(!el) return;
       if(statusText) {
         el.textContent = `半雲端模式｜${statusText}`;
-      } else if(state.cloud?.lastSharedSync) {
-        el.textContent = `半雲端模式｜${base}｜上次同步 ${state.cloud.lastSharedSync}`;
       } else {
         el.textContent = `半雲端模式｜${base}｜已連線`;
       }
@@ -1336,7 +1359,7 @@ let state = loadState();
       return { level:'正常', cls:'green', text:'未觸發重大警報。' };
     }
 
-    function renderTopStatusBar(){ calculateMarket(); const { lossMode, effectiveMaxNewPositions } = getEffectiveSettings(); $('topStatusBar').innerHTML = `<div class="pill ${signalClass(state.market.signal)}">市場燈號：${state.market.signal.toUpperCase()}</div><div class="pill cyan">系統模式：${lossMode.mode}</div><div class="pill">連敗：${state.risk.lossStreak}</div><div class="pill purple">開倉上限：${effectiveMaxNewPositions}</div><div class="pill ${state.aiReview?.parsed ? 'green':'purple'}">AI覆核：${state.aiReview?.parsed ? '已載入':'未載入'}</div>`; }
+    function renderTopStatusBar(){ calculateMarket(); const { lossMode, effectiveMaxNewPositions } = getEffectiveSettings(); const last = state.lastSync || '-'; $('topStatusBar').innerHTML = `<div class="pill ${signalClass(state.market.signal)}">市場燈號：${state.market.signal.toUpperCase()}</div><div class="pill cyan">系統模式：${lossMode.mode}</div><div class="pill">連敗：${state.risk.lossStreak}</div><div class="pill purple">開倉上限：${effectiveMaxNewPositions}</div><div class="pill green">最後同步：${last}</div><div class="pill ${state.aiReview?.parsed ? 'green':'purple'}">AI覆核：${state.aiReview?.parsed ? '已載入':'未載入'}</div>`; }
     function renderHero(){ const summary = getDashboardSummary(); const perf=getPerformance(); const items=[{label:'市場總分',value:fmt(state.market.totalScore,1),color:signalClass(state.market.signal)},{label:'今日可開新倉',value:`${summary.effectiveMaxNewPositions} 檔`},{label:'單日風險額',value:`NT$ ${fmt(summary.dailyRiskAmount)}`},{label:'持倉數量',value:`${summary.openPositions.length} 檔`},{label:'已占用資金',value:`NT$ ${fmt(summary.usedCapital)}`},{label:'剩餘資金',value:`NT$ ${fmt(summary.remainingCash)}`},{label:'飛輪累積 %',value:pct(perf.flywheelPct,2),color:perf.flywheelPct>=0?'green':'red'},{label:'平倉勝率',value:pct(perf.winRate,1),color:perf.winRate>=50?'green':'yellow'}]; $('heroMetrics').innerHTML=items.map(x=>`<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color||''}">${x.value}</div></div>`).join(''); $('todayInstruction').textContent=state.market.instruction; $('lastSyncTime').textContent=state.lastSync||'-'; }
 
     function renderMarket(){ const r=state.market.radar||{}; $('marketRadarGrid').innerHTML=`<div class="radar-item"><div class="radar-title">廣度擴散</div><div class="radar-bar"><div class="radar-fill" style="width:${r.breadth||0}%"></div></div><div class="radar-score">${r.breadth||0}</div></div><div class="radar-item"><div class="radar-title">情緒熱度</div><div class="radar-bar"><div class="radar-fill" style="width:${r.sentiment||0}%"></div></div><div class="radar-score">${r.sentiment||0}</div></div><div class="radar-item"><div class="radar-title">加權強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.taiex||0}%"></div></div><div class="radar-score">${pct(state.market.taiexChange,2)}</div></div><div class="radar-item"><div class="radar-title">OTC 強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.otc||0}%"></div></div><div class="radar-score">${pct(state.market.otcChange,2)}</div></div><div class="radar-item"><div class="radar-title">漲跌停優勢</div><div class="radar-bar"><div class="radar-fill" style="width:${r.spread||0}%"></div></div><div class="radar-score">${fmt(num(state.market.limitUp)-num(state.market.limitDown),0)}</div></div><div class="radar-item"><div class="radar-title">最終戰況</div><div class="radar-bar"><div class="radar-fill" style="width:${r.total||0}%"></div></div><div class="radar-score ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()} / ${fmt(state.market.totalScore,1)}</div></div>`; $('marketSummary').innerHTML=`<div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div></div><div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div></div><div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div></div>`; $('marketExplainBox').innerHTML=(state.market.explainParts||[]).length ? state.market.explainParts.map(x=>`<div class="explain-item">${x}</div>`).join('') : `<div class="footnote">尚無燈號判定說明。</div>`; }
@@ -1827,13 +1850,15 @@ ${candidatesText}
       // 半雲端按鈕修正
       $('saveCloudConfigBtn')?.addEventListener('click', saveCloudConfig);
       document.querySelectorAll("button[onclick=\"openCloudModal()\"]").forEach(btn=>btn.addEventListener('click', ()=>{ ensureCloudDefaults(); syncCloudInputs(); }));
-      $('loadSharedBtn')?.addEventListener('click', ()=>{
+      const runLoadShared = ()=>{
         loadSharedFromCloud().catch(err=>{
           console.error(err);
           updateCloudBadge('半雲端模式｜讀取失敗');
           alert('讀取共用資料失敗：' + err.message);
         });
-      });
+      };
+      $('loadSharedBtn')?.addEventListener('click', runLoadShared);
+      $('loadSharedTopBtn')?.addEventListener('click', runLoadShared);
       $('saveSharedBtn')?.addEventListener('click', ()=>{
         saveSharedToCloud().catch(err=>{
           console.error(err);
