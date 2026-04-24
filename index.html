@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.7.4｜按鈕修復版</title>
+<title>AI 戰艦 Pro Max v10.7.5｜CSV按鈕修復版</title>
 <style>
     :root{
       --bg:#071019;
@@ -189,7 +189,7 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.7.4 按鈕修復版</h1>
+<h1>AI 戰艦 Pro Max v10.7.5 CSV按鈕修復版</h1>
 <div class="sub">CSV 彈性防呆 ｜ 雙引擎過濾 ｜ AI 絕對物理隔離</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
@@ -732,6 +732,45 @@ let state = loadState();
       return "x";
     }
 
+
+
+    // ===== v10.7.5 修復：補齊決策分與 AI 標籤函式 =====
+    function getAiFlags(symbol){
+      const p = state.aiReview?.parsed || {};
+      const s = String(symbol || '').split(' ')[0];
+      const match = (pick) => {
+        const ps = String(pick?.symbol || '').trim();
+        return ps && (ps.includes(s) || s.includes(ps.split(' ')[0]));
+      };
+      return { isTop: match(p.top_pick), isBackup: match(p.backup_pick), isAvoid: match(p.avoid_pick) };
+    }
+
+    function getDecisionScore(c){
+      if(!c) return 0;
+      let score = Number(c.localScore || 0);
+      const gradeBonus = {'S+':20,'A':10,'B':0,'C':-20,'X':-50};
+      score += gradeBonus[c.grade] || 0;
+      if(c.selected) score += 8;
+      if(c.isMainAttackCandidate) score += 10;
+      if(c.rejected || c.hardReject || isHardForbidden(c)) score -= 100;
+      const ai = getAiFlags(c.symbol);
+      if(ai.isTop) score += 12;
+      if(ai.isBackup) score += 5;
+      if(ai.isAvoid) score -= 50;
+      return Math.round(score * 10) / 10;
+    }
+
+    function getDecisionTag(c, idx=0){
+      if(!c) return { text:'無資料', cls:'red', reason:'無候選資料' };
+      if(isHardForbidden(c) || c.rejected || c.grade === 'C' || c.grade === 'X'){
+        return { text:'禁止', cls:'red', reason:(c.rejectReasons||c.warnings||['不符合風控']).join('、') };
+      }
+      if(c.grade === 'S+') return { text:'S+共振', cls:'green', reason:'雙引擎通過，可列主攻候選' };
+      if(c.grade === 'A') return { text:'A備選', cls:'cyan', reason:'動能可用，但需強勢盤或小倉' };
+      if(c.grade === 'B') return { text:'B觀察', cls:'yellow', reason:'基本面尚可但動能不足' };
+      return { text:'觀察', cls:'yellow', reason:'需人工確認' };
+    }
+
     function scoreCandidateCsv(stock, market){
       const close = safeNum(stock.close);
       const sma20 = safeNum(stock.sma20, NaN);
@@ -842,24 +881,6 @@ let state = loadState();
       };
     }
 
-
-
-    // ===== v10.7.4 修復：補齊決策分數函式 =====
-    function getDecisionScore(c){
-      if(!c) return 0;
-      let score = Number(c.localScore || 0);
-      const gradeBonus = {'S+':20,'A':10,'B':0,'C':-20,'X':-50};
-      score += gradeBonus[c.grade] || 0;
-      if(c.selected) score += 8;
-      if(c.isMainAttackCandidate) score += 10;
-      if(c.rejected || c.hardReject || isHardForbidden(c)) score -= 100;
-      const ai = (typeof getAiFlags === "function") ? getAiFlags(c.symbol) : {isTop:false,isBackup:false,isAvoid:false};
-      if(ai.isTop) score += 12;
-      if(ai.isBackup) score += 5;
-      if(ai.isAvoid) score -= 50;
-      return Math.round(score * 10) / 10;
-    }
-
     function rankCandidates(candidates, market){
       const scored = candidates.map(stock => {
         const s = scoreCandidateCsv(stock, market);
@@ -966,23 +987,6 @@ let state = loadState();
     }
 
     function fillInputsFromState(){ $('decisionMode') && ($('decisionMode').value = state.decision?.mode || 'auto'); $('autoHeatThreshold') && ($('autoHeatThreshold').value = state.decision?.autoHeatThreshold ?? 20); $('autoScoreGap') && ($('autoScoreGap').value = state.decision?.autoScoreGap ?? 12); $('advancersInput').value=state.market.advancers; $('declinersInput').value=state.market.decliners; $('limitUpInput').value=state.market.limitUp; $('limitDownInput').value=state.market.limitDown; $('otcChangeInput').value=state.market.otcChange; $('taiexChangeInput').value=state.market.taiexChange; $('capitalInput').value=state.risk.capital; $('availableCashInput').value=state.risk.availableCash; $('dailyRiskPercentInput').value=state.risk.dailyRiskPercent; $('singlePositionCapitalPercentInput').value=state.risk.singlePositionCapitalPercent; $('maxNewPositionsInput').value=state.risk.maxNewPositions; $('lossStreakInput').value=state.risk.lossStreak; $('candidateTextarea').value=state.candidatesRawText||''; $('aiPromptBox').value=state.aiReview?.prompt||''; $('aiResultBox').value=state.aiReview?.rawResponse||''; }
-
-
-
-    // ===== v10.7.4 修復：補齊 AI 標記函式 =====
-    function getAiFlags(symbol){
-      const p = state.aiReview?.parsed || {};
-      const s = String(symbol || '').split(' ')[0];
-      const match = (pick) => {
-        const ps = String(pick?.symbol || '').trim();
-        return ps && (ps.includes(s) || s.includes(ps.split(' ')[0]));
-      };
-      return {
-        isTop: match(p.top_pick),
-        isBackup: match(p.backup_pick),
-        isAvoid: match(p.avoid_pick)
-      };
-    }
 
     function getLocalDecisionTop(limit=2){
       return guardTradableRows(state.candidates)
@@ -1255,20 +1259,81 @@ let state = loadState();
       URL.revokeObjectURL(a.href);
     }
 
-    function renderTopStatusBar(){ calculateMarket(); const { lossMode, effectiveMaxNewPositions } = getEffectiveSettings(); $('topStatusBar').innerHTML = `<div class="pill ${signalClass(state.market.signal)}">市場燈號：${state.market.signal.toUpperCase()}</div><div class="pill cyan">系統模式：${lossMode.mode}</div><div class="pill">連敗：${state.risk.lossStreak}</div><div class="pill purple">開倉上限：${effectiveMaxNewPositions}</div><div class="pill ${state.aiReview?.parsed ? 'green':'purple'}">AI覆核：${state.aiReview?.parsed ? '已載入':'未載入'}</div>`; }
-    function renderHero(){ const summary = getDashboardSummary(); const perf=getPerformance(); const items=[{label:'市場總分',value:fmt(state.market.totalScore,1),color:signalClass(state.market.signal)},{label:'今日可開新倉',value:`${summary.effectiveMaxNewPositions} 檔`},{label:'單日風險額',value:`NT$ ${fmt(summary.dailyRiskAmount)}`},{label:'持倉數量',value:`${summary.openPositions.length} 檔`},{label:'已占用資金',value:`NT$ ${fmt(summary.usedCapital)}`},{label:'剩餘資金',value:`NT$ ${fmt(summary.remainingCash)}`},{label:'飛輪累積 %',value:pct(perf.flywheelPct,2),color:perf.flywheelPct>=0?'green':'red'},{label:'平倉勝率',value:pct(perf.winRate,1),color:perf.winRate>=50?'green':'yellow'}]; $('heroMetrics').innerHTML=items.map(x=>`<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color||''}">${x.value}</div></div>`).join(''); $('todayInstruction').textContent=state.market.instruction; $('lastSyncTime').textContent=state.lastSync||'-'; }
-
-    function renderMarket(){ const r=state.market.radar||{}; $('marketRadarGrid').innerHTML=`<div class="radar-item"><div class="radar-title">廣度擴散</div><div class="radar-bar"><div class="radar-fill" style="width:${r.breadth||0}%"></div></div><div class="radar-score">${r.breadth||0}</div></div><div class="radar-item"><div class="radar-title">情緒熱度</div><div class="radar-bar"><div class="radar-fill" style="width:${r.sentiment||0}%"></div></div><div class="radar-score">${r.sentiment||0}</div></div><div class="radar-item"><div class="radar-title">加權強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.taiex||0}%"></div></div><div class="radar-score">${pct(state.market.taiexChange,2)}</div></div><div class="radar-item"><div class="radar-title">OTC 強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.otc||0}%"></div></div><div class="radar-score">${pct(state.market.otcChange,2)}</div></div><div class="radar-item"><div class="radar-title">漲跌停優勢</div><div class="radar-bar"><div class="radar-fill" style="width:${r.spread||0}%"></div></div><div class="radar-score">${fmt(num(state.market.limitUp)-num(state.market.limitDown),0)}</div></div><div class="radar-item"><div class="radar-title">最終戰況</div><div class="radar-bar"><div class="radar-fill" style="width:${r.total||0}%"></div></div><div class="radar-score ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()} / ${fmt(state.market.totalScore,1)}</div></div>`; $('marketSummary').innerHTML=`<div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div></div><div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div></div><div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div></div>`; $('marketExplainBox').innerHTML=(state.market.explainParts||[]).length ? state.market.explainParts.map(x=>`<div class="explain-item">${x}</div>`).join('') : `<div class="footnote">尚無燈號判定說明。</div>`; }
-    function renderRiskMode(){ const { lossMode, effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings(); const cls = lossMode.mode==='正常模式' ? 'ok-box' : 'warning-box'; $('riskModeSummary').innerHTML=`<div class="${cls}"><div><strong>目前模式：</strong>${lossMode.mode}</div><div><strong>有效單日風險：</strong>${fmt(effectiveDailyRiskPercent,2)}%</div><div><strong>有效新倉上限：</strong>${effectiveMaxNewPositions} 檔</div><div><strong>說明：</strong>${lossMode.note}</div></div>`; }
 
 
-    // ===== v10.7.4 修復：補齊自適應過濾描述函式 =====
+    // ===== v10.7.5 修復：補齊總覽 / 持倉渲染依賴函式 =====
+    function getAdaptiveExitProfile(){
+      if(state.market?.signal === 'red') return { label:'紅燈防守', stopLossPct:3, trailGapPct:3, lock1:5, lock2:8 };
+      if(state.market?.signal === 'green') return { label:'綠燈攻擊', stopLossPct:5, trailGapPct:5, lock1:8, lock2:12 };
+      return { label:'黃燈標準', stopLossPct:4, trailGapPct:4, lock1:6, lock2:10 };
+    }
+
     function getAdaptiveFilterProfile(){
       if(state.market?.signal === 'green') return { label:'綠燈攻擊濾網', minVolume:1000, minRelVolume:1.2, rsiMin:55, rsiMax:75, maxDeviation20:18 };
       if(state.market?.signal === 'red') return { label:'紅燈防守濾網', minVolume:1000, minRelVolume:1.5, rsiMin:60, rsiMax:70, maxDeviation20:10 };
       return { label:'黃燈標準濾網', minVolume:1000, minRelVolume:1.5, rsiMin:60, rsiMax:72, maxDeviation20:15 };
     }
 
+    function getOpenPositions(){
+      return (state.positions || []).filter(p => p && p.isOpen !== false);
+    }
+
+    function getPerformance(){
+      const logs = state.logs || [];
+      const totalTrades = logs.length;
+      const wins = logs.filter(l => Number(l.pnl || l.realizedPnL || 0) > 0).length;
+      const totalPnl = logs.reduce((s,l)=>s + Number(l.pnl || l.realizedPnL || 0), 0);
+      const avgReturn = totalTrades ? logs.reduce((s,l)=>s + Number(l.returnPct || l.pnlPct || l.realizedPct || 0), 0) / totalTrades : 0;
+      const winRate = totalTrades ? wins / totalTrades * 100 : 0;
+      const base = Number(state.risk?.capital || 0) || 1;
+      const flywheelPct = totalPnl / base * 100;
+      return { totalTrades, wins, winRate, totalPnl, avgReturn, flywheelPct };
+    }
+
+    function getDashboardSummary(){
+      const { effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings();
+      const openPositions = getOpenPositions();
+      const usedCapital = getUsedCapitalFromOpenPositions();
+      const remainingCash = Math.max(0, Number(state.risk?.availableCash || 0) - usedCapital);
+      const dailyRiskAmount = Number(state.risk?.capital || 0) * (effectiveDailyRiskPercent / 100);
+      return { effectiveDailyRiskPercent, effectiveMaxNewPositions, openPositions, usedCapital, remainingCash, dailyRiskAmount };
+    }
+
+    function updateTrailingStop(pos){
+      if(!pos || pos.isOpen === false) return pos;
+      const profile = getAdaptiveExitProfile();
+      const current = Number(pos.currentPrice || pos.lastClose || pos.entryPrice || pos.buyPrice || 0);
+      if(current > 0) pos.highestPrice = Math.max(Number(pos.highestPrice || 0), current);
+      const highest = Number(pos.highestPrice || current || 0);
+      const baseStop = Number(pos.initialStop || pos.stopLossPrice || (pos.entryPrice ? pos.entryPrice * 0.97 : 0));
+      const trailStop = highest > 0 ? highest * (1 - profile.trailGapPct / 100) : baseStop;
+      pos.trailingStop = Number(Math.max(baseStop || 0, trailStop || 0).toFixed(2));
+      return pos;
+    }
+
+    function getHoldingAction(p, portfolioStats){
+      const m = computePositionMetrics(p);
+      if(state.market?.signal === 'red') return '防守/不加碼';
+      if(portfolioStats && portfolioStats.drop <= -5) return '組合熔斷/降倉';
+      if(m.dynamicRejected) return '動態降級/減碼';
+      if(m.status && (m.status.includes('停損') || m.status.includes('停利') || m.status.includes('移動'))) return m.status;
+      return '續抱觀察';
+    }
+
+    function getHoldingRiskInfo(p, portfolioStats){
+      const m = computePositionMetrics(p);
+      if(m.dynamicRejected) return { level:'高', cls:'red', text:'動態評級不符，優先防守。' };
+      if(state.market?.signal === 'red') return { level:'高', cls:'red', text:'市場紅燈，只守不攻。' };
+      if(portfolioStats && portfolioStats.drop <= -5) return { level:'高', cls:'red', text:'組合回撤過大。' };
+      if(m.toStopPct !== null && Math.abs(m.toStopPct) <= 2) return { level:'中高', cls:'yellow', text:'接近停損。' };
+      return { level:'正常', cls:'green', text:'未觸發重大警報。' };
+    }
+
+    function renderTopStatusBar(){ calculateMarket(); const { lossMode, effectiveMaxNewPositions } = getEffectiveSettings(); $('topStatusBar').innerHTML = `<div class="pill ${signalClass(state.market.signal)}">市場燈號：${state.market.signal.toUpperCase()}</div><div class="pill cyan">系統模式：${lossMode.mode}</div><div class="pill">連敗：${state.risk.lossStreak}</div><div class="pill purple">開倉上限：${effectiveMaxNewPositions}</div><div class="pill ${state.aiReview?.parsed ? 'green':'purple'}">AI覆核：${state.aiReview?.parsed ? '已載入':'未載入'}</div>`; }
+    function renderHero(){ const summary = getDashboardSummary(); const perf=getPerformance(); const items=[{label:'市場總分',value:fmt(state.market.totalScore,1),color:signalClass(state.market.signal)},{label:'今日可開新倉',value:`${summary.effectiveMaxNewPositions} 檔`},{label:'單日風險額',value:`NT$ ${fmt(summary.dailyRiskAmount)}`},{label:'持倉數量',value:`${summary.openPositions.length} 檔`},{label:'已占用資金',value:`NT$ ${fmt(summary.usedCapital)}`},{label:'剩餘資金',value:`NT$ ${fmt(summary.remainingCash)}`},{label:'飛輪累積 %',value:pct(perf.flywheelPct,2),color:perf.flywheelPct>=0?'green':'red'},{label:'平倉勝率',value:pct(perf.winRate,1),color:perf.winRate>=50?'green':'yellow'}]; $('heroMetrics').innerHTML=items.map(x=>`<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color||''}">${x.value}</div></div>`).join(''); $('todayInstruction').textContent=state.market.instruction; $('lastSyncTime').textContent=state.lastSync||'-'; }
+
+    function renderMarket(){ const r=state.market.radar||{}; $('marketRadarGrid').innerHTML=`<div class="radar-item"><div class="radar-title">廣度擴散</div><div class="radar-bar"><div class="radar-fill" style="width:${r.breadth||0}%"></div></div><div class="radar-score">${r.breadth||0}</div></div><div class="radar-item"><div class="radar-title">情緒熱度</div><div class="radar-bar"><div class="radar-fill" style="width:${r.sentiment||0}%"></div></div><div class="radar-score">${r.sentiment||0}</div></div><div class="radar-item"><div class="radar-title">加權強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.taiex||0}%"></div></div><div class="radar-score">${pct(state.market.taiexChange,2)}</div></div><div class="radar-item"><div class="radar-title">OTC 強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.otc||0}%"></div></div><div class="radar-score">${pct(state.market.otcChange,2)}</div></div><div class="radar-item"><div class="radar-title">漲跌停優勢</div><div class="radar-bar"><div class="radar-fill" style="width:${r.spread||0}%"></div></div><div class="radar-score">${fmt(num(state.market.limitUp)-num(state.market.limitDown),0)}</div></div><div class="radar-item"><div class="radar-title">最終戰況</div><div class="radar-bar"><div class="radar-fill" style="width:${r.total||0}%"></div></div><div class="radar-score ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()} / ${fmt(state.market.totalScore,1)}</div></div>`; $('marketSummary').innerHTML=`<div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div></div><div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div></div><div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div></div>`; $('marketExplainBox').innerHTML=(state.market.explainParts||[]).length ? state.market.explainParts.map(x=>`<div class="explain-item">${x}</div>`).join('') : `<div class="footnote">尚無燈號判定說明。</div>`; }
+    function renderRiskMode(){ const { lossMode, effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings(); const cls = lossMode.mode==='正常模式' ? 'ok-box' : 'warning-box'; $('riskModeSummary').innerHTML=`<div class="${cls}"><div><strong>目前模式：</strong>${lossMode.mode}</div><div><strong>有效單日風險：</strong>${fmt(effectiveDailyRiskPercent,2)}%</div><div><strong>有效新倉上限：</strong>${effectiveMaxNewPositions} 檔</div><div><strong>說明：</strong>${lossMode.note}</div></div>`; }
     function renderMainAttackSummary(){
       const ranked = getFinalSelectedRows(2).map(c=>({ ...c, decisionScore:getDecisionScore(c) }));
       const ai=state.aiReview?.parsed;
@@ -1290,20 +1355,6 @@ let state = loadState();
       $('mainAttackSummary').innerHTML=html;
     }
 
-
-
-
-    // ===== v10.7.4 修復：補齊決策標籤函式 =====
-    function getDecisionTag(c, idx=0){
-      if(!c) return { text:'無資料', cls:'red', reason:'無候選資料' };
-      if(isHardForbidden(c) || c.rejected || c.grade === 'C' || c.grade === 'X'){
-        return { text:'禁止', cls:'red', reason:(c.rejectReasons||c.warnings||['不符合風控']).join('、') };
-      }
-      if(c.grade === 'S+') return { text:'S+共振', cls:'green', reason:'雙引擎通過，可列主攻候選' };
-      if(c.grade === 'A') return { text:'A備選', cls:'cyan', reason:'動能可用，但需強勢盤或小倉' };
-      if(c.grade === 'B') return { text:'B觀察', cls:'yellow', reason:'基本面尚可但動能不足' };
-      return { text:'觀察', cls:'yellow', reason:'需人工確認' };
-    }
 
     function renderCandidateRanking(){
       const list = (state.candidates || []).map(c=>({ ...c, decisionScore:getDecisionScore(c) }))
@@ -1391,15 +1442,15 @@ ${candidatesText}
 
 
 
-    // ===== v10.7.4 修復：補齊 AI Prompt 複製 / 解析 / 清空函式 =====
+    // ===== v10.7.5 修復：補齊 AI Prompt 複製 / 解析 / 清空函式 =====
     async function copyAiPrompt(){
       const text = $('aiPromptBox')?.value || state.aiReview?.prompt || '';
       if(!text) return alert('目前沒有可複製的 Prompt');
       try{
-        if(navigator.clipboard && navigator.clipboard.writeText){
+        if(typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(text);
         }else{
-          $('aiPromptBox')?.select();
+          $('aiPromptBox')?.select?.();
           document.execCommand && document.execCommand('copy');
         }
         alert('AI Prompt 已複製');
@@ -1789,126 +1840,87 @@ ${candidatesText}
 
 
 
-    // ===== v10.7.4 修復：補齊遺失的持倉/平倉函式，避免初始化中斷造成全站按鈕失效 =====
-    function getOpenPositions(){
-      return (state.positions || []).filter(p => p && p.isOpen !== false);
-    }
-
-    function getPerformance(){
-      const logs = state.logs || [];
-      const totalTrades = logs.length;
-      const wins = logs.filter(l => Number(l.pnl || 0) > 0).length;
-      const totalPnl = logs.reduce((s,l)=>s + Number(l.pnl || 0), 0);
-      const avgReturn = totalTrades ? logs.reduce((s,l)=>s + Number(l.returnPct || 0), 0) / totalTrades : 0;
-      const winRate = totalTrades ? wins / totalTrades * 100 : 0;
-      const base = Number(state.risk?.capital || 0) || 1;
-      const flywheelPct = totalPnl / base * 100;
-      return { totalTrades, wins, winRate, totalPnl, avgReturn, flywheelPct };
-    }
-
-    function getDashboardSummary(){
-      const { effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings();
-      const openPositions = getOpenPositions();
-      const usedCapital = getUsedCapitalFromOpenPositions();
-      const remainingCash = Math.max(0, Number(state.risk?.availableCash || 0) - usedCapital);
-      const dailyRiskAmount = Number(state.risk?.capital || 0) * (effectiveDailyRiskPercent / 100);
-      return { effectiveDailyRiskPercent, effectiveMaxNewPositions, openPositions, usedCapital, remainingCash, dailyRiskAmount };
-    }
-
-    function getAdaptiveExitProfile(){
-      if(state.market?.signal === 'red') return { label:'紅燈防守', stopLossPct:3, trailGapPct:3, lock1:5, lock2:8 };
-      if(state.market?.signal === 'green') return { label:'綠燈攻擊', stopLossPct:5, trailGapPct:5, lock1:8, lock2:12 };
-      return { label:'黃燈標準', stopLossPct:4, trailGapPct:4, lock1:6, lock2:10 };
-    }
-
-    function updateTrailingStop(pos){
-      if(!pos || pos.isOpen === false) return pos;
-      const profile = getAdaptiveExitProfile();
-      const current = Number(pos.currentPrice || pos.lastClose || pos.entryPrice || 0);
-      if(current > 0){
-        pos.highestPrice = Math.max(Number(pos.highestPrice || 0), current);
-      }
-      const highest = Number(pos.highestPrice || current || 0);
-      const baseStop = Number(pos.initialStop || pos.stopLossPrice || (pos.entryPrice ? pos.entryPrice * 0.97 : 0));
-      const trailStop = highest > 0 ? highest * (1 - profile.trailGapPct / 100) : baseStop;
-      pos.trailingStop = Number(Math.max(baseStop || 0, trailStop || 0).toFixed(2));
-      return pos;
-    }
-
-    function getHoldingAction(p, portfolioStats){
-      const m = computePositionMetrics(p);
-      if(state.market?.signal === 'red') return '防守/不加碼';
-      if(portfolioStats && portfolioStats.drop <= -5) return '組合熔斷/降倉';
-      if(m.dynamicRejected) return '動態降級/減碼';
-      if(m.status && (m.status.includes('停損') || m.status.includes('停利') || m.status.includes('移動'))) return m.status;
-      return '續抱觀察';
-    }
-
-    function getHoldingRiskInfo(p, portfolioStats){
-      const m = computePositionMetrics(p);
-      if(m.dynamicRejected) return { level:'高', cls:'red', text:'動態評級不符，優先防守。' };
-      if(state.market?.signal === 'red') return { level:'高', cls:'red', text:'市場紅燈，只守不攻。' };
-      if(portfolioStats && portfolioStats.drop <= -5) return { level:'高', cls:'red', text:'組合回撤過大。' };
-      if(m.toStopPct !== null && Math.abs(m.toStopPct) <= 2) return { level:'中高', cls:'yellow', text:'接近停損。' };
-      return { level:'正常', cls:'green', text:'未觸發重大警報。' };
-    }
-
-    function updatePositionMarket(id){
-      const p = (state.positions || []).find(x => x.id === id);
+    // ===== v10.7.5 修復：補齊缺失的持倉操作函式，避免初始化中斷 =====
+    function updatePositionMarket(idx){
+      const open = state.positions.filter(p => p.isOpen !== false);
+      const p = open[idx];
       if(!p) return;
-      const cur = prompt(`輸入 ${p.symbol} 今日收盤價`, p.currentPrice ?? p.lastClose ?? p.entryPrice ?? '');
-      if(cur === null) return;
-      const currentPrice = Number(cur);
-      if(!Number.isFinite(currentPrice) || currentPrice <= 0) return alert('收盤價格式錯誤');
-      const hi = prompt(`輸入 ${p.symbol} 今日最高價`, Math.max(Number(p.highestPrice || 0), currentPrice));
-      if(hi === null) return;
-      const highPrice = Number(hi);
-      if(!Number.isFinite(highPrice) || highPrice <= 0) return alert('最高價格式錯誤');
-      p.currentPrice = currentPrice;
-      p.lastClose = currentPrice;
-      p.highestPrice = Math.max(Number(p.highestPrice || 0), highPrice, currentPrice);
-      updateTrailingStop(p);
+      const current = prompt('請輸入最新現價', p.currentPrice ?? p.lastClose ?? p.entryPrice ?? '');
+      if(current === null) return;
+      const price = num(current, NaN);
+      if(!Number.isFinite(price) || price <= 0) return alert('現價格式錯誤');
+      const realIdx = state.positions.findIndex(x => x.id === p.id);
+      if(realIdx < 0) return;
+      const old = state.positions[realIdx];
+      const highest = Math.max(num(old.highestPrice, 0), price);
+      state.positions[realIdx] = {
+        ...old,
+        currentPrice: price,
+        lastClose: price,
+        highestPrice: highest,
+        ...computePositionMetrics({ ...old, currentPrice: price, lastClose: price, highestPrice: highest })
+      };
       saveState();
     }
 
-    function openClose(id){
-      const p = (state.positions || []).find(x => x.id === id);
+    function openClose(idx){
+      const open = state.positions.filter(p => p.isOpen !== false);
+      const p = open[idx];
       if(!p) return;
-      state.pendingCloseId = id;
-      if($('closeInfo')) $('closeInfo').textContent = `${p.symbol} ${p.name || ''}｜成本 ${fmt(p.entryPrice || p.buyPrice,2)}｜股數 ${fmt(p.shares || p.qty || 0)}`;
-      if($('closePrice')) $('closePrice').value = p.currentPrice || p.lastClose || '';
-      if($('closeOverlay')) $('closeOverlay').classList.add('show');
+      state.pendingCloseId = p.id;
+      if($('closeInfo')) $('closeInfo').textContent = `${p.symbol} ${p.name || ''}｜成本 ${fmtMoney(p.entryPrice || p.buyPrice)}｜現價 ${fmtMoney(p.currentPrice || p.lastClose)}`;
+      if($('closePrice')) $('closePrice').value = p.currentPrice || p.lastClose || p.entryPrice || p.buyPrice || '';
+      $('closeOverlay')?.classList.add('show');
     }
 
     function cancelClosePosition(){
       state.pendingCloseId = null;
-      if($('closeOverlay')) $('closeOverlay').classList.remove('show');
+      $('closeOverlay')?.classList.remove('show');
     }
 
     function confirmClosePosition(){
+      if(state.isClosing) return;
       const id = state.pendingCloseId;
-      const p = (state.positions || []).find(x => x.id === id);
-      if(!p) return cancelClosePosition();
-      const exitPrice = Number($('closePrice')?.value || p.currentPrice || p.lastClose || 0);
-      if(!Number.isFinite(exitPrice) || exitPrice <= 0) return alert('請輸入有效出場價');
-      const shares = Number(p.shares || p.qty || 0);
-      const entryPrice = Number(p.entryPrice || p.buyPrice || 0);
-      const pnl = (exitPrice - entryPrice) * shares;
-      const returnPct = entryPrice ? (exitPrice - entryPrice) / entryPrice * 100 : 0;
+      if(!id) return cancelClosePosition();
+      const idx = state.positions.findIndex(p => p.id === id);
+      if(idx < 0) return cancelClosePosition();
+      const p = state.positions[idx];
+      const closePrice = num($('closePrice')?.value, NaN);
+      if(!Number.isFinite(closePrice) || closePrice <= 0) return alert('請輸入正確平倉價格');
+      const shares = num(p.shares ?? p.qty, 0);
+      const entry = num(p.entryPrice ?? p.buyPrice, 0);
+      const pnl = (closePrice - entry) * shares;
+      const pnlPct = entry > 0 ? ((closePrice - entry) / entry) * 100 : 0;
       const reason = $('closeReason')?.value || 'Manual';
-      state.logs.unshift({
-        symbol:p.symbol, name:p.name || '', entryPrice, exitPrice, shares,
-        pnl, returnPct, result:pnl>0?'win':(pnl<0?'loss':'flat'), reason, exitDate:nowString()
+      state.isClosing = true;
+      state.positions[idx] = {
+        ...p,
+        isOpen: false,
+        closePrice,
+        exitPrice: closePrice,
+        exitDate: nowString(),
+        closeReason: reason,
+        realizedPnL: pnl,
+        realizedPct: pnlPct,
+        status: '已平倉'
+      };
+      state.logs.push({
+        id: uid('log'),
+        symbol: p.symbol,
+        name: p.name || '',
+        entryPrice: entry,
+        closePrice,
+        shares,
+        pnl,
+        pnlPct,
+        reason,
+        time: nowString()
       });
-      p.isOpen = false;
-      p.exitPrice = exitPrice;
-      p.exitDate = nowString();
-      p.closeReason = reason;
       state.pendingCloseId = null;
-      if($('closeOverlay')) $('closeOverlay').classList.remove('show');
+      state.isClosing = false;
+      $('closeOverlay')?.classList.remove('show');
       saveState();
     }
-
 
     window.toggleSelectCandidate = toggleSelectCandidate;
     window.addPositionFromCandidate = addPositionFromCandidate;
