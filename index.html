@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.13.3｜機構版・整張零股雙模式</title>
+<title>AI 戰艦 Pro Max v10.15.2.2｜半自動健康控管版</title>
 <style>
     :root{
       --bg:#071019;
@@ -229,7 +229,7 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.15.2</h1>
+<h1>AI 戰艦 Pro Max v10.15.2.2</h1>
 <div class="sub">UI強化版｜攻防雙模式｜AI進化｜機構級風控｜整張/零股雙軌</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
@@ -420,6 +420,8 @@
 <div class="panel-body">
 <div class="grid-5" id="performanceMetrics"></div>
 <div class="divider"></div>
+<div id="strategyHealthPanel"></div>
+<div class="divider"></div>
 <div class="btnrow" style="margin-bottom:14px">
   <button class="btn purple" onclick="document.getElementById('evolutionModal').classList.add('show')">🤖 AI 系統進化建議</button>
 </div>
@@ -519,7 +521,7 @@
 
 <div class="close-overlay" id="uiGuideModal">
   <div class="close-modal" style="width:min(1040px,95%)">
-    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.15.2｜攻防雙模・機構級交易系統</div>
+    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.15.2.2｜攻防雙模・策略健康觀測系統</div>
     <div class="ok-box" style="font-size:14px;line-height:1.75">
       <strong>核心定位：</strong><br>
       這不是單純選股工具，而是一套從「市場判斷 → 選股篩選 → AI覆核 → 攻防決策 → 倉位風控 → 出場管理 → 覆盤進化」串成閉環的戰情室系統。<br>
@@ -1919,7 +1921,89 @@ ${candidatesText}
     }
 
     function renderPositions(){ const openPositions=getOpenPositions(); if(openPositions.length===0){ $('positionsBox').innerHTML=`<div class="footnote">目前沒有開啟中的持倉。</div>`; return; } const portfolioStats=getPortfolioStats(); const lossMode=getLossMode(state.risk.lossStreak); const profile=getAdaptiveExitProfile(); let topAlert=`<div class="ok-box" style="margin-bottom:12px"><strong>目前出場模式：</strong>${profile.label}｜初始停損 ${profile.stopLossPct}%｜移動停利回撤 ${profile.trailGapPct}%｜第一鎖利 ${profile.lock1}%｜第二鎖利 ${profile.lock2}%</div>`; if(state.market.signal==='red'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 市場紅燈：</strong>禁止新倉，持倉全面進入防守狀態。</div>`; } else if(portfolioStats.drop <= -5){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 組合熔斷：</strong>總回撤 ${pct(portfolioStats.drop,2)}，優先降倉保命，只減不加。</div>`; } else if(lossMode.mode==='冷卻模式'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🧊 冷卻模式：</strong>連敗達標，禁止新倉，只管理舊倉。</div>`; } $('positionsBox').innerHTML=topAlert + openPositions.map(p=>{ const pnl=(p.currentPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((p.currentPrice-p.entryPrice)/p.entryPrice)*100:0; const stopDistance=p.currentPrice-p.trailingStop; const action=getHoldingAction(p, portfolioStats); const risk=getHoldingRiskInfo(p, portfolioStats); const dynamicCandidate = findCandidateBySymbol(p.symbol); const dynamicGrade = dynamicCandidate?.grade || p.dynamicGrade || ''; const dynamicRejected = dynamicCandidate ? isHardForbidden(dynamicCandidate) : false; return `<div class="card"><div class="card-head"><div><div class="symbol">${p.symbol} ${p.name||''}</div><div class="muted">建倉 ${p.entryDate}</div></div><span class="badge ${p.status.includes('撤退')?'red':(p.status.includes('鎖利')||p.status.includes('防守')?'yellow':'green')}">${p.status}</span></div><div class="mini"><div class="cell"><div class="k">成本</div><div class="v">${fmt(p.entryPrice,2)}</div></div><div class="cell"><div class="k">現價</div><div class="v">${fmt(p.currentPrice,2)}</div></div><div class="cell"><div class="k">浮盈虧</div><div class="v ${pnl>=0?'green':'red'}">NT$ ${fmt(pnl)}</div></div><div class="cell"><div class="k">報酬率</div><div class="v ${returnPct>=0?'green':'red'}">${pct(returnPct,2)}</div></div><div class="cell"><div class="k">歷史高點</div><div class="v">${fmt(p.highestPrice,2)}</div></div><div class="cell"><div class="k">移動停損</div><div class="v red">${fmt(p.trailingStop,2)}</div></div><div class="cell"><div class="k">初始停損</div><div class="v">${fmt(p.initialStop,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(p.shares)}</div></div><div class="cell"><div class="k">距停損空間</div><div class="v ${stopDistance<=0?'red':'yellow'}">${fmt(stopDistance,2)}</div></div><div class="cell"><div class="k">明日動作</div><div class="v">${action}</div></div><div class="cell"><div class="k">風險等級</div><div class="v ${risk.cls}">${risk.level}</div></div><div class="cell"><div class="k">診斷</div><div class="v">${risk.text}</div></div><div class="cell"><div class="k">動態評級</div><div class="v ${dynamicRejected?'red':'green'}">${dynamicGrade || '未同步'}</div></div><div class="cell"><div class="k">出場模式</div><div class="v">${p.exitModeLabel || getInstitutionalExitPlan(p).modeLabel}</div></div><div class="cell"><div class="k">階段</div><div class="v">${p.exitStage || getInstitutionalExitPlan(p).stage}</div></div></div>${renderInstitutionalExitInfo(p)}${dynamicRejected ? `<div class="warning-box" style="margin-top:10px">v10.8 持倉動態降級：此股已不符合 S+ 條件，明日優先防守／減碼／出場，不再加碼。</div>` : ''}${(state.market.signal==='red' || portfolioStats.drop <= -5 || lossMode.mode==='冷卻模式') ? `<div class="warning-box" style="margin-top:10px">系統防守警報：目前僅建議防守、減碼或平倉，不建議任何加碼動作。</div>` : ''}<div class="btnrow" style="margin-top:10px"><button class="btn small" onclick="updatePositionMarket('${p.id}')">更新收盤 / 高點</button><button class="btn small red" onclick="openClose('${p.id}')">真實平倉</button></div></div>`; }).join(''); }
-    function renderPerformance(){ const perf=getPerformance(); $('performanceMetrics').innerHTML=`<div class="metric"><div class="label">總交易筆數</div><div class="value">${fmt(perf.totalTrades)}</div></div><div class="metric"><div class="label">勝率</div><div class="value ${perf.winRate>=50?'green':'yellow'}">${pct(perf.winRate,1)}</div></div><div class="metric"><div class="label">累積損益</div><div class="value ${perf.totalPnl>=0?'green':'red'}">NT$ ${fmt(perf.totalPnl)}</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value ${perf.avgReturn>=0?'green':'red'}">${pct(perf.avgReturn,2)}</div></div><div class="metric"><div class="label">飛輪累積 %</div><div class="value ${perf.flywheelPct>=0?'green':'red'}">${pct(perf.flywheelPct,2)}</div></div>`; if(state.logs.length===0){ $('logsTable').innerHTML=`<div class="footnote">尚無歷史紀錄。</div>`; return; } $('logsTable').innerHTML=`<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>原因</th><th>日期</th></tr></thead><tbody>${state.logs.slice(0,12).map(l=>`<tr><td class="mono">${l.symbol}</td><td>${fmt(l.entryPrice,2)}</td><td>${fmt(l.exitPrice,2)}</td><td>${fmt(l.shares)}</td><td class="${l.pnl>=0?'green':'red'}">NT$ ${fmt(l.pnl)}</td><td class="${l.returnPct>=0?'green':'red'}">${pct(l.returnPct,2)}</td><td class="${l.result==='win'?'green':(l.result==='loss'?'red':'yellow')}">${l.result}</td><td>${l.reason||'-'}</td><td class="mono">${l.exitDate}</td></tr>`).join('')}</tbody></table>`; }
+
+
+    // ===== v10.15.2.2 半自動健康控管：只顯示，不鎖單 =====
+    function getStrategyHealthStats(limit=20){
+      const logs = (state.logs || []).slice(0, limit);
+      let wins = 0, losses = 0, grossWin = 0, grossLoss = 0;
+      let avgWinPctSum = 0, avgLossPctSum = 0;
+      let curLossStreak = 0, maxLossStreak = 0;
+      logs.forEach(l=>{
+        const pnl = Number(l.pnl || 0);
+        const ret = Number(l.returnPct || 0);
+        if(pnl > 0){
+          wins++; grossWin += pnl; avgWinPctSum += ret; curLossStreak = 0;
+        }else if(pnl < 0){
+          losses++; grossLoss += Math.abs(pnl); avgLossPctSum += Math.abs(ret); curLossStreak++; maxLossStreak = Math.max(maxLossStreak, curLossStreak);
+        }
+      });
+      const total = wins + losses;
+      const winRate = total ? wins / total * 100 : null;
+      const pf = grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? 999 : null);
+      return {
+        count: logs.length,
+        total,
+        wins,
+        losses,
+        winRate,
+        pf,
+        grossWin,
+        grossLoss,
+        avgWinPct: wins ? avgWinPctSum / wins : 0,
+        avgLossPct: losses ? avgLossPctSum / losses : 0,
+        maxLossStreak
+      };
+    }
+
+    function getStrategyHealthVerdict(stats){
+      if(!stats || stats.total < 5){
+        return { label:'🟦 樣本累積中', cls:'cyan', level:'觀測', advice:'交易樣本未滿 5 筆，暫不判斷策略強弱；先照系統紀律累積紀錄。' };
+      }
+      const pf = stats.pf === null ? 0 : stats.pf;
+      const wr = stats.winRate === null ? 0 : stats.winRate;
+      if(pf >= 1.4 && wr >= 55){
+        return { label:'🔥 健康｜可維持攻擊觀察', cls:'green', level:'健康', advice:'近況具備正期望，允許依系統攻防模式執行；不要手動亂放大風險。' };
+      }
+      if(pf >= 1.2){
+        return { label:'⚖ 正常｜穩定觀測', cls:'yellow', level:'正常', advice:'策略仍在可接受區間，維持目前設定，避免因短期波動過度調參。' };
+      }
+      if(pf >= 1.0){
+        return { label:'⚠ 低效｜建議收縮觀察', cls:'orange', level:'警告', advice:'獲利因子偏低，建議暫時避免手動加碼與主觀開攻擊，優先觀察選股與出場是否過早。' };
+      }
+      return { label:'🚨 失血｜只建議防守覆盤', cls:'red', level:'危險', advice:'近 20 筆呈現慢性失血，先停止主觀放寬條件，檢查假突破、出場與 TradingView 篩選模板。' };
+    }
+
+    function renderStrategyHealthPanel(){
+      const stats = getStrategyHealthStats(20);
+      const verdict = getStrategyHealthVerdict(stats);
+      const pfText = stats.pf === null ? '-' : (stats.pf >= 999 ? '∞' : fmt(stats.pf,2));
+      const winRateText = stats.winRate === null ? '-' : pct(stats.winRate,1);
+      const net = stats.grossWin - stats.grossLoss;
+      return `<div class="card" style="border-color:rgba(86,215,255,.22);box-shadow:0 0 0 1px rgba(86,215,255,.10),0 0 22px rgba(28,183,255,.08)">
+        <div class="card-head">
+          <div>
+            <div class="symbol">🧠 策略健康觀測艙</div>
+            <div class="muted">半自動健康控管：只提示、不鎖單、不自動改風險</div>
+          </div>
+          <span class="badge ${verdict.cls}">${verdict.label}</span>
+        </div>
+        <div class="mini">
+          <div class="cell"><div class="k">觀測樣本</div><div class="v">近 ${fmt(stats.count)} 筆</div></div>
+          <div class="cell"><div class="k">勝率</div><div class="v ${stats.winRate!==null && stats.winRate>=50?'green':'yellow'}">${winRateText}</div></div>
+          <div class="cell"><div class="k">PF 獲利因子</div><div class="v ${stats.pf!==null && stats.pf>=1.2?'green':'red'}">${pfText}</div></div>
+          <div class="cell"><div class="k">最大連敗</div><div class="v ${stats.maxLossStreak>=3?'red':'yellow'}">${fmt(stats.maxLossStreak)}</div></div>
+          <div class="cell"><div class="k">平均賺幅</div><div class="v green">${pct(stats.avgWinPct,2)}</div></div>
+          <div class="cell"><div class="k">平均賠幅</div><div class="v red">-${pct(stats.avgLossPct,2)}</div></div>
+          <div class="cell"><div class="k">觀測淨額</div><div class="v ${net>=0?'green':'red'}">NT$ ${fmt(net)}</div></div>
+          <div class="cell"><div class="k">建議狀態</div><div class="v ${verdict.cls}">${verdict.level}</div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="${verdict.cls==='red'?'warning-box':'ok-box'}"><strong>系統建議：</strong>${verdict.advice}<br><span class="footnote">PF &lt; 1.2 只會顯示警告，不會自動鎖單；真正的風險控制仍由紅燈、連敗、單筆風險與攻防模式負責。</span></div>
+      </div>`;
+    }
+
+    function renderPerformance(){ if($('strategyHealthPanel')) $('strategyHealthPanel').innerHTML = renderStrategyHealthPanel(); const perf=getPerformance(); $('performanceMetrics').innerHTML=`<div class="metric"><div class="label">總交易筆數</div><div class="value">${fmt(perf.totalTrades)}</div></div><div class="metric"><div class="label">勝率</div><div class="value ${perf.winRate>=50?'green':'yellow'}">${pct(perf.winRate,1)}</div></div><div class="metric"><div class="label">累積損益</div><div class="value ${perf.totalPnl>=0?'green':'red'}">NT$ ${fmt(perf.totalPnl)}</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value ${perf.avgReturn>=0?'green':'red'}">${pct(perf.avgReturn,2)}</div></div><div class="metric"><div class="label">飛輪累積 %</div><div class="value ${perf.flywheelPct>=0?'green':'red'}">${pct(perf.flywheelPct,2)}</div></div>`; if(state.logs.length===0){ $('logsTable').innerHTML=`<div class="footnote">尚無歷史紀錄。</div>`; return; } $('logsTable').innerHTML=`<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>原因</th><th>日期</th></tr></thead><tbody>${state.logs.slice(0,12).map(l=>`<tr><td class="mono">${l.symbol}</td><td>${fmt(l.entryPrice,2)}</td><td>${fmt(l.exitPrice,2)}</td><td>${fmt(l.shares)}</td><td class="${l.pnl>=0?'green':'red'}">NT$ ${fmt(l.pnl)}</td><td class="${l.returnPct>=0?'green':'red'}">${pct(l.returnPct,2)}</td><td class="${l.result==='win'?'green':(l.result==='loss'?'red':'yellow')}">${l.result}</td><td>${l.reason||'-'}</td><td class="mono">${l.exitDate}</td></tr>`).join('')}</tbody></table>`; }
     function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); if($('orderSummaryBox') && $('ordersTable')) renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
       if(btn){ btn.textContent = (state.ui?.candidateCardsExpanded ? '收合候選詳卡' : '展開候選詳卡'); }
       const body=$('candidateCardsPanelBody');
