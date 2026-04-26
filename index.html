@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.15.2.3.2｜持倉按鈕修正版</title>
+<title>AI 戰艦 Pro Max v10.15.2.4.2｜持倉按鈕修正版</title>
 <style>
     :root{
       --bg:#071019;
@@ -229,7 +229,7 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.15.2.3.2</h1>
+<h1>AI 戰艦 Pro Max v10.15.2.4.2</h1>
 <div class="sub">UI強化版｜攻防雙模式｜AI進化｜機構級風控｜整張/零股雙軌</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
@@ -521,7 +521,7 @@
 
 <div class="close-overlay" id="uiGuideModal">
   <div class="close-modal" style="width:min(1040px,95%)">
-    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.15.2.3.2｜攻防雙模・策略健康觀測系統</div>
+    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.15.2.4.2｜攻防雙模・策略健康觀測系統</div>
     <div class="ok-box" style="font-size:14px;line-height:1.75">
       <strong>核心定位：</strong><br>
       這不是單純選股工具，而是一套從「市場判斷 → 選股篩選 → AI覆核 → 攻防決策 → 倉位風控 → 出場管理 → 覆盤進化」串成閉環的戰情室系統。<br>
@@ -1469,7 +1469,8 @@ let state = loadState();
       $('positionsTableBody').innerHTML = state.positions.filter(p => p.isOpen !== false).map((p, idx) => {
         const m = computePositionMetrics(p);
         const modeText = `${m.exitModeLabel || '-'} / ${m.exitStage || '-'}`;
-        return `<tr><td><span class="badge-status ${m.statusClass}">${m.status}</span><br><span class="footnote">${modeText}</span></td><td>${m.symbol} ${m.name || ''}</td><td>${fmtMoney(m.buyPrice)}</td><td>${fmtMoney(m.currentPrice)}</td><td>${fmtPctSigned(m.pnlPct)}</td><td>${fmtMoney(m.pnlAmt)}</td><td>${fmtMoney(m.initialStop)}</td><td>${fmtMoney(m.effectiveStopLossPrice ?? m.stopLossPrice)}</td><td>${fmtMoney(m.takeProfit1Price)}</td><td>${fmtMoney(m.takeProfit2Price)}</td><td>${fmtMoney(m.highestPrice)}</td><td>${fmtPctSigned(m.drawdownFromHighPct)}</td><td><button class="action-btn" onclick="loadPositionToForm(${idx})">載入</button> <button class="action-btn" onclick="removePosition(${idx})">刪除</button></td></tr>`;
+        const ref = p.id || idx;
+        return `<tr><td><span class="badge-status ${m.statusClass}">${m.status}</span><br><span class="footnote">${modeText}</span></td><td>${m.symbol} ${m.name || ''}</td><td>${fmtMoney(m.buyPrice)}</td><td>${fmtMoney(m.currentPrice)}</td><td>${fmtPctSigned(m.pnlPct)}</td><td>${fmtMoney(m.pnlAmt)}</td><td>${fmtMoney(m.initialStop)}</td><td>${fmtMoney(m.effectiveStopLossPrice ?? m.stopLossPrice)}</td><td>${fmtMoney(m.takeProfit1Price)}</td><td>${fmtMoney(m.takeProfit2Price)}</td><td>${fmtMoney(m.highestPrice)}</td><td>${fmtPctSigned(m.drawdownFromHighPct)}</td><td><button class="action-btn" onclick="loadPositionToForm('${ref}')">載入</button> <button class="action-btn" onclick="removePosition('${ref}')">刪除</button></td></tr>`;
       }).join('');
     }
     function resolveOpenPositionRef(ref){
@@ -1504,6 +1505,7 @@ let state = loadState();
       $('trailPullback') && ($('trailPullback').value = p.trailPullback ?? 4);
       $('warnNearPct') && ($('warnNearPct').value = p.warnNearPct ?? 2);
       renderPositionPreview(computePositionMetrics(p));
+      $('addPosModal') && $('addPosModal').classList.add('show');
     }
     function removePosition(ref){
       const { p, realIdx } = resolveOpenPositionRef(ref);
