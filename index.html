@@ -229,8 +229,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.13.3</h1>
-<div class="sub">機構版｜整張/零股雙模式｜階梯保本｜風險透明化</div>
+<h1>AI 戰艦 Pro Max v10.15.2</h1>
+<div class="sub">UI強化版｜攻防雙模式｜AI進化｜機構級風控｜整張/零股雙軌</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -518,28 +518,53 @@
 <button class="floating-help-btn" onclick="document.getElementById('uiGuideModal').classList.add('show')">功能導覽</button>
 
 <div class="close-overlay" id="uiGuideModal">
-  <div class="close-modal" style="width:min(980px,95%)">
-    <div class="panel-title" style="margin-bottom:12px">📘 AI 戰艦怎麼幫你作戰</div>
-    <div class="ok-box"><strong>一句話：</strong><br>AI 戰艦會先看市場強弱，再用雙引擎篩出「有動能、但不過熱」的強勢股，最後交給 AI 嚴選官做題材、法人與新聞覆核，幫你把隔日智慧單名單壓到最乾淨。</div>
+  <div class="close-modal" style="width:min(1040px,95%)">
+    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.15.2｜攻防雙模・機構級交易系統</div>
+    <div class="ok-box" style="font-size:14px;line-height:1.75">
+      <strong>核心定位：</strong><br>
+      這不是單純選股工具，而是一套從「市場判斷 → 選股篩選 → AI覆核 → 攻防決策 → 倉位風控 → 出場管理 → 覆盤進化」串成閉環的戰情室系統。<br>
+      <span class="cyan"><strong>一句話：</strong>不是幫你亂追股票，是幫你在市場裡活下來，並在真正有勝算時放大獲利。</span>
+    </div>
 
     <div class="help-grid" style="margin-top:14px">
-      <div class="help-item"><strong>1｜先判斷今天能不能打</strong>系統會依市場分數、漲跌家數、OTC 與加權強弱，決定今天是進攻、保守，還是乾脆休兵。</div>
-      <div class="help-item"><strong>2｜從候選股抓出強勢股</strong>貼上 TradingView CSV 後，戰艦會自動過濾過熱、爆量失控、乖離過大的股票。</div>
-      <div class="help-item"><strong>3｜雙引擎共振</strong>引擎 A 看短線動能，引擎 B 做基本面排雷；同時合格的股票，才有資格進入主攻名單。</div>
-      <div class="help-item"><strong>4｜AI 嚴選官覆核</strong>AI 只在系統篩出的名單內，檢查題材是否延續、法人是否偏多、新聞是否可能利多出盡。</div>
-      <div class="help-item"><strong>5｜隔日智慧單紀律</strong>系統會把可掛單標的、停損、停利與風險整理好，讓你晚上決策、隔天照紀律執行。</div>
-      <div class="help-item"><strong>6｜持倉戰情中心</strong>已進場股票可以追蹤損益、停損、停利與移動停利，避免盤中情緒化亂操作。</div>
+      <div class="help-item"><strong>1｜三層戰鬥架構</strong>市場層判斷紅 / 黃 / 綠燈；選股層切換防守、精準、動能、狂牛；戰術層再決定 🛡防守、⚖平衡、🔥攻擊。系統不是只會篩股，而是會決定「什麼行情該怎麼打」。</div>
+      <div class="help-item"><strong>2｜攻防雙模式 NEW</strong>平常用防守與平衡保護本金；綠燈高分、勝率與PF達標時，才進入攻擊模式。攻擊模式會放寬RSI、量比、乖離與假突破容忍，讓強勢行情有機會跑出大段。</div>
+      <div class="help-item"><strong>3｜TradingView + 本地雙引擎</strong>TradingView負責粗篩股票池，AI戰艦負責二次精篩。系統會用技術動能、量能、趨勢、基本面排雷與假突破偵測，將垃圾股、過熱股、出貨股先擋掉。</div>
+      <div class="help-item"><strong>4｜AI嚴選官覆核</strong>AI不亂選股，只能在系統篩出的候選名單內判斷題材、法人、新聞延續性與利多出盡風險。AI是副駕，不會搶走你的主控權。</div>
+      <div class="help-item"><strong>5｜AI即時微調層</strong>系統會依近期勝率、PF與市場狀態，微調RSI上限、量比門檻、20MA乖離容忍與假突破強度。並內建開關與保守/標準/積極強度，避免AI過度擬合或暴走。</div>
+      <div class="help-item"><strong>6｜機構級倉位風控</strong>系統不是叫你「買多少錢」，而是用總資金、單筆風險與停損距離反推出建議股數。每一筆交易都能看見：最多可能虧多少、建議部位多少、風險使用率多少。</div>
+      <div class="help-item"><strong>7｜整張 / 零股雙軌出場</strong>整張模式不強迫分批，保留完整停損、鎖利與移動停利；零股模式啟用機構級分批落袋，讓小資金也能做到部分獲利了結、剩餘部位續抱。</div>
+      <div class="help-item"><strong>8｜階梯式保本與移動停利</strong>獲利達標後，系統會逐步把風險往上推：呼吸保本、鎖定底利、再啟動高點回撤追蹤。目標不是賣在最高，而是避免「賺到變倒賠」。</div>
+      <div class="help-item"><strong>9｜AI戰術覆盤室</strong>系統會整理最近交易紀錄，讓AI分析勝率、盈虧比、PF、被洗盤情況與參數偏差，提供下一階段調整建議。這是讓系統持續進化的核心。</div>
+      <div class="help-item"><strong>10｜半雲端協作</strong>市場、CSV候選、AI覆核與決策模式可同步共用；個人持倉、火控與績效保留在自己的裝置，避免朋友或家人互相覆蓋資料。</div>
     </div>
 
     <div class="divider"></div>
-    <div class="warning-box"><strong>適合誰？</strong><br>適合想做台股短線、但不想每天靠感覺追高的人。它的核心不是叫你一直買，而是幫你把「不能打的盤、不能追的股、不能碰的風險」先擋掉。</div>
+    <div class="grid-3">
+      <div class="metric"><div class="label">系統定位</div><div class="value small">半自動量化戰情室</div></div>
+      <div class="metric"><div class="label">核心優勢</div><div class="value small">先保命，再進攻</div></div>
+      <div class="metric"><div class="label">最終目標</div><div class="value small">穩定資產曲線</div></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="warning-box" style="font-size:13px;line-height:1.7">
+      <strong>實戰提醒：</strong><br>
+      AI戰艦不是讓你每天都下單，也不是保證每筆都賺。它的核心是：行情差時讓你少受傷；行情普通時讓你穩定執行；行情真正強時才啟動攻擊模式，讓獲利有機會放大。<br>
+      <span class="yellow"><strong>最重要紀律：</strong>不要因為一兩次踏空就手動關掉風控，也不要因為一兩次暴賺就強制開攻擊模式。</span>
+    </div>
+
+    <div class="divider"></div>
+    <div class="ok-box" style="font-size:13px;line-height:1.7">
+      <strong>適合誰？</strong><br>
+      適合想做台股短線，但不想靠感覺追高、不想盤中情緒化亂砍、不想一筆交易毀掉整個月績效的人。<br>
+      這套系統的精神是：<span class="cyan"><strong>防守讓你活下來，攻擊讓你有機會做大。</strong></span>
+    </div>
 
     <div class="toolbar" style="margin-top:18px">
       <button class="btn secondary" onclick="document.getElementById('uiGuideModal').classList.remove('show')" style="flex:1">關閉導覽</button>
     </div>
   </div>
 </div>
-
 
 <div class="close-overlay" id="cloudModal">
   <div class="close-modal" style="width:min(860px,95%)">
