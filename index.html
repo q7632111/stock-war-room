@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.15.2.2｜半自動健康控管版</title>
+<title>AI 戰艦 Pro Max v10.15.2.3.2｜持倉按鈕修正版</title>
 <style>
     :root{
       --bg:#071019;
@@ -229,7 +229,7 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.15.2.2</h1>
+<h1>AI 戰艦 Pro Max v10.15.2.3.2</h1>
 <div class="sub">UI強化版｜攻防雙模式｜AI進化｜機構級風控｜整張/零股雙軌</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
@@ -521,7 +521,7 @@
 
 <div class="close-overlay" id="uiGuideModal">
   <div class="close-modal" style="width:min(1040px,95%)">
-    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.15.2.2｜攻防雙模・策略健康觀測系統</div>
+    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.15.2.3.2｜攻防雙模・策略健康觀測系統</div>
     <div class="ok-box" style="font-size:14px;line-height:1.75">
       <strong>核心定位：</strong><br>
       這不是單純選股工具，而是一套從「市場判斷 → 選股篩選 → AI覆核 → 攻防決策 → 倉位風控 → 出場管理 → 覆盤進化」串成閉環的戰情室系統。<br>
@@ -1472,10 +1472,25 @@ let state = loadState();
         return `<tr><td><span class="badge-status ${m.statusClass}">${m.status}</span><br><span class="footnote">${modeText}</span></td><td>${m.symbol} ${m.name || ''}</td><td>${fmtMoney(m.buyPrice)}</td><td>${fmtMoney(m.currentPrice)}</td><td>${fmtPctSigned(m.pnlPct)}</td><td>${fmtMoney(m.pnlAmt)}</td><td>${fmtMoney(m.initialStop)}</td><td>${fmtMoney(m.effectiveStopLossPrice ?? m.stopLossPrice)}</td><td>${fmtMoney(m.takeProfit1Price)}</td><td>${fmtMoney(m.takeProfit2Price)}</td><td>${fmtMoney(m.highestPrice)}</td><td>${fmtPctSigned(m.drawdownFromHighPct)}</td><td><button class="action-btn" onclick="loadPositionToForm(${idx})">載入</button> <button class="action-btn" onclick="removePosition(${idx})">刪除</button></td></tr>`;
       }).join('');
     }
-    function loadPositionToForm(idx){
+    function resolveOpenPositionRef(ref){
       const open = state.positions.filter(p => p.isOpen !== false);
-      const p = open[idx];
-      if(!p) return;
+      let p = null;
+      if(typeof ref === 'number' || /^\d+$/.test(String(ref))){
+        p = open[Number(ref)] || null;
+        if(!p) p = open.find(x => String(x.id) === String(ref)) || null;
+      } else {
+        p = open.find(x => String(x.id) === String(ref)) || null;
+      }
+      if(!p && ref && typeof ref === 'object' && ref.id){
+        p = open.find(x => String(x.id) === String(ref.id)) || null;
+      }
+      const realIdx = p ? state.positions.findIndex(x => x.id === p.id) : -1;
+      return { open, p, realIdx };
+    }
+
+    function loadPositionToForm(ref){
+      const { p } = resolveOpenPositionRef(ref);
+      if(!p) { alert('找不到這筆持倉資料，請重新整理後再試。'); return; }
       $('holdSymbol').value = p.symbol || '';
       $('holdName') && ($('holdName').value = p.name || '');
       $('holdShares').value = p.shares ?? 1000;
@@ -1490,12 +1505,11 @@ let state = loadState();
       $('warnNearPct') && ($('warnNearPct').value = p.warnNearPct ?? 2);
       renderPositionPreview(computePositionMetrics(p));
     }
-    function removePosition(idx){
-      const open = state.positions.filter(p => p.isOpen !== false);
-      const p = open[idx];
-      if(!p) return;
-      const realIdx = state.positions.findIndex(x => x.id === p.id);
-      if(realIdx >= 0) state.positions.splice(realIdx, 1);
+    function removePosition(ref){
+      const { p, realIdx } = resolveOpenPositionRef(ref);
+      if(!p || realIdx < 0) { alert('找不到這筆持倉資料，請重新整理後再試。'); return; }
+      if(!confirm('確認刪除 ' + (p.symbol || '') + ' ' + (p.name || '') + ' 這筆持倉監控？')) return;
+      state.positions.splice(realIdx, 1);
       saveState();
     }
     function refreshAllPositions(){
@@ -2439,38 +2453,35 @@ ${candidatesText}
 
 
     // ===== v10.7.5 修復：補齊缺失的持倉操作函式，避免初始化中斷 =====
-    function updatePositionMarket(idx){
-      const open = state.positions.filter(p => p.isOpen !== false);
-      const p = open[idx];
-      if(!p) return;
-      const current = prompt('請輸入最新現價', p.currentPrice ?? p.lastClose ?? p.entryPrice ?? '');
+    function updatePositionMarket(ref){
+      const { p, realIdx } = resolveOpenPositionRef(ref);
+      if(!p || realIdx < 0) { alert('找不到這筆持倉資料，請重新整理後再試。'); return; }
+      const current = prompt('請輸入最新收盤價 / 現價', p.currentPrice ?? p.lastClose ?? p.entryPrice ?? '');
       if(current === null) return;
       const price = num(current, NaN);
       if(!Number.isFinite(price) || price <= 0) return alert('現價格式錯誤');
-      const realIdx = state.positions.findIndex(x => x.id === p.id);
-      if(realIdx < 0) return;
-      const old = state.positions[realIdx];
-      const highest = Math.max(num(old.highestPrice, 0), price);
+      const highInput = prompt('請輸入今日最高價（可直接按確定用現價更新）', Math.max(num(p.highestPrice,0), price));
+      if(highInput === null) return;
+      const todayHigh = num(highInput, price);
+      if(!Number.isFinite(todayHigh) || todayHigh <= 0) return alert('高點格式錯誤');
+      const oldPos = state.positions[realIdx];
+      const highest = Math.max(num(oldPos.highestPrice, 0), price, todayHigh);
+      const merged = { ...oldPos, currentPrice: price, lastClose: price, highestPrice: highest };
       state.positions[realIdx] = {
-        ...old,
-        currentPrice: price,
-        lastClose: price,
-        highestPrice: highest,
-        ...computePositionMetrics({ ...old, currentPrice: price, lastClose: price, highestPrice: highest })
+        ...merged,
+        ...computePositionMetrics(merged)
       };
       saveState();
     }
 
-    function openClose(idx){
-      const open = state.positions.filter(p => p.isOpen !== false);
-      const p = open[idx];
-      if(!p) return;
+    function openClose(ref){
+      const { p } = resolveOpenPositionRef(ref);
+      if(!p) { alert('找不到這筆持倉資料，請重新整理後再試。'); return; }
       state.pendingCloseId = p.id;
       if($('closeInfo')) $('closeInfo').textContent = `${p.symbol} ${p.name || ''}｜成本 ${fmtMoney(p.entryPrice || p.buyPrice)}｜現價 ${fmtMoney(p.currentPrice || p.lastClose)}`;
       if($('closePrice')) $('closePrice').value = p.currentPrice || p.lastClose || p.entryPrice || p.buyPrice || '';
       $('closeOverlay')?.classList.add('show');
     }
-
     function cancelClosePosition(){
       state.pendingCloseId = null;
       $('closeOverlay')?.classList.remove('show');
