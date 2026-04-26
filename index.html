@@ -2021,6 +2021,98 @@ ${candidatesText}
     }
     window.runCsvParseSafe = runCsvParseSafe;
 
+
+
+    // ===== v10.14.2b AI覆盤室按鈕修正：補齊缺失函數 =====
+    function buildEvolutionSnapshot(limit=20){
+      const logs = (state.logs || []).slice(0, limit);
+      const wins = logs.filter(l => Number(l.pnl || l.realizedPnL || 0) > 0);
+      const losses = logs.filter(l => Number(l.pnl || l.realizedPnL || 0) < 0);
+      const grossWin = wins.reduce((s,l)=>s + Number(l.pnl || l.realizedPnL || 0), 0);
+      const grossLoss = Math.abs(losses.reduce((s,l)=>s + Number(l.pnl || l.realizedPnL || 0), 0));
+      const avgReturn = logs.length ? logs.reduce((s,l)=>s + Number(l.returnPct || l.pnlPct || l.realizedPct || 0), 0) / logs.length : 0;
+      return {
+        count: logs.length,
+        wins: wins.length,
+        losses: losses.length,
+        winRate: logs.length ? wins.length / logs.length * 100 : null,
+        grossWin,
+        grossLoss,
+        pf: grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? 999 : null),
+        avgReturn,
+        logs
+      };
+    }
+
+    function generateEvoPrompt(){
+      const snap = buildEvolutionSnapshot(20);
+      const adj = getAiLiveAdjustment ? getAiLiveAdjustment(state.market) : null;
+      const recentRows = snap.logs.map((l, i)=>{
+        const pnl = Number(l.pnl || l.realizedPnL || 0);
+        const ret = Number(l.returnPct || l.pnlPct || l.realizedPct || 0);
+        return `${i+1}. ${l.symbol || '-'} ${l.name || ''}｜損益 ${Math.round(pnl)}｜報酬 ${ret.toFixed(2)}%｜原因 ${l.reason || l.closeReason || '-'}`;
+      }).join('\n') || '尚無足夠交易紀錄。';
+      const prompt = `你現在是台股量化交易系統的風控長。請根據最近交易紀錄，給出保守、可執行的參數微調建議。請不要要求大幅改參數，所有建議都必須維持在安全範圍內。\n\n【目前市場】\n燈號：${state.market?.signal || '-'}\n市場總分：${state.market?.totalScore ?? '-'}\n情緒分數：${state.market?.sentimentScore ?? '-'}\nAI即時微調：${state.decision?.liveAdjEnabled !== 'false' ? '開啟' : '關閉'}\n微調強度：${state.decision?.liveAdjStrength || 'conservative'}\n目前微調狀態：${adj?.modeLabel || '-'}\n\n【最近20筆統計】\n交易筆數：${snap.count}\n勝率：${snap.winRate === null ? '-' : snap.winRate.toFixed(1) + '%'}\nPF：${snap.pf === null ? '-' : snap.pf.toFixed(2)}\n平均報酬：${snap.avgReturn.toFixed(2)}%\n\n【最近交易】\n${recentRows}\n\n請用 JSON 回覆，格式如下：\n{\n  "diagnosis":"整體診斷",\n  "adjustments":[{"param":"參數名稱","advice":"建議","reason":"理由"}],\n  "risk_warning":"主要風險",\n  "psychological_advice":"執行紀律建議"\n}`;
+      if($('evoPromptBox')) $('evoPromptBox').value = prompt;
+      return prompt;
+    }
+
+    function copyEvoPrompt(){
+      const text = $('evoPromptBox')?.value || generateEvoPrompt();
+      if(!text) return alert('目前沒有覆盤 Prompt 可複製');
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(()=>alert('已複製覆盤 Prompt')).catch(()=>{
+          $('evoPromptBox')?.select();
+          document.execCommand('copy');
+          alert('已複製覆盤 Prompt');
+        });
+      }else{
+        $('evoPromptBox')?.select();
+        document.execCommand('copy');
+        alert('已複製覆盤 Prompt');
+      }
+    }
+
+    function parseEvoResult(){
+      const raw = ($('evoResultBox')?.value || '').trim();
+      if(!raw){
+        if($('evoResultPanel')) $('evoResultPanel').innerHTML = '<div class="warning-box">請先貼上 AI JSON 覆盤建議。</div>';
+        return;
+      }
+      let parsed = null;
+      try{
+        parsed = JSON.parse(raw);
+      }catch(e){
+        const match = raw.match(/\{[\s\S]*\}/);
+        if(match){
+          try{ parsed = JSON.parse(match[0]); }catch(err){}
+        }
+      }
+      if(!parsed){
+        if($('evoResultPanel')) $('evoResultPanel').innerHTML = '<div class="warning-box">AI 覆盤內容不是有效 JSON，請確認格式後再解析。</div>';
+        return;
+      }
+      const adjustments = Array.isArray(parsed.adjustments) ? parsed.adjustments : [];
+      if($('evoResultPanel')){
+        $('evoResultPanel').innerHTML = `
+          <div class="card">
+            <div class="badge purple">AI 覆盤診斷</div>
+            <div style="margin-top:8px">${parsed.diagnosis || '未提供診斷'}</div>
+          </div>
+          <div class="card">
+            <div class="badge cyan">參數微調建議</div>
+            <div style="margin-top:8px">
+              ${adjustments.length ? adjustments.map(a=>`<div class="explain-item"><strong>${a.param || '參數'}</strong>：${a.advice || '-'}<br><span class="muted">${a.reason || ''}</span></div>`).join('') : '<span class="muted">AI 未提出具體調整。</span>'}
+            </div>
+          </div>
+          <div class="warning-box"><strong>風險提醒：</strong><br>${parsed.risk_warning || '未提供'}</div>
+          <div class="ok-box" style="margin-top:10px"><strong>紀律建議：</strong><br>${parsed.psychological_advice || '未提供'}</div>
+        `;
+      }
+      state.evolutionReview = { rawResponse: raw, parsed, updatedAt: nowString() };
+      saveState();
+    }
+
     function bindEvents(){
       $('calcMarketBtn')?.addEventListener('click', saveMarketInputs);
       $('saveMarketBtn')?.addEventListener('click', saveMarketInputs);
