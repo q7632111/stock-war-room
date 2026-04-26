@@ -298,7 +298,7 @@
 <div class="col">
 <section class="panel" id="step2Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 2｜貼 CSV 做雙引擎初篩</h2><div class="panel-sub">先貼資料做本地排雷，再往下看候選結果</div></div></div>
-<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地評級 (S+/A/B/C/X) → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v10.12.2 整合：狂牛必須綠燈才放寬；綠燈高分允許 A 級送 AI；假突破直接封鎖。</div>
+<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地評級 (S+/A/B/C/X) → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v10.14.1 整合：狂牛必須綠燈才放寬；綠燈高分允許 A 級送 AI；假突破直接封鎖；AI 即時微調層會實際調整 RSI、量比、乖離與假突破強度。</div>
 <label>貼上 TradingView CSV（保留標題列）</label>
 <div class="footnote" style="margin-bottom:8px">這格只負責貼入資料，貼完通常就不需要再看，已縮成短框避免佔畫面。</div>
 <textarea id="candidateTextarea" placeholder="直接貼上 TradingView CSV，例如：商品,描述,價格,價格變化 % 1天,相對成交量 1天,本益比,..."></textarea>
@@ -336,10 +336,12 @@
 <section class="panel" id="step45Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 4.5｜AI 決策模式區</h2><div class="panel-sub">交集 / 本地優先 / AI優先 / 自動判斷，讓 AI 輔助但不搶主控權</div></div></div>
 <div class="panel-body">
-<div class="grid-3">
+<div class="grid-5">
 <div><label>決策模式</label><select id="decisionMode"><option value="auto" selected>自動切模式（推薦）</option><option value="intersection">交集模式</option><option value="local">本地優先</option><option value="ai">AI優先</option></select></div>
 <div><label>過熱乖離門檻 %</label><input id="autoHeatThreshold" type="number" value="20"/></div>
 <div><label>本地分數優勢門檻</label><input id="autoScoreGap" type="number" value="12"/></div>
+<div><label>AI即時微調</label><select id="liveAdjEnabled"><option value="true" selected>開啟（動態）</option><option value="false">關閉（靜態）</option></select></div>
+<div><label>微調強度</label><select id="liveAdjStrength"><option value="conservative" selected>保守（預設）</option><option value="standard">標準</option><option value="aggressive">積極</option></select></div>
 </div>
 <div class="btnrow" style="margin-top:10px">
 <button class="btn purple" id="runDecisionBtn">套用決策模式</button>
@@ -418,6 +420,9 @@
 <div class="panel-body">
 <div class="grid-5" id="performanceMetrics"></div>
 <div class="divider"></div>
+<div class="btnrow" style="margin-bottom:14px">
+  <button class="btn purple" onclick="document.getElementById('evolutionModal').classList.add('show')">🤖 AI 系統進化建議</button>
+</div>
 <div class="tableWrap" id="logsTable"></div>
 </div>
 </section>
@@ -432,6 +437,19 @@
 </div>
 </section></div>
 </div>
+</div>
+
+<div class="close-overlay" id="evolutionModal">
+  <div class="close-modal" style="width:min(860px,95%)">
+    <div class="panel-title" style="margin-bottom:12px">🤖 AI 戰術覆盤室（系統進化）</div>
+    <div class="ok-box"><strong>運作邏輯：</strong><br>系統會抓取最近 20 筆交易紀錄，交給 AI 量化風控長分析。AI 不會自動亂改你的參數，而是給出安全範圍內的微調建議；本版另有「即時微調層」，會依市場狀態在本地評分中自動調整 RSI、量比、乖離與假突破強度。</div>
+    <div class="btnrow" style="margin-top:14px; margin-bottom:10px;"><button class="btn purple" id="genEvoPromptBtn">1. 產生覆盤 Prompt</button><button class="btn secondary" id="copyEvoPromptBtn">2. 複製 Prompt</button></div>
+    <div><textarea id="evoPromptBox" placeholder="系統會自動將近期交易紀錄轉換為 AI 覆盤指令"></textarea></div>
+    <div style="margin-top:14px;"><label>貼上 AI JSON 覆盤建議</label><textarea id="evoResultBox" placeholder='例如：{"diagnosis":"...","adjustments":[{"param":"...","advice":"...","reason":"..."}],"psychological_advice":"..."}'></textarea></div>
+    <div class="btnrow" style="margin-top:10px"><button class="btn green" id="parseEvoBtn">3. 解析建議</button></div>
+    <div class="divider"></div><div id="evoResultPanel"></div>
+    <div class="toolbar" style="margin-top:18px"><button class="btn secondary" onclick="document.getElementById('evolutionModal').classList.remove('show')" style="flex:1">關閉</button></div>
+  </div>
 </div>
 
 <div class="close-overlay" id="settingsModal">
@@ -567,7 +585,7 @@
       risk: { capital:200000, availableCash:200000, dailyRiskPercent:1, singlePositionCapitalPercent:25, maxNewPositions:2, lossStreak:0 },
       candidatesRawText:'', candidates:[], positions:[], logs:[], lastSync:'', pendingCloseId:null, isClosing:false, pendingAddCandidateId:null,
       aiReview: { prompt:'', rawResponse:'', parsed:null, mode:'local_only' },
-      decision: { mode:'auto', finalSymbols:[], summary:'', autoHeatThreshold:20, autoScoreGap:12 },
+      decision: { mode:'auto', finalSymbols:[], summary:'', autoHeatThreshold:20, autoScoreGap:12, liveAdjEnabled:'true', liveAdjStrength:'conservative' },
       cloud: { apiUrl:'https://script.google.com/macros/s/AKfycbxTNAT3bzlh9ZbvzDsW71lgkLWgD9RqoW4L5fYT-VifK5PHvNKSFV2FhAhqEFNhpDxI/exec', roomId:'main_room', token:'', lastSharedSync:'' },
       ui: { candidateCardsExpanded:false, candidateCardsMode:'top5' }
     };
@@ -831,18 +849,80 @@ let state = loadState();
       return { text:'觀察', cls:'yellow', reason:'需人工確認' };
     }
 
+
+    // ===== v10.14.1 即時微調層：真正介入本地評分，不只顯示建議 =====
+    function getRecentTradeStats(limit=20){
+      const logs = (state.logs || []).slice(0, limit);
+      const wins = logs.filter(l => Number(l.pnl || 0) > 0);
+      const losses = logs.filter(l => Number(l.pnl || 0) < 0);
+      const grossWin = wins.reduce((s,l)=>s+Number(l.pnl||0),0);
+      const grossLoss = Math.abs(losses.reduce((s,l)=>s+Number(l.pnl||0),0));
+      return { count: logs.length, winRate: logs.length ? wins.length / logs.length * 100 : null, avgWin: wins.length ? wins.reduce((s,l)=>s+Number(l.returnPct||0),0)/wins.length : 0, avgLoss: losses.length ? losses.reduce((s,l)=>s+Number(l.returnPct||0),0)/losses.length : 0, pf: grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? 999 : null) };
+    }
+    function getAiLiveAdjustment(market=state.market){
+      const total = num(market && market.totalScore, 0);
+      const sentiment = num(market && market.sentimentScore, 0);
+      const signal = market && market.signal || 'yellow';
+      const superBull = signal === 'green' && (total >= 85 || sentiment >= 80);
+      const defense = signal === 'red' || total < 40;
+      const stats = getRecentTradeStats(20);
+      let modeLabel = '標準參數', rsiMin = 60, rsiBestHigh = 70, rsiLimit = superBull ? 82 : 75, rvolMin = 1.5, rvolHealthyMax = 3.5, rvolLimit = superBull ? 6 : 5, devLimit = 15;
+      if(signal === 'red') devLimit = 10; else if(superBull) devLimit = 25; else if(signal === 'green' && total >= 75) devLimit = 18;
+      let fakeVol = superBull ? 4.0 : (defense ? 2.0 : 3.0), fakeRsi = superBull ? 80 : (defense ? 70 : 75), fakeDev = superBull ? 22 : (defense ? 15 : 18), fakeHitNeed = superBull ? 3 : 2, scoreBias = 0;
+      if(defense){ modeLabel = '防守收斂'; rsiMin = 52; rsiBestHigh = 65; rsiLimit = 68; rvolMin = 1.1; rvolHealthyMax = 2.5; rvolLimit = 3.5; devLimit = Math.min(devLimit, 10); scoreBias -= 5; }
+      else if(superBull){ modeLabel = '狂牛延展'; rsiMin = 60; rsiBestHigh = 75; rsiLimit = 82; rvolMin = 1.5; rvolHealthyMax = 4.0; rvolLimit = 6; scoreBias += 2; }
+      else if(signal === 'green'){ modeLabel = '綠燈進攻'; rsiMin = 58; rsiBestHigh = 72; rsiLimit = 78; rvolMin = 1.3; rvolHealthyMax = 3.8; rvolLimit = 5.5; devLimit = Math.max(devLimit, 18); scoreBias += 1; }
+      else { modeLabel = '精準平衡'; rsiMin = 55; rsiBestHigh = 70; rsiLimit = 72; rvolMin = 1.25; rvolHealthyMax = 3.2; rvolLimit = 5; }
+
+      // ===== v10.14.2 安全開關：AI即時微調可關閉，強度可控 =====
+      const isEnabled = state.decision?.liveAdjEnabled !== 'false';
+      const strength = state.decision?.liveAdjStrength || 'conservative';
+      if(!isEnabled){
+        modeLabel += '｜微調關閉';
+        return { modeLabel, superBull, defense, rsiMin, rsiBestHigh, rsiLimit, rvolMin, rvolHealthyMax, rvolLimit, devLimit, fakeVol, fakeRsi, fakeDev, fakeHitNeed, scoreBias:0, stats, liveAdjEnabled:false, liveAdjStrength:strength };
+      }
+
+      if(stats.count >= 10){
+        const mult = strength === 'aggressive' ? 1.5 : (strength === 'standard' ? 1.0 : 0.5);
+        const rsiDelta = Math.round(2 * mult);
+        const volDelta = Number((0.3 * mult).toFixed(2));
+        const devDelta = Math.round(2 * mult);
+        const biasDelta = Math.round(2 * mult);
+        if(stats.winRate !== null && stats.winRate < 42){
+          modeLabel += `｜績效收緊(${strength})`;
+          rsiLimit -= rsiDelta;
+          rvolLimit -= volDelta;
+          devLimit -= devDelta;
+          fakeHitNeed = Math.max(2, fakeHitNeed - 1);
+          scoreBias -= biasDelta;
+        }
+        else if(stats.winRate !== null && stats.winRate > 58 && (stats.pf === null || stats.pf >= 1.3)){
+          modeLabel += `｜績效放寬(${strength})`;
+          rsiLimit += rsiDelta;
+          rvolLimit += volDelta;
+          devLimit += devDelta;
+          scoreBias += biasDelta;
+        }
+      }
+      rsiLimit = clamp(rsiLimit, 65, 84); rsiBestHigh = clamp(rsiBestHigh, 62, rsiLimit); rsiMin = clamp(rsiMin, 50, 62); rvolMin = clamp(rvolMin, 1.0, 1.8); rvolHealthyMax = clamp(rvolHealthyMax, 2.5, 4.5); rvolLimit = clamp(rvolLimit, 3.0, 6.5); devLimit = clamp(devLimit, 8, 27); fakeVol = clamp(fakeVol, 1.8, 4.5); fakeRsi = clamp(fakeRsi, 68, 82); fakeDev = clamp(fakeDev, 12, 24);
+      return { modeLabel, superBull, defense, rsiMin, rsiBestHigh, rsiLimit, rvolMin, rvolHealthyMax, rvolLimit, devLimit, fakeVol, fakeRsi, fakeDev, fakeHitNeed, scoreBias, stats, liveAdjEnabled:true, liveAdjStrength:strength };
+    }
+    function renderAiLiveAdjustmentBox(){
+      const adj = getAiLiveAdjustment(state.market);
+      const statsText = adj.stats.count >= 10 ? `近${adj.stats.count}筆勝率 ${fmt(adj.stats.winRate,1)}%｜PF ${adj.stats.pf===null?'-':fmt(adj.stats.pf,2)}` : `交易樣本 ${adj.stats.count} 筆，先以市場狀態微調`;
+      return `<div class="ok-box" style="margin-bottom:12px"><strong>v10.14.2 AI 安全微調層：</strong>${adj.modeLabel}<br>RSI有效區：${fmt(adj.rsiMin,0)}～${fmt(adj.rsiLimit,0)}｜量比門檻：>${fmt(adj.rvolMin,1)}｜20MA乖離上限：${fmt(adj.devLimit,1)}%｜假突破命中門檻：${adj.fakeHitNeed}項<br><span class="footnote">${statsText}</span></div>`;
+    }
+
     function isFakeBreakout(c){
-      const rsi = num(c && c.rsi14, NaN);
-      const dev = num(c && c.deviation20, NaN);
-      const vol = num(c && c.volumeRatio, NaN);
-      const change = num(c && c.changePct, NaN);
+      const adj = getAiLiveAdjustment(state.market);
+      const rsi = num(c && c.rsi14, NaN), dev = num(c && c.deviation20, NaN), vol = num(c && c.volumeRatio, NaN), change = num(c && c.changePct, NaN);
       let hit = 0;
-      if(Number.isFinite(rsi) && rsi > 75) hit++;
-      if(Number.isFinite(dev) && dev > 18) hit++;
-      if(Number.isFinite(vol) && vol > 2.5) hit++;
-      if(Number.isFinite(change) && change > 6) hit++;
-      const stallDistribution = Number.isFinite(vol) && vol > 3.5 && Number.isFinite(change) && change < 2 && Number.isFinite(rsi) && rsi > 70;
-      return hit >= 2 || stallDistribution;
+      if(Number.isFinite(rsi) && rsi > adj.fakeRsi) hit++;
+      if(Number.isFinite(dev) && dev > adj.fakeDev) hit++;
+      if(Number.isFinite(vol) && vol > (adj.fakeVol * 0.8)) hit++;
+      if(Number.isFinite(change) && change > (adj.superBull ? 8 : 6)) hit++;
+      const stallDistribution = (Number.isFinite(vol) && vol > adj.fakeVol && Number.isFinite(change) && change < 2 && Number.isFinite(rsi) && rsi > (adj.fakeRsi - 5)) || (Number.isFinite(dev) && dev > adj.fakeDev && Number.isFinite(change) && change < 2);
+      return hit >= adj.fakeHitNeed || stallDistribution;
     }
 
     function checkPositionRisk(p){
@@ -878,29 +958,32 @@ let state = loadState();
       const riskPct = safeNum(stock.riskPct);
       const totalScore = num(market && market.totalScore, 0);
       const sentimentScore = num(state.market && state.market.sentimentScore, 0);
-      const superBull = market && market.signal === 'green' && (totalScore >= 85 || sentimentScore >= 80);
-      let L = 15;
-      if(market && market.signal === 'red') L = 10;
-      else if(superBull) L = 25;
-      else if(market && market.signal === 'green' && totalScore >= 75) L = 18;
-      const rsiLimit = superBull ? 82 : 75;
-      const rvolLimit = superBull ? 6 : 5;
+      const liveAdj = getAiLiveAdjustment(market || state.market);
+      const superBull = liveAdj.superBull;
+      const L = liveAdj.devLimit;
+      const rsiLimit = liveAdj.rsiLimit;
+      const rvolLimit = liveAdj.rvolLimit;
+      const rvolMin = liveAdj.rvolMin;
+      const rvolHealthyMax = liveAdj.rvolHealthyMax;
+      const rsiMin = liveAdj.rsiMin;
+      const rsiBestHigh = liveAdj.rsiBestHigh;
       const dev = (close && sma20) ? ((close - sma20) / sma20 * 100) : null;
       const trend = close > sma20 && sma20 > sma60;
-      let score = 50, reasons = [], risks = [], rejectReasons = [];
+      let score = 50 + (liveAdj.scoreBias || 0), reasons = [], risks = [], rejectReasons = [];
+      reasons.push('AI即時微調：' + liveAdj.modeLabel);
       if(trend) { score += 15; reasons.push('多頭排列'); } else { score -= 18; risks.push('非多頭結構'); }
       if(dev === null) { score -= 10; risks.push('缺20MA乖離資料'); }
       else if(dev >= 0 && dev <= L) { score += 15; reasons.push('乖離 ' + dev.toFixed(1) + '% 安全'); }
       else if(dev > L) { score -= 15; risks.push('⚠️ 乖離率 ' + dev.toFixed(1) + '% 超過 ' + L + '% 上限'); }
       else { score -= 6; risks.push('價格低於20MA，動能不足'); }
       if(Number.isNaN(rvol)) { score -= 10; risks.push('缺量比資料'); }
-      else if(rvol < 1.5) { score -= 12; risks.push('量比低於1.5，未發動'); }
-      else if(rvol <= 3.5) { score += 15; reasons.push('量能健康放大'); }
+      else if(rvol < rvolMin) { score -= 12; risks.push('量比低於' + rvolMin.toFixed(1) + '，未發動'); }
+      else if(rvol <= rvolHealthyMax) { score += 15; reasons.push('量能健康放大（AI門檻 ' + rvolMin.toFixed(1) + '~' + rvolHealthyMax.toFixed(1) + '）'); }
       else if(rvol <= rvolLimit) { score -= 6; risks.push('量比3.5~' + rvolLimit + '，短線籌碼偏亂'); }
       else { score -= 30; risks.push('量比>' + rvolLimit + '，隔日沖戰場'); }
       if(Number.isNaN(rsi)) { score -= 10; risks.push('缺RSI資料'); }
-      else if(rsi < 60) { score -= 8; risks.push('RSI<60，攻擊不足'); }
-      else if(rsi <= 70) { score += 15; reasons.push('RSI最佳攻擊區'); }
+      else if(rsi < rsiMin) { score -= 8; risks.push('RSI<' + rsiMin.toFixed(0) + '，攻擊不足'); }
+      else if(rsi <= rsiBestHigh) { score += 15; reasons.push('RSI最佳攻擊區（AI門檻 ' + rsiMin.toFixed(0) + '~' + rsiBestHigh.toFixed(0) + '）'); }
       else if(rsi <= rsiLimit) { score -= 4; risks.push('RSI 70~' + rsiLimit + '，偏熱警戒'); }
       else { score -= 10; risks.push('RSI ' + rsi.toFixed(1) + ' 偏熱'); }
       if(Number.isNaN(pe)) { score -= 10; risks.push('缺本益比資料'); }
@@ -921,7 +1004,7 @@ let state = loadState();
       if(riskPct > 6) { score -= 6; risks.push('停損距離偏大'); }
       const fakeBreakout = isFakeBreakout(Object.assign({}, stock, { deviation20: dev }));
       if(fakeBreakout){ score -= 25; risks.push('⚠ 假突破 / 隔日沖風險'); }
-      const engineA = trend && Number.isFinite(rvol) && rvol >= 1.5 && Number.isFinite(rsi) && rsi >= 60;
+      const engineA = trend && Number.isFinite(rvol) && rvol >= rvolMin && Number.isFinite(rsi) && rsi >= rsiMin;
       const engineB = (!Number.isNaN(pe) && pe <= 100) || (!Number.isNaN(epsGrowthYoy) && epsGrowthYoy > 0);
       const localScore = Math.max(0, Math.min(100, Math.round(score)));
       const hardReject = fakeBreakout || (Number.isFinite(rvol) && rvol > rvolLimit) || (dev !== null && dev > L && Number.isFinite(rsi) && rsi > rsiLimit) || (!trend) || (market && market.signal === 'red');
@@ -1048,7 +1131,7 @@ let state = loadState();
       return (state.candidates || []).find(c => normalizeSymbol(c.symbol) === code) || null;
     }
 
-    function fillInputsFromState(){ $('decisionMode') && ($('decisionMode').value = state.decision?.mode || 'auto'); $('autoHeatThreshold') && ($('autoHeatThreshold').value = state.decision?.autoHeatThreshold ?? 20); $('autoScoreGap') && ($('autoScoreGap').value = state.decision?.autoScoreGap ?? 12); $('advancersInput').value=state.market.advancers; $('declinersInput').value=state.market.decliners; $('limitUpInput').value=state.market.limitUp; $('limitDownInput').value=state.market.limitDown; $('otcChangeInput').value=state.market.otcChange; $('taiexChangeInput').value=state.market.taiexChange; $('capitalInput').value=state.risk.capital; $('availableCashInput').value=state.risk.availableCash; $('dailyRiskPercentInput').value=state.risk.dailyRiskPercent; $('singlePositionCapitalPercentInput').value=state.risk.singlePositionCapitalPercent; $('maxNewPositionsInput').value=state.risk.maxNewPositions; $('lossStreakInput').value=state.risk.lossStreak; $('candidateTextarea').value=state.candidatesRawText||''; $('aiPromptBox').value=state.aiReview?.prompt||''; $('aiResultBox').value=state.aiReview?.rawResponse||''; }
+    function fillInputsFromState(){ $('decisionMode') && ($('decisionMode').value = state.decision?.mode || 'auto'); $('autoHeatThreshold') && ($('autoHeatThreshold').value = state.decision?.autoHeatThreshold ?? 20); $('autoScoreGap') && ($('autoScoreGap').value = state.decision?.autoScoreGap ?? 12); $('liveAdjEnabled') && ($('liveAdjEnabled').value = state.decision?.liveAdjEnabled ?? 'true'); $('liveAdjStrength') && ($('liveAdjStrength').value = state.decision?.liveAdjStrength ?? 'conservative'); $('advancersInput').value=state.market.advancers; $('declinersInput').value=state.market.decliners; $('limitUpInput').value=state.market.limitUp; $('limitDownInput').value=state.market.limitDown; $('otcChangeInput').value=state.market.otcChange; $('taiexChangeInput').value=state.market.taiexChange; $('capitalInput').value=state.risk.capital; $('availableCashInput').value=state.risk.availableCash; $('dailyRiskPercentInput').value=state.risk.dailyRiskPercent; $('singlePositionCapitalPercentInput').value=state.risk.singlePositionCapitalPercent; $('maxNewPositionsInput').value=state.risk.maxNewPositions; $('lossStreakInput').value=state.risk.lossStreak; $('candidateTextarea').value=state.candidatesRawText||''; $('aiPromptBox').value=state.aiReview?.prompt||''; $('aiResultBox').value=state.aiReview?.rawResponse||''; }
 
     function getLocalDecisionTop(limit=2){
       return guardTradableRows(state.candidates)
@@ -1167,13 +1250,15 @@ let state = loadState();
         finalSymbols: result.chosen.map(r=>r.symbol),
         summary: result.summary,
         autoHeatThreshold: result.autoHeatThreshold,
-        autoScoreGap: result.autoScoreGap
+        autoScoreGap: result.autoScoreGap,
+        liveAdjEnabled: $('liveAdjEnabled')?.value || 'true',
+        liveAdjStrength: $('liveAdjStrength')?.value || 'conservative'
       };
       saveState();
       return result;
     }
     function resetToLocalSelection(){
-      state.decision = { ...(state.decision||{}), mode:'local', finalSymbols:[], summary:'已切回本地結果。', autoHeatThreshold:num($('autoHeatThreshold')?.value,20), autoScoreGap:num($('autoScoreGap')?.value,12) };
+      state.decision = { ...(state.decision||{}), mode:'local', finalSymbols:[], summary:'已切回本地結果。', autoHeatThreshold:num($('autoHeatThreshold')?.value,20), autoScoreGap:num($('autoScoreGap')?.value,12), liveAdjEnabled:$('liveAdjEnabled')?.value||'true', liveAdjStrength:$('liveAdjStrength')?.value||'conservative' };
       saveState();
     }
 
@@ -1524,7 +1609,7 @@ let state = loadState();
       const { lossMode, effectiveDailyRiskPercent, effectiveMaxNewPositions, superBull } = getEffectiveSettings();
       const cls = lossMode.mode==='正常模式' && !superBull ? 'ok-box' : 'warning-box';
       const superBullNote = superBull ? '<div><strong>狂牛降載：</strong>已啟動，單筆有效風險自動打 8 折。</div>' : '';
-      $('riskModeSummary').innerHTML=`<div class="${cls}"><div><strong>目前模式：</strong>${lossMode.mode}${superBull?' / 狂牛降載':''}</div><div><strong>有效單日風險：</strong>${fmt(effectiveDailyRiskPercent,2)}%</div><div><strong>有效新倉上限：</strong>${effectiveMaxNewPositions} 檔</div>${superBullNote}<div><strong>說明：</strong>${lossMode.note}</div></div>`;
+      $('riskModeSummary').innerHTML=renderAiLiveAdjustmentBox()+`<div class="${cls}"><div><strong>目前模式：</strong>${lossMode.mode}${superBull?' / 狂牛降載':''}</div><div><strong>有效單日風險：</strong>${fmt(effectiveDailyRiskPercent,2)}%</div><div><strong>有效新倉上限：</strong>${effectiveMaxNewPositions} 檔</div>${superBullNote}<div><strong>說明：</strong>${lossMode.note}</div></div>`;
     }
     function renderMainAttackSummary(){
       const ranked = getFinalSelectedRows(2).map(c=>({ ...c, decisionScore:getDecisionScore(c) }));
@@ -1975,6 +2060,9 @@ ${candidatesText}
       $('copyAiPromptBtn')?.addEventListener('click', copyAiPrompt);
       $('parseAiBtn')?.addEventListener('click', parseAiResult);
       $('clearAiBtn')?.addEventListener('click', clearAiResult);
+      $('genEvoPromptBtn')?.addEventListener('click', generateEvoPrompt);
+      $('copyEvoPromptBtn')?.addEventListener('click', copyEvoPrompt);
+      $('parseEvoBtn')?.addEventListener('click', parseEvoResult);
       $('runDecisionBtn')?.addEventListener('click', ()=>applyDecisionMode(false));
       $('autoDecisionBtn')?.addEventListener('click', ()=>{
         if($('decisionMode')) $('decisionMode').value = 'auto';
@@ -2021,7 +2109,7 @@ ${candidatesText}
         if(e.target === $('closeOverlay')) cancelClosePosition();
       });
 
-      ['settingsModal','addPosModal','uiGuideModal','cloudModal'].forEach(id=>{
+      ['settingsModal','addPosModal','uiGuideModal','cloudModal','evolutionModal'].forEach(id=>{
         const el = $(id);
         if(el){
           el.addEventListener('click', (e)=>{
