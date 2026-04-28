@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.18｜無標的提示・Delta結構UI完整版</title>
+<title>AI 戰艦 Pro Max v10.19｜完整績效分析版</title>
 <style>
     :root{
       --bg:#071019;
@@ -236,14 +236,32 @@
 .no-target-alert{border-radius:14px;padding:12px 14px;margin-top:10px;line-height:1.7;font-size:13px;border:1px solid rgba(255,255,255,.10)}
 .no-target-ok{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.25);color:#d9fff1}.no-target-watch{background:rgba(251,191,36,.09);border-color:rgba(251,191,36,.28);color:#fff3bf}.no-target-danger{background:rgba(248,113,113,.09);border-color:rgba(248,113,113,.32);color:#ffe2e2}.no-target-info{background:rgba(86,215,255,.08);border-color:rgba(86,215,255,.25);color:#dff6ff}
 
+
+
+/* ===== v10.19 完整績效分析版 ===== */
+.perf-lab{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+@media(max-width:900px){.perf-lab{grid-template-columns:1fr}}
+.segment-table{width:100%;min-width:760px;border-collapse:collapse;font-size:12px}
+.segment-table th,.segment-table td{padding:8px 7px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;vertical-align:middle}
+.segment-table th{font-size:10px;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
+.perf-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+.perf-chip.good{color:#bbf7d0;border-color:rgba(52,211,153,.35)}
+.perf-chip.warn{color:#fde68a;border-color:rgba(251,191,36,.35)}
+.perf-chip.bad{color:#fecaca;border-color:rgba(248,113,113,.35)}
+.perf-chip.info{color:#dff6ff;border-color:rgba(86,215,255,.35)}
+.perf-insight{border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.7;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+.perf-insight.good{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.08)}
+.perf-insight.warn{border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.08)}
+.perf-insight.bad{border-color:rgba(248,113,113,.28);background:rgba(248,113,113,.08)}
+
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.18</h1>
-<div class="sub">無標的提示版｜Delta市場方向｜Structure觀測｜AI篩選條件一鍵複製｜完整STEP保留</div>
+<h1>AI 戰艦 Pro Max v10.19</h1>
+<div class="sub">完整績效分析版｜模式PF排行｜Delta績效｜市場結構回饋｜20筆驗證儀表板</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -432,7 +450,7 @@
 </div>
 </section>
 <section class="panel">
-<div class="panel-head"><div><h2 class="panel-title">股票戰報艙</h2><div class="panel-sub">只看股票交易紀律與績效，不混基金飛輪</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">股票戰報艙｜v10.19 完整績效分析</h2><div class="panel-sub">拆解攻防模式、選股模板、Delta、Structure 與市場燈號績效，不混基金飛輪</div></div></div>
 <div class="panel-body">
 <div class="grid-5" id="performanceMetrics"></div>
 <div class="divider"></div>
@@ -537,7 +555,7 @@
 
 <div class="close-overlay" id="uiGuideModal">
   <div class="close-modal" style="width:min(1040px,95%)">
-    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.18｜Delta結構觀測・無標的提示・AI篩選條件一鍵複製</div>
+    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.19｜完整績效分析版</div>
     <div class="ok-box" style="font-size:14px;line-height:1.75">
       <strong>核心定位：</strong><br>
       這不是單純選股工具，而是一套從「市場判斷 → 選股篩選 → AI覆核 → 攻防決策 → 倉位風控 → 出場管理 → 覆盤進化」串成閉環的戰情室系統。<br>
@@ -554,8 +572,8 @@
       <div class="help-item"><strong>6｜機構級倉位風控</strong>系統不是叫你「買多少錢」，而是用總資金、單筆風險與停損距離反推出建議股數。每一筆交易都能看見：最多可能虧多少、建議部位多少、風險使用率多少。</div>
       <div class="help-item"><strong>7｜整張 / 零股雙軌出場</strong>整張模式不強迫分批，保留完整停損、鎖利與移動停利；零股模式啟用機構級分批落袋，讓小資金也能做到部分獲利了結、剩餘部位續抱。</div>
       <div class="help-item"><strong>8｜階梯式保本與移動停利</strong>獲利達標後，系統會逐步把風險往上推：呼吸保本、鎖定底利、再啟動高點回撤追蹤。目標不是賣在最高，而是避免「賺到變倒賠」。</div>
-      <div class="help-item"><strong>9｜AI戰術覆盤室</strong>系統會整理最近交易紀錄，讓AI分析勝率、盈虧比、PF、被洗盤情況與參數偏差，提供下一階段調整建議。這是讓系統持續進化的核心。</div>
-      <div class="help-item"><strong>10｜半雲端協作</strong>市場、CSV候選、AI覆核與決策模式可同步共用；個人持倉、火控與績效保留在自己的裝置，避免朋友或家人互相覆蓋資料。</div>
+      <div class="help-item"><strong>9｜完整績效回饋 NEW</strong>不只看總勝率，系統會拆解精準/動能/狂牛、防守/平衡/攻擊、Delta升溫/降溫、Structure結構強弱下的PF與勝率，讓你知道到底是哪個模式在賺錢。</div><div class="help-item"><strong>10｜AI戰術覆盤室</strong>系統會整理最近交易紀錄，讓AI分析勝率、盈虧比、PF、被洗盤情況與參數偏差，提供下一階段調整建議。這是讓系統持續進化的核心。</div>
+      <div class="help-item"><strong>11｜半雲端協作</strong>市場、CSV候選、AI覆核與決策模式可同步共用；個人持倉、火控與績效保留在自己的裝置，避免朋友或家人互相覆蓋資料。</div>
     </div>
 
     <div class="divider"></div>
@@ -1708,18 +1726,107 @@ let state = loadState();
     function getOpenPositions(){
       return (state.positions || []).filter(p => p && p.isOpen !== false);
     }
+    // ===== v10.19 完整績效分析版：交易正規化與分群統計 =====
+    function normalizeTradeLog(l){
+      const pnl = Number(l.pnl ?? l.realizedPnL ?? 0);
+      const ret = Number(l.returnPct ?? l.pnlPct ?? l.realizedPct ?? 0);
+      const entryPrice = Number(l.entryPrice ?? l.buyPrice ?? 0);
+      const exitPrice = Number(l.exitPrice ?? l.closePrice ?? 0);
+      const shares = Number(l.shares ?? l.qty ?? 0);
+      const tacticalMode = l.tacticalMode || l.tactical || l.tacticalLabel || '-';
+      const strategyMode = l.strategyMode || l.marketMode || l.templateMode || l.tvMode || l.modeLabel || '-';
+      const deltaRaw = l.marketDelta ?? l.delta ?? null;
+      const delta = deltaRaw === null || deltaRaw === undefined || deltaRaw === '' ? null : Number(deltaRaw);
+      const structureRaw = l.structureScore ?? l.structure ?? null;
+      const structureScore = structureRaw === null || structureRaw === undefined || structureRaw === '' ? null : Number(structureRaw);
+      const signal = l.marketSignal || l.signal || '-';
+      const totalScore = Number(l.marketScore ?? l.totalScore ?? 0);
+      return { ...l, pnl, ret, returnPct: ret, pnlPct: ret, entryPrice, exitPrice, closePrice: exitPrice, shares,
+        result: pnl > 0 ? 'win' : (pnl < 0 ? 'loss' : 'flat'),
+        exitDate: l.exitDate || l.time || l.date || '-', reason: l.reason || l.closeReason || '-',
+        tacticalMode, strategyMode, delta, structureScore, signal, totalScore };
+    }
+
+    function buildSegmentStats(logs, keyFn, labelFn){
+      const map = new Map();
+      (logs || []).map(normalizeTradeLog).forEach(l=>{
+        const key = keyFn(l) || '未記錄';
+        const label = labelFn ? labelFn(l, key) : key;
+        if(!map.has(key)) map.set(key, { key, label, count:0, wins:0, losses:0, flats:0, grossWin:0, grossLoss:0, totalPnl:0, retSum:0, winRetSum:0, lossRetSum:0, maxLossStreak:0, curLossStreak:0 });
+        const r = map.get(key);
+        r.count++; r.totalPnl += l.pnl; r.retSum += l.ret;
+        if(l.pnl > 0){ r.wins++; r.grossWin += l.pnl; r.winRetSum += Math.max(0,l.ret); r.curLossStreak = 0; }
+        else if(l.pnl < 0){ r.losses++; r.grossLoss += Math.abs(l.pnl); r.lossRetSum += Math.abs(l.ret); r.curLossStreak++; r.maxLossStreak = Math.max(r.maxLossStreak, r.curLossStreak); }
+        else{ r.flats++; }
+      });
+      return Array.from(map.values()).map(r=>{
+        const decided = r.wins + r.losses;
+        const pf = r.grossLoss > 0 ? r.grossWin / r.grossLoss : (r.grossWin > 0 ? 999 : null);
+        return { ...r, decided, winRate: decided ? r.wins / decided * 100 : null, pf,
+          avgRet: r.count ? r.retSum / r.count : 0,
+          avgWinPct: r.wins ? r.winRetSum / r.wins : 0,
+          avgLossPct: r.losses ? r.lossRetSum / r.losses : 0,
+          expectancy: r.count ? r.totalPnl / r.count : 0 };
+      }).sort((a,b)=>(b.count-a.count) || ((b.pf||0)-(a.pf||0)));
+    }
+
+    function getDeltaBucket(l){
+      if(l.delta === null || !Number.isFinite(l.delta)) return '未記錄';
+      if(l.delta >= 5) return '🚀 升溫';
+      if(l.delta > 0) return '🟢 微升';
+      if(l.delta <= -5) return '❄ 降溫';
+      if(l.delta < 0) return '⚠ 轉弱';
+      return '持平';
+    }
+    function getStructureBucket(l){
+      if(l.structureScore === null || !Number.isFinite(l.structureScore)) return '未記錄';
+      if(l.structureScore >= 3) return '🔥 結構3/3';
+      if(l.structureScore === 2) return '⚖ 結構2/3';
+      if(l.structureScore === 1) return '⚠ 結構1/3';
+      return '❄ 結構0/3';
+    }
 
     function getPerformance(){
-      const logs = state.logs || [];
+      const logs = (state.logs || []).map(normalizeTradeLog);
       const totalTrades = logs.length;
-      const wins = logs.filter(l => Number(l.pnl || l.realizedPnL || 0) > 0).length;
-      const totalPnl = logs.reduce((s,l)=>s + Number(l.pnl || l.realizedPnL || 0), 0);
-      const avgReturn = totalTrades ? logs.reduce((s,l)=>s + Number(l.returnPct || l.pnlPct || l.realizedPct || 0), 0) / totalTrades : 0;
-      const winRate = totalTrades ? wins / totalTrades * 100 : 0;
+      const wins = logs.filter(l => l.pnl > 0).length;
+      const losses = logs.filter(l => l.pnl < 0).length;
+      const grossWin = logs.filter(l=>l.pnl>0).reduce((s,l)=>s+l.pnl,0);
+      const grossLoss = Math.abs(logs.filter(l=>l.pnl<0).reduce((s,l)=>s+l.pnl,0));
+      const totalPnl = logs.reduce((s,l)=>s+l.pnl,0);
+      const avgReturn = totalTrades ? logs.reduce((s,l)=>s+l.ret,0) / totalTrades : 0;
+      const winRate = (wins+losses) ? wins / (wins+losses) * 100 : 0;
+      const pf = grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? 999 : null);
       const base = Number(state.risk?.capital || 0) || 1;
       const flywheelPct = totalPnl / base * 100;
-      return { totalTrades, wins, winRate, totalPnl, avgReturn, flywheelPct };
+      return { totalTrades, wins, losses, winRate, grossWin, grossLoss, pf, totalPnl, avgReturn, flywheelPct };
     }
+
+    function renderSegmentTable(title, rows, emptyText='樣本不足'){
+      if(!rows || !rows.length) return '<div class="footnote">'+emptyText+'</div>';
+      return '<div class="tableWrap"><table class="segment-table"><thead><tr><th>'+title+'</th><th>筆數</th><th>勝率</th><th>PF</th><th>淨損益</th><th>平均報酬</th><th>建議</th></tr></thead><tbody>' + rows.map(r=>{
+        const pfText = r.pf === null ? '-' : (r.pf >= 999 ? '∞' : fmt(r.pf,2));
+        const cls = r.pf !== null && r.pf >= 1.2 ? 'green' : (r.pf !== null && r.pf < 1 ? 'red' : 'yellow');
+        const advice = r.count < 5 ? '樣本少' : (r.pf !== null && r.pf >= 1.4 ? '優先保留' : (r.pf !== null && r.pf >= 1.2 ? '可持續' : (r.pf !== null && r.pf < 1 ? '需收縮' : '觀察')));
+        return '<tr><td>'+r.label+'</td><td>'+fmt(r.count)+'</td><td class="'+((r.winRate||0)>=50?'green':'yellow')+'">'+(r.winRate===null?'-':pct(r.winRate,1))+'</td><td class="'+cls+'">'+pfText+'</td><td class="'+(r.totalPnl>=0?'green':'red')+'">NT$ '+fmt(r.totalPnl)+'</td><td class="'+(r.avgRet>=0?'green':'red')+'">'+pct(r.avgRet,2)+'</td><td><span class="perf-chip '+(cls==='green'?'good':cls==='red'?'bad':'warn')+'">'+advice+'</span></td></tr>';
+      }).join('') + '</tbody></table></div>';
+    }
+
+    function getPerformanceInsights(){
+      const logs = (state.logs || []).map(normalizeTradeLog);
+      if(logs.length < 5) return { cls:'info', html:'樣本未滿 5 筆，先不要根據績效調整系統。請照 v10.18 SOP 累積交易紀錄。' };
+      const perf = getPerformance();
+      const deltaRows = buildSegmentStats(logs, getDeltaBucket).filter(r=>r.count>=2);
+      const tacticalRows = buildSegmentStats(logs, l=>l.tacticalMode || '未記錄').filter(r=>r.count>=2);
+      const badDelta = deltaRows.find(r=>r.key.includes('降溫') && r.pf !== null && r.pf < 1.0);
+      const bestTactical = tacticalRows.filter(r=>r.pf!==null).sort((a,b)=>(b.pf||0)-(a.pf||0))[0];
+      if(perf.pf !== null && perf.pf < 1) return { cls:'bad', html:'整體 PF '+fmt(perf.pf,2)+' 低於 1，代表近況慢性失血。建議暫停主觀放寬條件，只照系統防守/平衡模式執行。' };
+      if(badDelta) return { cls:'warn', html:'降溫盤績效偏弱（'+badDelta.label+' PF '+fmt(badDelta.pf,2)+'）。未來 Delta 轉弱時，不要手動切進攻或放寬 TradingView 條件。' };
+      if(bestTactical && bestTactical.count >= 3 && bestTactical.pf >= 1.4) return { cls:'good', html:'目前最有效的戰術條件是「'+bestTactical.label+'」，PF '+fmt(bestTactical.pf,2)+'。先保留現有規則，不急著新增濾網。' };
+      if(perf.pf !== null && perf.pf >= 1.2) return { cls:'good', html:'整體 PF '+fmt(perf.pf,2)+'，策略具備正期望。下一步是累積到 20 筆以上，再判斷是否調參。' };
+      return { cls:'warn', html:'目前策略介於觀察區，請先累積到 20 筆，不要因單筆勝負調整系統。' };
+    }
+
 
     function getDashboardSummary(){
       const { effectiveDailyRiskPercent, effectiveMaxNewPositions } = getEffectiveSettings();
@@ -2125,37 +2232,54 @@ ${candidatesText}
       }
       return { label:'🚨 失血｜只建議防守覆盤', cls:'red', level:'危險', advice:'近 20 筆呈現慢性失血，先停止主觀放寬條件，檢查假突破、出場與 TradingView 篩選模板。' };
     }
-
     function renderStrategyHealthPanel(){
       const stats = getStrategyHealthStats(20);
       const verdict = getStrategyHealthVerdict(stats);
-      const pfText = stats.pf === null ? '-' : (stats.pf >= 999 ? '∞' : fmt(stats.pf,2));
-      const winRateText = stats.winRate === null ? '-' : pct(stats.winRate,1);
-      const net = stats.grossWin - stats.grossLoss;
-      return `<div class="card" style="border-color:rgba(86,215,255,.22);box-shadow:0 0 0 1px rgba(86,215,255,.10),0 0 22px rgba(28,183,255,.08)">
-        <div class="card-head">
-          <div>
-            <div class="symbol">🧠 策略健康觀測艙</div>
-            <div class="muted">半自動健康控管：只提示、不鎖單、不自動改風險</div>
-          </div>
-          <span class="badge ${verdict.cls}">${verdict.label}</span>
-        </div>
-        <div class="mini">
-          <div class="cell"><div class="k">觀測樣本</div><div class="v">近 ${fmt(stats.count)} 筆</div></div>
-          <div class="cell"><div class="k">勝率</div><div class="v ${stats.winRate!==null && stats.winRate>=50?'green':'yellow'}">${winRateText}</div></div>
-          <div class="cell"><div class="k">PF 獲利因子</div><div class="v ${stats.pf!==null && stats.pf>=1.2?'green':'red'}">${pfText}</div></div>
-          <div class="cell"><div class="k">最大連敗</div><div class="v ${stats.maxLossStreak>=3?'red':'yellow'}">${fmt(stats.maxLossStreak)}</div></div>
-          <div class="cell"><div class="k">平均賺幅</div><div class="v green">${pct(stats.avgWinPct,2)}</div></div>
-          <div class="cell"><div class="k">平均賠幅</div><div class="v red">-${pct(stats.avgLossPct,2)}</div></div>
-          <div class="cell"><div class="k">觀測淨額</div><div class="v ${net>=0?'green':'red'}">NT$ ${fmt(net)}</div></div>
-          <div class="cell"><div class="k">建議狀態</div><div class="v ${verdict.cls}">${verdict.level}</div></div>
-        </div>
-        <div class="divider"></div>
-        <div class="${verdict.cls==='red'?'warning-box':'ok-box'}"><strong>系統建議：</strong>${verdict.advice}<br><span class="footnote">PF &lt; 1.2 只會顯示警告，不會自動鎖單；真正的風險控制仍由紅燈、連敗、單筆風險與攻防模式負責。</span></div>
-      </div>`;
+      const perf = getPerformance();
+      const pfText = perf.pf === null ? '-' : (perf.pf >= 999 ? '∞' : fmt(perf.pf,2));
+      const winRateText = perf.totalTrades ? pct(perf.winRate,1) : '-';
+      const logs = (state.logs || []).map(normalizeTradeLog);
+      const tacticalRows = buildSegmentStats(logs, l=>l.tacticalMode || '未記錄').slice(0,6);
+      const strategyRows = buildSegmentStats(logs, l=>l.strategyMode || '未記錄').slice(0,6);
+      const deltaRows = buildSegmentStats(logs, getDeltaBucket).slice(0,6);
+      const structureRows = buildSegmentStats(logs, getStructureBucket).slice(0,6);
+      const signalRows = buildSegmentStats(logs, l=>l.signal || '未記錄').slice(0,6);
+      const insight = getPerformanceInsights();
+      return '<div class="card" style="border-color:rgba(86,215,255,.22);box-shadow:0 0 0 1px rgba(86,215,255,.10),0 0 22px rgba(28,183,255,.08)">'+
+        '<div class="card-head"><div><div class="symbol">🧠 v10.19 完整績效回饋艙</div><div class="muted">不只看勝率：拆解模式、Delta、Structure 與市場燈號下的 PF / 勝率 / 期望值</div></div><span class="badge '+verdict.cls+'">'+verdict.label+'</span></div>'+ 
+        '<div class="mini">'+
+          '<div class="cell"><div class="k">總樣本</div><div class="v">'+fmt(perf.totalTrades)+' 筆</div></div>'+ 
+          '<div class="cell"><div class="k">總勝率</div><div class="v '+(perf.winRate>=50?'green':'yellow')+'">'+winRateText+'</div></div>'+ 
+          '<div class="cell"><div class="k">總PF</div><div class="v '+(perf.pf!==null && perf.pf>=1.2?'green':'red')+'">'+pfText+'</div></div>'+ 
+          '<div class="cell"><div class="k">累積損益</div><div class="v '+(perf.totalPnl>=0?'green':'red')+'">NT$ '+fmt(perf.totalPnl)+'</div></div>'+ 
+          '<div class="cell"><div class="k">平均賺幅</div><div class="v green">'+pct(stats.avgWinPct,2)+'</div></div>'+ 
+          '<div class="cell"><div class="k">平均賠幅</div><div class="v red">-'+pct(stats.avgLossPct,2)+'</div></div>'+ 
+          '<div class="cell"><div class="k">最大連敗</div><div class="v '+(stats.maxLossStreak>=3?'red':'yellow')+'">'+fmt(stats.maxLossStreak)+'</div></div>'+ 
+          '<div class="cell"><div class="k">建議狀態</div><div class="v '+verdict.cls+'">'+verdict.level+'</div></div>'+ 
+        '</div><div class="divider"></div>'+ 
+        '<div class="perf-insight '+insight.cls+'"><strong>回饋結論：</strong>'+insight.html+'</div>'+ 
+        '<div class="divider"></div><div class="perf-lab">'+
+          '<div class="card"><div class="symbol" style="font-size:16px">⚔ 攻防模式績效</div>'+renderSegmentTable('攻防', tacticalRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">🎯 選股模板績效</div>'+renderSegmentTable('模板', strategyRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">📈 Delta 方向績效</div>'+renderSegmentTable('Delta', deltaRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">🧱 Structure 結構績效</div>'+renderSegmentTable('Structure', structureRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">🚦 市場燈號績效</div>'+renderSegmentTable('燈號', signalRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">🛡 系統建議</div><div class="'+(verdict.cls==='red'?'warning-box':'ok-box')+'"><strong>健康建議：</strong>'+verdict.advice+'<br><span class="footnote">v10.19 只提供數據回饋，不自動鎖單、不自動改風險。請至少累積 20 筆後再調參。</span></div></div>'+ 
+        '</div></div>';
     }
 
-    function renderPerformance(){ if($('strategyHealthPanel')) $('strategyHealthPanel').innerHTML = renderStrategyHealthPanel(); const perf=getPerformance(); $('performanceMetrics').innerHTML=`<div class="metric"><div class="label">總交易筆數</div><div class="value">${fmt(perf.totalTrades)}</div></div><div class="metric"><div class="label">勝率</div><div class="value ${perf.winRate>=50?'green':'yellow'}">${pct(perf.winRate,1)}</div></div><div class="metric"><div class="label">累積損益</div><div class="value ${perf.totalPnl>=0?'green':'red'}">NT$ ${fmt(perf.totalPnl)}</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value ${perf.avgReturn>=0?'green':'red'}">${pct(perf.avgReturn,2)}</div></div><div class="metric"><div class="label">飛輪累積 %</div><div class="value ${perf.flywheelPct>=0?'green':'red'}">${pct(perf.flywheelPct,2)}</div></div>`; if(state.logs.length===0){ $('logsTable').innerHTML=`<div class="footnote">尚無歷史紀錄。</div>`; return; } $('logsTable').innerHTML=`<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>原因</th><th>日期</th></tr></thead><tbody>${state.logs.slice(0,12).map(l=>`<tr><td class="mono">${l.symbol}</td><td>${fmt(l.entryPrice,2)}</td><td>${fmt(l.exitPrice,2)}</td><td>${fmt(l.shares)}</td><td class="${l.pnl>=0?'green':'red'}">NT$ ${fmt(l.pnl)}</td><td class="${l.returnPct>=0?'green':'red'}">${pct(l.returnPct,2)}</td><td class="${l.result==='win'?'green':(l.result==='loss'?'red':'yellow')}">${l.result}</td><td>${l.reason||'-'}</td><td class="mono">${l.exitDate}</td></tr>`).join('')}</tbody></table>`; }
+
+    function renderPerformance(){
+      if($('strategyHealthPanel')) $('strategyHealthPanel').innerHTML = renderStrategyHealthPanel();
+      const perf=getPerformance();
+      const pfText = perf.pf === null ? '-' : (perf.pf >= 999 ? '∞' : fmt(perf.pf,2));
+      if($('performanceMetrics')) $('performanceMetrics').innerHTML='<div class="metric"><div class="label">總交易筆數</div><div class="value">'+fmt(perf.totalTrades)+'</div></div><div class="metric"><div class="label">勝率</div><div class="value '+(perf.winRate>=50?'green':'yellow')+'">'+pct(perf.winRate,1)+'</div></div><div class="metric"><div class="label">PF</div><div class="value '+(perf.pf!==null && perf.pf>=1.2?'green':'red')+'">'+pfText+'</div></div><div class="metric"><div class="label">累積損益</div><div class="value '+(perf.totalPnl>=0?'green':'red')+'">NT$ '+fmt(perf.totalPnl)+'</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value '+(perf.avgReturn>=0?'green':'red')+'">'+pct(perf.avgReturn,2)+'</div></div>';
+      if(!$('logsTable')) return;
+      if((state.logs||[]).length===0){ $('logsTable').innerHTML='<div class="footnote">尚無歷史紀錄。平倉後會自動記錄當時的攻防模式、選股模板、Delta 與 Structure。</div>'; return; }
+      const logs = (state.logs || []).map(normalizeTradeLog);
+      $('logsTable').innerHTML='<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>模式</th><th>Delta</th><th>Structure</th><th>原因</th><th>日期</th></tr></thead><tbody>'+logs.slice(0,20).map(l=>'<tr><td class="mono">'+l.symbol+'</td><td>'+fmt(l.entryPrice,2)+'</td><td>'+fmt(l.exitPrice,2)+'</td><td>'+fmt(l.shares)+'</td><td class="'+(l.pnl>=0?'green':'red')+'">NT$ '+fmt(l.pnl)+'</td><td class="'+(l.ret>=0?'green':'red')+'">'+pct(l.ret,2)+'</td><td class="'+(l.result==='win'?'green':(l.result==='loss'?'red':'yellow'))+'">'+l.result+'</td><td>'+l.strategyMode+'<br><span class="footnote">'+l.tacticalMode+'</span></td><td>'+(l.delta===null?'-':fmt(l.delta,1))+'</td><td>'+(l.structureScore===null?'-':fmt(l.structureScore)+'/3')+'</td><td>'+(l.reason||'-')+'</td><td class="mono">'+l.exitDate+'</td></tr>').join('')+'</tbody></table>';
+    }
+
     function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderTvFilterPanel(); renderNoTargetHint(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); if($('orderSummaryBox') && $('ordersTable')) renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
       if(btn){ btn.textContent = (state.ui?.candidateCardsExpanded ? '收合候選詳卡' : '展開候選詳卡'); }
       const body=$('candidateCardsPanelBody');
@@ -2665,17 +2789,36 @@ ${candidatesText}
         realizedPct: pnlPct,
         status: '已平倉'
       };
+      const tacticalSnap = (typeof getTacticalMode === 'function') ? getTacticalMode(state.market) : { label:'-', mode:'-' };
+      const tvSnap = (typeof getTodayTvFilter === 'function') ? getTodayTvFilter() : { modeLabel:'-', biasLabel:'-' };
       state.logs.push({
         id: uid('log'),
         symbol: p.symbol,
         name: p.name || '',
         entryPrice: entry,
         closePrice,
+        exitPrice: closePrice,
         shares,
         pnl,
         pnlPct,
+        returnPct: pnlPct,
+        realizedPnL: pnl,
+        realizedPct: pnlPct,
+        result: pnl > 0 ? 'win' : (pnl < 0 ? 'loss' : 'flat'),
         reason,
-        time: nowString()
+        closeReason: reason,
+        time: nowString(),
+        exitDate: nowString(),
+        marketSignal: state.market?.signal || '-',
+        marketScore: num(state.market?.totalScore,0),
+        sentimentScore: num(state.market?.sentimentScore,0),
+        marketDelta: num(state.market?.delta,0),
+        structureScore: num(state.market?.structureScore,0),
+        tacticalMode: tacticalSnap.label || tacticalSnap.mode || '-',
+        tacticalKey: tacticalSnap.mode || '-',
+        strategyMode: tvSnap.modeLabel || '-',
+        tvBias: tvSnap.biasLabel || '-',
+        aiMode: state.decision?.mode || '-'
       });
       state.pendingCloseId = null;
       state.isClosing = false;
