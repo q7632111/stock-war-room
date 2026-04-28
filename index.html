@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.17.1｜AI篩選條件一鍵複製版</title>
+<title>AI 戰艦 Pro Max v10.18｜無標的提示・Delta結構UI完整版</title>
 <style>
     :root{
       --bg:#071019;
@@ -223,14 +223,27 @@
   .cloud-main-actions{width:100%;display:grid;grid-template-columns:1fr;gap:8px}
   .main-load-btn{width:100%;font-size:16px;padding:14px 16px}
 }
+
+
+/* ===== v10.18 Delta / Structure / TV filter / 無標的提示 ===== */
+.delta-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04)}
+.delta-up{color:#d9fff1;border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.10)}
+.delta-flat{color:#dbeafe;border-color:rgba(148,163,184,.32);background:rgba(148,163,184,.08)}
+.delta-down{color:#ffe2e2;border-color:rgba(248,113,113,.45);background:rgba(248,113,113,.10)}
+.structure-bars{display:flex;gap:4px;margin-top:8px}.structure-bar{height:8px;flex:1;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.06)}.structure-bar.on{background:linear-gradient(90deg,var(--cyan2),var(--green));box-shadow:0 0 12px rgba(52,211,153,.18)}
+.tv-filter-box{border:1px solid rgba(86,215,255,.22);background:linear-gradient(180deg,rgba(12,34,50,.82),rgba(7,18,29,.82));border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--glow)}
+.tv-filter-title{font-size:14px;font-weight:900;color:#dff6ff;margin-bottom:8px}.tv-filter-line{font-size:13px;line-height:1.75;color:#d9edff}.tv-filter-note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px}.tv-filter-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.no-target-alert{border-radius:14px;padding:12px 14px;margin-top:10px;line-height:1.7;font-size:13px;border:1px solid rgba(255,255,255,.10)}
+.no-target-ok{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.25);color:#d9fff1}.no-target-watch{background:rgba(251,191,36,.09);border-color:rgba(251,191,36,.28);color:#fff3bf}.no-target-danger{background:rgba(248,113,113,.09);border-color:rgba(248,113,113,.32);color:#ffe2e2}.no-target-info{background:rgba(86,215,255,.08);border-color:rgba(86,215,255,.25);color:#dff6ff}
+
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.17.1</h1>
-<div class="sub">AI篩選條件一鍵複製版｜4模式微調｜攻防雙模式｜機構級風控</div>
+<h1>AI 戰艦 Pro Max v10.18</h1>
+<div class="sub">無標的提示版｜Delta市場方向｜Structure觀測｜AI篩選條件一鍵複製｜完整STEP保留</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -240,7 +253,6 @@
   <a href="#step2Panel">STEP 2｜CSV</a>
   <a href="#step4Panel">STEP 4｜AI</a>
   <a href="#step45Panel">STEP 4.5｜決策</a>
-  <a href="#tvFilterPanel">TV篩選建議</a>
   <a href="#step5Panel">STEP 5｜掛單</a>
   <a href="#step6Panel">STEP 6｜持倉</a>
   <a href="#detailCandidatesPanel">候選詳卡</a>
@@ -289,7 +301,7 @@
 <div class="divider"></div>
 <div class="radar-grid" id="marketRadarGrid"></div>
 <div class="divider"></div>
-<div class="grid-3" id="marketSummary"></div>
+<div class="grid-5" id="marketSummary"></div>
 <div class="divider"></div>
 <div class="explain-list" id="marketExplainBox"></div>
 </div>
@@ -357,22 +369,12 @@
 </div>
 </section>
 
-
-<section class="panel" id="tvFilterPanel">
-<div class="panel-head"><div><h2 class="panel-title">TradingView 篩選條件｜AI微調一鍵複製</h2><div class="panel-sub">維持原本 4 模式，不新增 8 模式；AI 只提示微調幅度，讓你直接照抄到 TradingView</div></div></div>
-<div class="panel-body">
-<div id="tvFilterHintBox" class="card mono">尚未產生篩選建議，請先完成 STEP 1 市場戰況。</div>
-<div class="btnrow" style="margin-top:10px">
-<button class="btn green" id="copyTvFilterBtn" type="button">📋 複製今日 TradingView 條件</button>
-<button class="btn secondary" id="refreshTvFilterBtn" type="button">重新整理建議</button>
-</div>
-<div class="footnote" style="margin-top:10px">使用方式：先看 UI 顯示的 4 模式，再到 TradingView 使用對應模板；若 AI 顯示偏保守 / 偏進攻，只照建議微調 RSI、相對成交量與漲幅，不要自行擴大超過建議範圍。</div>
-</div>
-</section>
-
 <section class="panel" id="step5Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 5｜確認明天掛單名單</h2><div class="panel-sub">本地 + AI 看完後，由你自己決定鎖定戰隊與掛單內容</div></div></div>
 <div class="panel-body">
+<div id="tvFilterPanel"></div>
+<div id="noTargetHintPanel"></div>
+<div class="divider"></div>
 <div id="orderSummaryBox"></div>
 <div class="divider"></div>
 <div class="tableWrap" id="ordersTable"></div>
@@ -535,7 +537,7 @@
 
 <div class="close-overlay" id="uiGuideModal">
   <div class="close-modal" style="width:min(1040px,95%)">
-    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.15.2.4.2｜攻防雙模・策略健康觀測系統</div>
+    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.18｜Delta結構觀測・無標的提示・AI篩選條件一鍵複製</div>
     <div class="ok-box" style="font-size:14px;line-height:1.75">
       <strong>核心定位：</strong><br>
       這不是單純選股工具，而是一套從「市場判斷 → 選股篩選 → AI覆核 → 攻防決策 → 倉位風控 → 出場管理 → 覆盤進化」串成閉環的戰情室系統。<br>
@@ -543,6 +545,7 @@
     </div>
 
     <div class="help-grid" style="margin-top:14px">
+      <div class="help-item"><strong>NEW｜市場方向與無標的保護</strong>Delta 顯示市場分數是升溫還是退潮；Structure 顯示市場結構健康度；若 TradingView 連續無標的，系統會提示是否維持空手或切換模式，避免手癢亂放寬條件。</div>
       <div class="help-item"><strong>1｜三層戰鬥架構</strong>市場層判斷紅 / 黃 / 綠燈；選股層切換防守、精準、動能、狂牛；戰術層再決定 🛡防守、⚖平衡、🔥攻擊。系統不是只會篩股，而是會決定「什麼行情該怎麼打」。</div>
       <div class="help-item"><strong>2｜攻防雙模式 NEW</strong>平常用防守與平衡保護本金；綠燈高分、勝率與PF達標時，才進入攻擊模式。攻擊模式會放寬RSI、量比、乖離與假突破容忍，讓強勢行情有機會跑出大段。</div>
       <div class="help-item"><strong>3｜TradingView + 本地雙引擎</strong>TradingView負責粗篩股票池，AI戰艦負責二次精篩。系統會用技術動能、量能、趨勢、基本面排雷與假突破偵測，將垃圾股、過熱股、出貨股先擋掉。</div>
@@ -622,13 +625,14 @@
     const STORAGE_KEY = 'warroom_v10_13_3_institutional_exit';
 
     const defaultState = {
-      market: { advancers:0, decliners:0, limitUp:0, limitDown:0, otcChange:0, taiexChange:0, breadthScore:0, sentimentScore:0, totalScore:0, signal:'yellow', maxNewPositionsAllowed:1, instruction:'等待市場狀態更新', explainParts:[], radar:{} },
+      market: { advancers:0, decliners:0, limitUp:0, limitDown:0, otcChange:0, taiexChange:0, breadthScore:0, sentimentScore:0, totalScore:0, prevScore:0, delta:0, structureScore:0, signal:'yellow', maxNewPositionsAllowed:1, instruction:'等待市場狀態更新', explainParts:[], radar:{} },
       risk: { capital:200000, availableCash:200000, dailyRiskPercent:1, singlePositionCapitalPercent:25, maxNewPositions:2, lossStreak:0 },
       candidatesRawText:'', candidates:[], positions:[], logs:[], lastSync:'', pendingCloseId:null, isClosing:false, pendingAddCandidateId:null,
       aiReview: { prompt:'', rawResponse:'', parsed:null, mode:'local_only' },
       decision: { mode:'auto', finalSymbols:[], summary:'', autoHeatThreshold:20, autoScoreGap:12, liveAdjEnabled:'true', liveAdjStrength:'conservative' },
       cloud: { apiUrl:'https://script.google.com/macros/s/AKfycbxTNAT3bzlh9ZbvzDsW71lgkLWgD9RqoW4L5fYT-VifK5PHvNKSFV2FhAhqEFNhpDxI/exec', roomId:'main_room', token:'', lastSharedSync:'' },
-      ui: { candidateCardsExpanded:false, candidateCardsMode:'top5' }
+      ui: { candidateCardsExpanded:false, candidateCardsMode:'top5' },
+      noTarget: { days:0, lastDate:'' }
     };
 
     
@@ -752,7 +756,11 @@ let state = loadState();
       const autoSent = calculateAutoSentimentScore({limitUp:up, limitDown:down, otcChange:otc, taiexChange:taiex});
       const sentimentScore = autoSent.score; const totalScore = Math.round((breadthScore*0.6 + sentimentScore*0.4)*10)/10; const decision = getMarketDecision(totalScore);
       const radar = { breadth: Math.round(breadthScore), sentiment: Math.round(sentimentScore), taiex: clamp(Math.round((taiex+3)/6*100),0,100), otc: clamp(Math.round((otc+3)/6*100),0,100), spread: clamp(Math.round((up-down+40)/80*100),0,100), total: Math.round(totalScore) };
-      state.market = { ...state.market, breadthScore, sentimentScore, totalScore, signal:decision.signal, maxNewPositionsAllowed:decision.maxNewPositionsAllowed, instruction:decision.instruction, explainParts:[...autoSent.explain.map(x=>`${x[0]} ${x[1]}`), ...getMarketExplainParts({advancers:adv,decliners:dec,limitUp:up,limitDown:down,otcChange:otc,taiexChange:taiex})], radar };
+      let structureScore = 0;
+      if(adv > dec) structureScore++;
+      if(up > down) structureScore++;
+      if(otc > 0 && taiex > 0) structureScore++;
+      state.market = { ...state.market, breadthScore, sentimentScore, totalScore, structureScore, signal:decision.signal, maxNewPositionsAllowed:decision.maxNewPositionsAllowed, instruction:decision.instruction, explainParts:[...autoSent.explain.map(x=>`${x[0]} ${x[1]}`), ...getMarketExplainParts({advancers:adv,decliners:dec,limitUp:up,limitDown:down,otcChange:otc,taiexChange:taiex})], radar };
     }
     function getUsedCapitalFromOpenPositions(){ return state.positions.filter(p=>p.isOpen).reduce((sum,p)=>sum+num(p.invested),0); }
     function getPortfolioStats(){ let totalCost=0,totalPnL=0; state.positions.filter(p=>p.isOpen).forEach(h=>{ const s=Number(h.shares)||1000; totalCost += Number(h.entryPrice||0)*s; totalPnL += (Number(h.currentPrice||0)-Number(h.entryPrice||0))*s; }); const drop = totalCost > 0 ? (totalPnL/totalCost)*100 : 0; return { totalCost, totalPnL, drop }; }
@@ -906,18 +914,24 @@ let state = loadState();
       const signal = market && market.signal || 'yellow';
       const total = num(market && market.totalScore, 0);
       const sentiment = num(market && market.sentimentScore, 0);
+      const delta = num(market && market.delta, 0);
       const winRate = stats && stats.winRate !== null ? num(stats.winRate, 0) : null;
       const pf = stats && stats.pf !== null ? num(stats.pf, 0) : null;
       const lossStreak = num(state.risk && state.risk.lossStreak, 0);
+
+      // v10.17/v10.18：Delta 正式接管攻防。市場明顯退潮時，直接退出攻擊模式。
+      if(delta <= -5){
+        return { mode:'defense', label:'🛡 防守模式', cls:'red', reason:`市場分數降溫 ${fmt(delta,1)}，退潮期不開攻擊模式。` };
+      }
 
       // 防守模式容易進，攻擊模式嚴格進：避免追高殺低
       if(signal === 'red' || total < 40 || lossStreak >= 2 || (stats.count >= 10 && winRate !== null && winRate < 40)){
         return { mode:'defense', label:'🛡 防守模式', cls:'red', reason:'市場偏弱、連敗或近期勝率低，先守本金。' };
       }
-      if(signal === 'green' && total >= 80 && sentiment >= 70 && stats.count >= 10 && winRate !== null && winRate >= 50 && (pf === null || pf >= 1.2) && lossStreak < 2){
-        return { mode:'attack', label:'🔥 攻擊模式', cls:'purple', reason:'綠燈高分、近期勝率與 PF 合格，放大利潤空間但不放大風險。' };
+      if(signal === 'green' && total >= 80 && delta >= 0 && sentiment >= 70 && stats.count >= 10 && winRate !== null && winRate >= 50 && (pf === null || pf >= 1.2) && lossStreak < 2){
+        return { mode:'attack', label:'🔥 攻擊模式', cls:'purple', reason:'綠燈高分、Delta未轉弱、近期勝率與 PF 合格，放大利潤空間但不放大風險。' };
       }
-      return { mode:'balanced', label:'⚖ 平衡模式', cls:'cyan', reason:'維持 v10.14.2 安全節奏。' };
+      return { mode:'balanced', label:'⚖ 平衡模式', cls:'cyan', reason:'維持安全節奏；若 Delta 明顯升溫且績效達標，才允許攻擊。' };
     }
     function getAiLiveAdjustment(market=state.market){
       const total = num(market && market.totalScore, 0);
@@ -1759,131 +1773,116 @@ let state = loadState();
     }
 
 
-    // ===== v10.17.1 AI篩選條件一鍵複製：4模式固定，AI只做小幅微調 =====
-    const TV_FILTER_PROFILES = {
-      defense: {
-        label:'🛡 防守模式', key:'防守',
-        base:{ rsi:'45 ~ 60', rvol:'> 1.0', change:'> 0%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
-        conservative:{ rsi:'43 ~ 58', rvol:'> 1.2', change:'> 0%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
-        aggressive:{ rsi:'47 ~ 63', rvol:'> 0.9', change:'> 0.5%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' }
-      },
-      precision: {
-        label:'⚔ 精準模式', key:'精準',
-        base:{ rsi:'55 ~ 72', rvol:'> 1.3', change:'> 1%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
-        conservative:{ rsi:'53 ~ 70', rvol:'> 1.5', change:'> 0.8%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
-        aggressive:{ rsi:'58 ~ 75', rvol:'> 1.1', change:'> 1.5%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' }
-      },
-      momentum: {
-        label:'🚀 動能模式', key:'動能',
-        base:{ rsi:'60 ~ 78', rvol:'> 1.5', change:'> 2%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
-        conservative:{ rsi:'58 ~ 75', rvol:'> 1.7', change:'> 1.5%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
-        aggressive:{ rsi:'63 ~ 82', rvol:'> 1.3', change:'> 3%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' }
-      },
-      superbull: {
-        label:'🔥 狂牛模式', key:'狂牛',
-        base:{ rsi:'65 ~ 85', rvol:'> 1.8', change:'> 3%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
-        conservative:{ rsi:'63 ~ 80', rvol:'> 2.0', change:'> 2%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
-        aggressive:{ rsi:'70 ~ 90', rvol:'> 1.5', change:'> 4%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' }
-      }
-    };
-
-    function getTvFilterModeKey(){
-      const strategy = typeof getStrategyModeDisplay === 'function' ? getStrategyModeDisplay() : null;
-      const label = String(strategy?.label || '');
-      if(label.includes('防守')) return 'defense';
-      if(label.includes('狂牛')) return 'superbull';
-      if(label.includes('動能')) return 'momentum';
-      if(label.includes('精準')) return 'precision';
-      const signal = state.market?.signal || 'yellow';
-      const total = num(state.market?.totalScore, 0);
-      const sentiment = num(state.market?.sentimentScore, 0);
-      if(signal === 'red' || total < 40) return 'defense';
-      if(signal === 'green' && (total >= 85 || sentiment >= 80)) return 'superbull';
-      if(signal === 'green' && total >= 75) return 'momentum';
-      return 'precision';
+    // ===== v10.18：Delta / Structure / TradingView條件 / 無標的提示 =====
+    function getDeltaInfo(){
+      const d = num(state.market && state.market.delta, 0);
+      if(d >= 5) return { text:`🚀 升溫 +${fmt(d,1)}`, cls:'delta-up', tone:'aggressive' };
+      if(d > 0) return { text:`🟢 微升 +${fmt(d,1)}`, cls:'delta-up', tone:'normal' };
+      if(d <= -5) return { text:`❄ 降溫 ${fmt(d,1)}`, cls:'delta-down', tone:'conservative' };
+      if(d < 0) return { text:`⚠ 轉弱 ${fmt(d,1)}`, cls:'delta-down', tone:'caution' };
+      return { text:'持平 +0', cls:'delta-flat', tone:'normal' };
     }
-
+    function getStructureInfo(){
+      const s = clamp(num(state.market && state.market.structureScore, 0), 0, 3);
+      const text = s >= 3 ? '🔥 結構完整' : s === 2 ? '⚖ 結構尚可' : s === 1 ? '⚠ 結構偏弱' : '❄ 結構不足';
+      return { score:s, text, bars:`<div class="structure-bars">${[1,2,3].map(i=>`<div class="structure-bar ${s>=i?'on':''}"></div>`).join('')}</div>` };
+    }
+    function getBaseTvProfile(){
+      const strategy = getStrategyModeDisplay ? getStrategyModeDisplay() : { key:'precision', label:'⚖ 精準模式' };
+      const raw = `${strategy.label || ''} ${strategy.desc || ''}`;
+      if(raw.includes('防守') || raw.includes('紅燈')) return { key:'defense', label:'🛡 防守模式', rsiMin:45, rsiMax:60, rvol:1.0, change:0, avgVol:'> 1M' };
+      if(raw.includes('動能')) return { key:'momentum', label:'⚡ 動能模式', rsiMin:60, rsiMax:78, rvol:1.5, change:2, avgVol:'> 1M' };
+      if(raw.includes('狂牛') || raw.includes('攻擊')) return { key:'bull', label:'🔥 狂牛模式', rsiMin:65, rsiMax:85, rvol:1.8, change:3, avgVol:'> 1M' };
+      return { key:'precision', label:'⚖ 精準模式', rsiMin:55, rsiMax:72, rvol:1.3, change:1, avgVol:'> 1M' };
+    }
     function getTvFilterBias(){
-      const delta = num(state.market?.delta, 0);
-      const tactical = typeof getTacticalMode === 'function' ? getTacticalMode(state.market) : { mode:'balanced' };
-      const structure = num(state.market?.structureScore, 2);
-      if(tactical.mode === 'defense' || delta <= -3 || structure <= 1) return { key:'conservative', label:'偏保守', reason:'市場轉弱、結構偏弱或攻防模式為防守，篩選條件收緊。' };
-      if(tactical.mode === 'attack' || delta >= 3) return { key:'aggressive', label:'偏進攻', reason:'市場升溫或攻防模式允許攻擊，篩選條件小幅放寬。' };
+      const delta = num(state.market && state.market.delta, 0);
+      const structure = num(state.market && state.market.structureScore, 0);
+      const tactical = getTacticalMode(state.market);
+      if(delta <= -3 || structure <= 1 || tactical.mode === 'defense') return { key:'conservative', label:'偏保守', reason:'市場轉弱、結構偏弱或攻防模式轉防守，源頭條件收緊。' };
+      if(delta >= 5 && structure >= 2 && tactical.mode === 'attack') return { key:'aggressive', label:'偏進攻', reason:'市場升溫且攻防模式允許，源頭條件小幅放寬。' };
       return { key:'base', label:'基準', reason:'市場未明顯升溫或降溫，維持原本模板。' };
     }
-
-    function getTvFilterRecommendation(){
-      const modeKey = getTvFilterModeKey();
+    function getTodayTvFilter(){
+      const base = getBaseTvProfile();
       const bias = getTvFilterBias();
-      const profile = TV_FILTER_PROFILES[modeKey] || TV_FILTER_PROFILES.precision;
-      const rule = profile[bias.key] || profile.base;
-      const delta = num(state.market?.delta, 0);
-      const structure = num(state.market?.structureScore, 0);
-      const tactical = typeof getTacticalMode === 'function' ? getTacticalMode(state.market) : { label:'⚖ 平衡模式', reason:'' };
-      return { modeKey, profile, bias, rule, delta, structure, tactical };
-    }
-
-    function formatTvFilterText(){
-      const r = getTvFilterRecommendation();
-      return [
-        `AI戰艦今日 TradingView 篩選建議`,
-        `模式：${r.profile.key}模式（AI：${r.bias.label}）`,
-        `市場Delta：${r.delta >= 0 ? '+' : ''}${r.delta}`,
-        `Structure：${r.structure}/3`,
-        `攻防狀態：${r.tactical.label || '-'}`,
-        ``,
-        `請在 TradingView 使用以下條件：`,
-        `1. ${r.rule.trend}`,
-        `2. RSI：${r.rule.rsi}`,
-        `3. 相對成交量：${r.rule.rvol}`,
-        `4. 今日漲幅：${r.rule.change}`,
-        `5. ${r.rule.avgVol}`,
-        ``,
-        `微調原因：${r.bias.reason}`,
-        `紀律提醒：只用這組條件，不要再自行放寬；若篩不到股票，先接受空手。`
-      ].join('\n');
-    }
-
-    function renderTvFilterHint(){
-      const el = $('tvFilterHintBox');
-      if(!el) return;
-      const r = getTvFilterRecommendation();
-      const cls = r.bias.key === 'aggressive' ? 'green' : (r.bias.key === 'conservative' ? 'yellow' : 'cyan');
-      el.innerHTML = `
-        <div class="badge ${cls}">今日模板：${r.profile.label}（AI：${r.bias.label}）</div>
-        <div class="divider"></div>
-        <div><strong>TradingView 條件</strong></div>
-        <div class="explain-item">趨勢：${r.rule.trend}</div>
-        <div class="explain-item">RSI：${r.rule.rsi}</div>
-        <div class="explain-item">相對成交量：${r.rule.rvol}</div>
-        <div class="explain-item">今日漲幅：${r.rule.change}</div>
-        <div class="explain-item">成交量：${r.rule.avgVol}</div>
-        <div class="divider"></div>
-        <div class="footnote">Delta：${r.delta >= 0 ? '+' : ''}${r.delta}｜Structure：${r.structure}/3｜攻防：${r.tactical.label || '-'}</div>
-        <div class="footnote">${r.bias.reason}</div>
-      `;
-    }
-
-    async function copyTvFilterText(){
-      const text = formatTvFilterText();
-      try{
-        await navigator.clipboard.writeText(text);
-        alert('已複製今日 TradingView 篩選條件');
-      }catch(err){
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        alert('已複製今日 TradingView 篩選條件');
+      let rsiMin = base.rsiMin, rsiMax = base.rsiMax, rvol = base.rvol, change = base.change;
+      if(bias.key === 'conservative'){
+        rsiMin = Math.max(1, rsiMin - 2);
+        rsiMax = Math.max(rsiMin + 5, rsiMax - 2);
+        rvol = Math.round((rvol + 0.2) * 10) / 10;
+        change = Math.max(0, Math.round((change - 0.2) * 10) / 10);
+      }else if(bias.key === 'aggressive'){
+        rsiMin = rsiMin + 2;
+        rsiMax = rsiMax + 3;
+        rvol = Math.max(0.8, Math.round((rvol - 0.2) * 10) / 10);
+        change = Math.round((change + 0.5) * 10) / 10;
       }
+      return { ...base, ...bias, modeLabel:base.label, biasLabel:bias.label, biasKey:bias.key, rsiMin, rsiMax, rvol, change };
+    }
+    function getTodayTvFilterText(){
+      const f = getTodayTvFilter();
+      const delta = getDeltaInfo();
+      const structure = getStructureInfo();
+      const tactical = getTacticalMode(state.market);
+      return `TradingView 條件\n趨勢：價格 > SMA20；SMA20 > SMA60\nRSI：${f.rsiMin} ~ ${f.rsiMax}\n相對成交量：> ${f.rvol}\n今日漲幅：> ${f.change}%\n成交量：10日平均成交量 ${f.avgVol}\nDelta：${fmt(num(state.market.delta,0),1)}｜Structure：${structure.score}/3｜攻防：${tactical.label}\n說明：${f.reason}`;
+    }
+    function copyTodayTvFilter(){
+      const text = getTodayTvFilterText();
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(()=>alert('已複製今日 TradingView 條件')).catch(()=>fallbackCopyText(text));
+      }else fallbackCopyText(text);
+    }
+    function fallbackCopyText(text){
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); alert('已複製今日 TradingView 條件'); }catch(e){ alert('複製失敗，請手動複製'); }
+      document.body.removeChild(ta);
+    }
+    function renderTvFilterPanel(){
+      if(!$('tvFilterPanel')) return;
+      const f = getTodayTvFilter();
+      const delta = getDeltaInfo();
+      const structure = getStructureInfo();
+      const tactical = getTacticalMode(state.market);
+      $('tvFilterPanel').innerHTML = `<div class="tv-filter-box"><div class="tv-filter-title">🎯 TradingView 篩選條件｜AI微調一鍵複製</div><div class="tv-filter-line"><strong>今日模板：</strong>${f.modeLabel}（AI：${f.biasLabel}）</div><div class="tv-filter-line"><strong>趨勢：</strong>價格 &gt; SMA20；SMA20 &gt; SMA60</div><div class="tv-filter-line"><strong>RSI：</strong>${f.rsiMin} ~ ${f.rsiMax}</div><div class="tv-filter-line"><strong>相對成交量：</strong>&gt; ${f.rvol}</div><div class="tv-filter-line"><strong>今日漲幅：</strong>&gt; ${f.change}%</div><div class="tv-filter-line"><strong>成交量：</strong>10日平均成交量 ${f.avgVol}</div><div class="tv-filter-note"><span class="delta-chip ${delta.cls}">Delta：${delta.text}</span>　<span class="delta-chip">Structure：${structure.score}/3</span>　<span class="delta-chip ${tactical.cls}">攻防：${tactical.label}</span><br>${structure.bars}<br>${f.reason}</div><div class="tv-filter-actions"><button class="btn small" type="button" onclick="copyTodayTvFilter()">📋 複製今日 TradingView 條件</button></div></div>`;
+    }
+    function getNoTargetSuggestion(count){
+      const n = num(count, 0);
+      const todayKey = new Date().toISOString().slice(0,10);
+      if(!state.noTarget) state.noTarget = { days:0, lastDate:'' };
+      if(n === 0){
+        if(state.noTarget.lastDate !== todayKey){ state.noTarget.days = num(state.noTarget.days,0) + 1; state.noTarget.lastDate = todayKey; }
+      }else{
+        state.noTarget.days = 0; state.noTarget.lastDate = todayKey;
+      }
+      const days = num(state.noTarget.days, 0);
+      const delta = num(state.market && state.market.delta, 0);
+      const structure = num(state.market && state.market.structureScore, 0);
+      if(n > 0) return { cls:'no-target-ok', html:`✅ TradingView / CSV 已有 ${n} 檔候選，無需切換模式。` };
+      if(days < 3) return { cls:'no-target-info', html:`目前無標的：${days}/3 天。先不要亂放寬條件，維持原模式觀察。` };
+      if(delta >= 5 && structure >= 2) return { cls:'no-target-ok', html:'🔥 連續無標的但市場升溫：可考慮「精準 → 動能」或使用目前模板的偏進攻條件。' };
+      if(delta <= -5) return { cls:'no-target-danger', html:'🛡 連續無標的且市場退潮：建議維持防守 / 空手，不要為了找單放寬條件。' };
+      if(structure <= 1) return { cls:'no-target-watch', html:'⚠ 連續無標的且市場結構偏弱：建議維持模式，不要放寬源頭篩選。' };
+      return { cls:'no-target-watch', html:'⚠ 連續無標的：建議再觀察一天，只允許切模式，不允許手動亂放寬條件。' };
+    }
+    function renderNoTargetHint(count=null){
+      if(!$('noTargetHintPanel')) return;
+      const n = count === null ? (state.candidates || []).length : count;
+      const s = getNoTargetSuggestion(n);
+      $('noTargetHintPanel').innerHTML = `<div class="no-target-alert ${s.cls}">${s.html}</div>`;
     }
 
+    function renderHero(){ const summary = getDashboardSummary(); const perf=getPerformance(); const tactical = getTacticalMode(state.market); const structure = getStructureInfo(); const delta = getDeltaInfo(); const items=[{label:'市場總分',value:fmt(state.market.totalScore,1),color:signalClass(state.market.signal)},{label:'Delta方向',value:delta.text,color:state.market.delta>=0?'green':'red'},{label:'Structure',value:`${structure.score}/3`,color:structure.score>=2?'green':'yellow'},{label:'攻防模式',value:tactical.label,color:tactical.cls},{label:'今日可開新倉',value:`${summary.effectiveMaxNewPositions} 檔`},{label:'單日風險額',value:`NT$ ${fmt(summary.dailyRiskAmount)}`},{label:'持倉數量',value:`${summary.openPositions.length} 檔`},{label:'剩餘資金',value:`NT$ ${fmt(summary.remainingCash)}`},{label:'飛輪累積 %',value:pct(perf.flywheelPct,2),color:perf.flywheelPct>=0?'green':'red'},{label:'平倉勝率',value:pct(perf.winRate,1),color:perf.winRate>=50?'green':'yellow'}]; $('heroMetrics').innerHTML=items.map(x=>`<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color||''}">${x.value}</div></div>`).join(''); $('todayInstruction').textContent=state.market.instruction; $('lastSyncTime').textContent=state.lastSync||'-'; }
 
-    function renderHero(){ const summary = getDashboardSummary(); const perf=getPerformance(); const tactical = getTacticalMode(state.market); const items=[{label:'市場總分',value:fmt(state.market.totalScore,1),color:signalClass(state.market.signal)},{label:'攻防模式',value:tactical.label,color:tactical.cls},{label:'今日可開新倉',value:`${summary.effectiveMaxNewPositions} 檔`},{label:'單日風險額',value:`NT$ ${fmt(summary.dailyRiskAmount)}`},{label:'持倉數量',value:`${summary.openPositions.length} 檔`},{label:'剩餘資金',value:`NT$ ${fmt(summary.remainingCash)}`},{label:'飛輪累積 %',value:pct(perf.flywheelPct,2),color:perf.flywheelPct>=0?'green':'red'},{label:'平倉勝率',value:pct(perf.winRate,1),color:perf.winRate>=50?'green':'yellow'}]; $('heroMetrics').innerHTML=items.map(x=>`<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color||''}">${x.value}</div></div>`).join(''); $('todayInstruction').textContent=state.market.instruction; $('lastSyncTime').textContent=state.lastSync||'-'; }
-
-    function renderMarket(){ const r=state.market.radar||{}; $('marketRadarGrid').innerHTML=`<div class="radar-item"><div class="radar-title">廣度擴散</div><div class="radar-bar"><div class="radar-fill" style="width:${r.breadth||0}%"></div></div><div class="radar-score">${r.breadth||0}</div></div><div class="radar-item"><div class="radar-title">情緒熱度</div><div class="radar-bar"><div class="radar-fill" style="width:${r.sentiment||0}%"></div></div><div class="radar-score">${r.sentiment||0}</div></div><div class="radar-item"><div class="radar-title">加權強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.taiex||0}%"></div></div><div class="radar-score">${pct(state.market.taiexChange,2)}</div></div><div class="radar-item"><div class="radar-title">OTC 強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.otc||0}%"></div></div><div class="radar-score">${pct(state.market.otcChange,2)}</div></div><div class="radar-item"><div class="radar-title">漲跌停優勢</div><div class="radar-bar"><div class="radar-fill" style="width:${r.spread||0}%"></div></div><div class="radar-score">${fmt(num(state.market.limitUp)-num(state.market.limitDown),0)}</div></div><div class="radar-item"><div class="radar-title">最終戰況</div><div class="radar-bar"><div class="radar-fill" style="width:${r.total||0}%"></div></div><div class="radar-score ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()} / ${fmt(state.market.totalScore,1)}</div></div>`; $('marketSummary').innerHTML=`<div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div></div><div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div></div><div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div></div>`; $('marketExplainBox').innerHTML=(state.market.explainParts||[]).length ? state.market.explainParts.map(x=>`<div class="explain-item">${x}</div>`).join('') : `<div class="footnote">尚無燈號判定說明。</div>`; }
+    function renderMarket(){
+      const r=state.market.radar||{};
+      const delta = getDeltaInfo();
+      const structure = getStructureInfo();
+      $('marketRadarGrid').innerHTML=`<div class="radar-item"><div class="radar-title">廣度擴散</div><div class="radar-bar"><div class="radar-fill" style="width:${r.breadth||0}%"></div></div><div class="radar-score">${r.breadth||0}</div></div><div class="radar-item"><div class="radar-title">情緒熱度</div><div class="radar-bar"><div class="radar-fill" style="width:${r.sentiment||0}%"></div></div><div class="radar-score">${r.sentiment||0}</div></div><div class="radar-item"><div class="radar-title">加權強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.taiex||0}%"></div></div><div class="radar-score">${pct(state.market.taiexChange,2)}</div></div><div class="radar-item"><div class="radar-title">OTC 強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.otc||0}%"></div></div><div class="radar-score">${pct(state.market.otcChange,2)}</div></div><div class="radar-item"><div class="radar-title">漲跌停優勢</div><div class="radar-bar"><div class="radar-fill" style="width:${r.spread||0}%"></div></div><div class="radar-score">${fmt(num(state.market.limitUp)-num(state.market.limitDown),0)}</div></div><div class="radar-item"><div class="radar-title">最終戰況</div><div class="radar-bar"><div class="radar-fill" style="width:${r.total||0}%"></div></div><div class="radar-score ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()} / ${fmt(state.market.totalScore,1)}</div></div>`;
+      $('marketSummary').innerHTML=`<div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div></div><div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div></div><div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div></div><div class="metric"><div class="label">Delta方向</div><div class="value small"><span class="delta-chip ${delta.cls}">${delta.text}</span></div></div><div class="metric"><div class="label">Structure結構</div><div class="value small">${structure.score}/3</div>${structure.bars}</div>`;
+      $('marketExplainBox').innerHTML=(state.market.explainParts||[]).length ? state.market.explainParts.map(x=>`<div class="explain-item">${x}</div>`).join('') : `<div class="footnote">尚無燈號判定說明。</div>`;
+    }
     function renderRiskMode(){
       const { lossMode, effectiveDailyRiskPercent, effectiveMaxNewPositions, superBull } = getEffectiveSettings();
       const cls = lossMode.mode==='正常模式' && !superBull ? 'ok-box' : 'warning-box';
@@ -1909,7 +1908,7 @@ let state = loadState();
       if(ai?.top_pick?.symbol){
         html += `<div class="divider"></div><div class="ok-box"><strong>AI 覆核結果</strong><br>主攻：${ai.top_pick.symbol}${ai.top_pick.reason?`｜${ai.top_pick.reason}`:''}<br>${ai.backup_pick?.symbol?`次選：${ai.backup_pick.symbol}${ai.backup_pick.reason?`｜${ai.backup_pick.reason}`:''}<br>`:''}${ai.avoid_pick?.symbol?`避開：${ai.avoid_pick.symbol}${ai.avoid_pick.reason?`｜${ai.avoid_pick.reason}`:''}`:''}</div>`;
       }
-      $('mainAttackSummary').innerHTML=html;
+      $('mainAttackSummary').innerHTML=html; renderTvFilterPanel(); renderNoTargetHint();
     }
 
 
@@ -2157,12 +2156,25 @@ ${candidatesText}
     }
 
     function renderPerformance(){ if($('strategyHealthPanel')) $('strategyHealthPanel').innerHTML = renderStrategyHealthPanel(); const perf=getPerformance(); $('performanceMetrics').innerHTML=`<div class="metric"><div class="label">總交易筆數</div><div class="value">${fmt(perf.totalTrades)}</div></div><div class="metric"><div class="label">勝率</div><div class="value ${perf.winRate>=50?'green':'yellow'}">${pct(perf.winRate,1)}</div></div><div class="metric"><div class="label">累積損益</div><div class="value ${perf.totalPnl>=0?'green':'red'}">NT$ ${fmt(perf.totalPnl)}</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value ${perf.avgReturn>=0?'green':'red'}">${pct(perf.avgReturn,2)}</div></div><div class="metric"><div class="label">飛輪累積 %</div><div class="value ${perf.flywheelPct>=0?'green':'red'}">${pct(perf.flywheelPct,2)}</div></div>`; if(state.logs.length===0){ $('logsTable').innerHTML=`<div class="footnote">尚無歷史紀錄。</div>`; return; } $('logsTable').innerHTML=`<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>原因</th><th>日期</th></tr></thead><tbody>${state.logs.slice(0,12).map(l=>`<tr><td class="mono">${l.symbol}</td><td>${fmt(l.entryPrice,2)}</td><td>${fmt(l.exitPrice,2)}</td><td>${fmt(l.shares)}</td><td class="${l.pnl>=0?'green':'red'}">NT$ ${fmt(l.pnl)}</td><td class="${l.returnPct>=0?'green':'red'}">${pct(l.returnPct,2)}</td><td class="${l.result==='win'?'green':(l.result==='loss'?'red':'yellow')}">${l.result}</td><td>${l.reason||'-'}</td><td class="mono">${l.exitDate}</td></tr>`).join('')}</tbody></table>`; }
-    function renderAll(){ fillInputsFromState(); renderTvFilterHint(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); if($('orderSummaryBox') && $('ordersTable')) renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
+    function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderTvFilterPanel(); renderNoTargetHint(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); if($('orderSummaryBox') && $('ordersTable')) renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
       if(btn){ btn.textContent = (state.ui?.candidateCardsExpanded ? '收合候選詳卡' : '展開候選詳卡'); }
       const body=$('candidateCardsPanelBody');
       if(body){ body.classList.toggle('hidden-panel', !state.ui?.candidateCardsExpanded); } }
 
-    function saveMarketInputs(){ state.market.advancers=num($('advancersInput').value); state.market.decliners=num($('declinersInput').value); state.market.limitUp=num($('limitUpInput').value); state.market.limitDown=num($('limitDownInput').value); state.market.otcChange=num($('otcChangeInput').value); state.market.taiexChange=num($('taiexChangeInput').value); saveState(); }
+    function saveMarketInputs(){
+      const prevScore = num(state.market.totalScore, 0);
+      state.market.advancers=num($('advancersInput').value);
+      state.market.decliners=num($('declinersInput').value);
+      state.market.limitUp=num($('limitUpInput').value);
+      state.market.limitDown=num($('limitDownInput').value);
+      state.market.otcChange=num($('otcChangeInput').value);
+      state.market.taiexChange=num($('taiexChangeInput').value);
+      calculateMarket();
+      const newScore = num(state.market.totalScore, 0);
+      state.market.prevScore = prevScore;
+      state.market.delta = Math.round((newScore - prevScore) * 10) / 10;
+      saveState();
+    }
 
     function fillPositionFormFromSource(src = {}, { openModal = true } = {}){
       const exitProfile = getAdaptiveExitProfile();
@@ -2367,6 +2379,7 @@ ${candidatesText}
         }
         parseTradingViewCsv();
         const count = (state.candidates || []).length;
+        renderNoTargetHint(count);
         if($('candidateWarnings')){
           $('candidateWarnings').innerHTML = count
             ? '<div class="ok-box">✅ CSV 已解析成功，共 ' + count + ' 檔候選股。</div>'
@@ -2522,8 +2535,6 @@ ${candidatesText}
         applyDecisionMode(false);
       });
       $('showDecisionBtn')?.addEventListener('click', ()=>applyDecisionMode(true));
-      $("copyTvFilterBtn")?.addEventListener("click", copyTvFilterText);
-      $("refreshTvFilterBtn")?.addEventListener("click", renderTvFilterHint);
       $('resetLocalBtn')?.addEventListener('click', resetToLocalSelection);
       $('calcPositionBtn')?.addEventListener('click', updatePositionPreview);
       $('addPositionBtn')?.addEventListener('click', addOrUpdatePosition);
@@ -2678,6 +2689,7 @@ ${candidatesText}
     window.openClose = openClose;
     window.loadPositionToForm = loadPositionToForm;
     window.removePosition = removePosition;
+    window.copyTodayTvFilter = copyTodayTvFilter;
 
     bindEvents();
     bindUiEvents();
