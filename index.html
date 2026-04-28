@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.15.2.4.2｜持倉按鈕修正版</title>
+<title>AI 戰艦 Pro Max v10.17.1｜AI篩選條件一鍵複製版</title>
 <style>
     :root{
       --bg:#071019;
@@ -229,8 +229,8 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.15.2.4.2</h1>
-<div class="sub">UI強化版｜攻防雙模式｜AI進化｜機構級風控｜整張/零股雙軌</div>
+<h1>AI 戰艦 Pro Max v10.17.1</h1>
+<div class="sub">AI篩選條件一鍵複製版｜4模式微調｜攻防雙模式｜機構級風控</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -240,6 +240,7 @@
   <a href="#step2Panel">STEP 2｜CSV</a>
   <a href="#step4Panel">STEP 4｜AI</a>
   <a href="#step45Panel">STEP 4.5｜決策</a>
+  <a href="#tvFilterPanel">TV篩選建議</a>
   <a href="#step5Panel">STEP 5｜掛單</a>
   <a href="#step6Panel">STEP 6｜持倉</a>
   <a href="#detailCandidatesPanel">候選詳卡</a>
@@ -353,6 +354,19 @@
 <div class="ok-box" id="autoModeHint">自動切模式會依市場分數、情緒熱度、AI交集與過熱風險，自動在交集 / 本地 / AI 優先之間切換。</div>
 <div class="divider"></div>
 <div id="decisionBox" class="card mono">尚未執行決策模式。</div>
+</div>
+</section>
+
+
+<section class="panel" id="tvFilterPanel">
+<div class="panel-head"><div><h2 class="panel-title">TradingView 篩選條件｜AI微調一鍵複製</h2><div class="panel-sub">維持原本 4 模式，不新增 8 模式；AI 只提示微調幅度，讓你直接照抄到 TradingView</div></div></div>
+<div class="panel-body">
+<div id="tvFilterHintBox" class="card mono">尚未產生篩選建議，請先完成 STEP 1 市場戰況。</div>
+<div class="btnrow" style="margin-top:10px">
+<button class="btn green" id="copyTvFilterBtn" type="button">📋 複製今日 TradingView 條件</button>
+<button class="btn secondary" id="refreshTvFilterBtn" type="button">重新整理建議</button>
+</div>
+<div class="footnote" style="margin-top:10px">使用方式：先看 UI 顯示的 4 模式，再到 TradingView 使用對應模板；若 AI 顯示偏保守 / 偏進攻，只照建議微調 RSI、相對成交量與漲幅，不要自行擴大超過建議範圍。</div>
 </div>
 </section>
 
@@ -1744,6 +1758,129 @@ let state = loadState();
       return '<div class="ok-box" style="margin-top:10px"><strong>v10.15 出場引擎</strong><br>出場模式：'+plan.modeLabel+'｜階段：'+plan.stage+'｜原始停損：'+fmt(p.initialStop ?? p.stopLossPrice,2)+'｜目前停損：'+fmt(plan.stopLossPrice,2)+partialLine+'<br>'+plan.suggestion+'</div>';
     }
 
+
+    // ===== v10.17.1 AI篩選條件一鍵複製：4模式固定，AI只做小幅微調 =====
+    const TV_FILTER_PROFILES = {
+      defense: {
+        label:'🛡 防守模式', key:'防守',
+        base:{ rsi:'45 ~ 60', rvol:'> 1.0', change:'> 0%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
+        conservative:{ rsi:'43 ~ 58', rvol:'> 1.2', change:'> 0%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
+        aggressive:{ rsi:'47 ~ 63', rvol:'> 0.9', change:'> 0.5%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' }
+      },
+      precision: {
+        label:'⚔ 精準模式', key:'精準',
+        base:{ rsi:'55 ~ 72', rvol:'> 1.3', change:'> 1%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
+        conservative:{ rsi:'53 ~ 70', rvol:'> 1.5', change:'> 0.8%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
+        aggressive:{ rsi:'58 ~ 75', rvol:'> 1.1', change:'> 1.5%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' }
+      },
+      momentum: {
+        label:'🚀 動能模式', key:'動能',
+        base:{ rsi:'60 ~ 78', rvol:'> 1.5', change:'> 2%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
+        conservative:{ rsi:'58 ~ 75', rvol:'> 1.7', change:'> 1.5%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
+        aggressive:{ rsi:'63 ~ 82', rvol:'> 1.3', change:'> 3%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' }
+      },
+      superbull: {
+        label:'🔥 狂牛模式', key:'狂牛',
+        base:{ rsi:'65 ~ 85', rvol:'> 1.8', change:'> 3%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
+        conservative:{ rsi:'63 ~ 80', rvol:'> 2.0', change:'> 2%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' },
+        aggressive:{ rsi:'70 ~ 90', rvol:'> 1.5', change:'> 4%', avgVol:'10日平均成交量 > 1M', trend:'價格 > SMA20；SMA20 > SMA60' }
+      }
+    };
+
+    function getTvFilterModeKey(){
+      const strategy = typeof getStrategyModeDisplay === 'function' ? getStrategyModeDisplay() : null;
+      const label = String(strategy?.label || '');
+      if(label.includes('防守')) return 'defense';
+      if(label.includes('狂牛')) return 'superbull';
+      if(label.includes('動能')) return 'momentum';
+      if(label.includes('精準')) return 'precision';
+      const signal = state.market?.signal || 'yellow';
+      const total = num(state.market?.totalScore, 0);
+      const sentiment = num(state.market?.sentimentScore, 0);
+      if(signal === 'red' || total < 40) return 'defense';
+      if(signal === 'green' && (total >= 85 || sentiment >= 80)) return 'superbull';
+      if(signal === 'green' && total >= 75) return 'momentum';
+      return 'precision';
+    }
+
+    function getTvFilterBias(){
+      const delta = num(state.market?.delta, 0);
+      const tactical = typeof getTacticalMode === 'function' ? getTacticalMode(state.market) : { mode:'balanced' };
+      const structure = num(state.market?.structureScore, 2);
+      if(tactical.mode === 'defense' || delta <= -3 || structure <= 1) return { key:'conservative', label:'偏保守', reason:'市場轉弱、結構偏弱或攻防模式為防守，篩選條件收緊。' };
+      if(tactical.mode === 'attack' || delta >= 3) return { key:'aggressive', label:'偏進攻', reason:'市場升溫或攻防模式允許攻擊，篩選條件小幅放寬。' };
+      return { key:'base', label:'基準', reason:'市場未明顯升溫或降溫，維持原本模板。' };
+    }
+
+    function getTvFilterRecommendation(){
+      const modeKey = getTvFilterModeKey();
+      const bias = getTvFilterBias();
+      const profile = TV_FILTER_PROFILES[modeKey] || TV_FILTER_PROFILES.precision;
+      const rule = profile[bias.key] || profile.base;
+      const delta = num(state.market?.delta, 0);
+      const structure = num(state.market?.structureScore, 0);
+      const tactical = typeof getTacticalMode === 'function' ? getTacticalMode(state.market) : { label:'⚖ 平衡模式', reason:'' };
+      return { modeKey, profile, bias, rule, delta, structure, tactical };
+    }
+
+    function formatTvFilterText(){
+      const r = getTvFilterRecommendation();
+      return [
+        `AI戰艦今日 TradingView 篩選建議`,
+        `模式：${r.profile.key}模式（AI：${r.bias.label}）`,
+        `市場Delta：${r.delta >= 0 ? '+' : ''}${r.delta}`,
+        `Structure：${r.structure}/3`,
+        `攻防狀態：${r.tactical.label || '-'}`,
+        ``,
+        `請在 TradingView 使用以下條件：`,
+        `1. ${r.rule.trend}`,
+        `2. RSI：${r.rule.rsi}`,
+        `3. 相對成交量：${r.rule.rvol}`,
+        `4. 今日漲幅：${r.rule.change}`,
+        `5. ${r.rule.avgVol}`,
+        ``,
+        `微調原因：${r.bias.reason}`,
+        `紀律提醒：只用這組條件，不要再自行放寬；若篩不到股票，先接受空手。`
+      ].join('\n');
+    }
+
+    function renderTvFilterHint(){
+      const el = $('tvFilterHintBox');
+      if(!el) return;
+      const r = getTvFilterRecommendation();
+      const cls = r.bias.key === 'aggressive' ? 'green' : (r.bias.key === 'conservative' ? 'yellow' : 'cyan');
+      el.innerHTML = `
+        <div class="badge ${cls}">今日模板：${r.profile.label}（AI：${r.bias.label}）</div>
+        <div class="divider"></div>
+        <div><strong>TradingView 條件</strong></div>
+        <div class="explain-item">趨勢：${r.rule.trend}</div>
+        <div class="explain-item">RSI：${r.rule.rsi}</div>
+        <div class="explain-item">相對成交量：${r.rule.rvol}</div>
+        <div class="explain-item">今日漲幅：${r.rule.change}</div>
+        <div class="explain-item">成交量：${r.rule.avgVol}</div>
+        <div class="divider"></div>
+        <div class="footnote">Delta：${r.delta >= 0 ? '+' : ''}${r.delta}｜Structure：${r.structure}/3｜攻防：${r.tactical.label || '-'}</div>
+        <div class="footnote">${r.bias.reason}</div>
+      `;
+    }
+
+    async function copyTvFilterText(){
+      const text = formatTvFilterText();
+      try{
+        await navigator.clipboard.writeText(text);
+        alert('已複製今日 TradingView 篩選條件');
+      }catch(err){
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        alert('已複製今日 TradingView 篩選條件');
+      }
+    }
+
+
     function renderHero(){ const summary = getDashboardSummary(); const perf=getPerformance(); const tactical = getTacticalMode(state.market); const items=[{label:'市場總分',value:fmt(state.market.totalScore,1),color:signalClass(state.market.signal)},{label:'攻防模式',value:tactical.label,color:tactical.cls},{label:'今日可開新倉',value:`${summary.effectiveMaxNewPositions} 檔`},{label:'單日風險額',value:`NT$ ${fmt(summary.dailyRiskAmount)}`},{label:'持倉數量',value:`${summary.openPositions.length} 檔`},{label:'剩餘資金',value:`NT$ ${fmt(summary.remainingCash)}`},{label:'飛輪累積 %',value:pct(perf.flywheelPct,2),color:perf.flywheelPct>=0?'green':'red'},{label:'平倉勝率',value:pct(perf.winRate,1),color:perf.winRate>=50?'green':'yellow'}]; $('heroMetrics').innerHTML=items.map(x=>`<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color||''}">${x.value}</div></div>`).join(''); $('todayInstruction').textContent=state.market.instruction; $('lastSyncTime').textContent=state.lastSync||'-'; }
 
     function renderMarket(){ const r=state.market.radar||{}; $('marketRadarGrid').innerHTML=`<div class="radar-item"><div class="radar-title">廣度擴散</div><div class="radar-bar"><div class="radar-fill" style="width:${r.breadth||0}%"></div></div><div class="radar-score">${r.breadth||0}</div></div><div class="radar-item"><div class="radar-title">情緒熱度</div><div class="radar-bar"><div class="radar-fill" style="width:${r.sentiment||0}%"></div></div><div class="radar-score">${r.sentiment||0}</div></div><div class="radar-item"><div class="radar-title">加權強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.taiex||0}%"></div></div><div class="radar-score">${pct(state.market.taiexChange,2)}</div></div><div class="radar-item"><div class="radar-title">OTC 強弱</div><div class="radar-bar"><div class="radar-fill" style="width:${r.otc||0}%"></div></div><div class="radar-score">${pct(state.market.otcChange,2)}</div></div><div class="radar-item"><div class="radar-title">漲跌停優勢</div><div class="radar-bar"><div class="radar-fill" style="width:${r.spread||0}%"></div></div><div class="radar-score">${fmt(num(state.market.limitUp)-num(state.market.limitDown),0)}</div></div><div class="radar-item"><div class="radar-title">最終戰況</div><div class="radar-bar"><div class="radar-fill" style="width:${r.total||0}%"></div></div><div class="radar-score ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()} / ${fmt(state.market.totalScore,1)}</div></div>`; $('marketSummary').innerHTML=`<div class="metric"><div class="label">廣度分數</div><div class="value">${fmt(state.market.breadthScore,1)}</div></div><div class="metric"><div class="label">自動情緒分數</div><div class="value">${fmt(state.market.sentimentScore,1)}</div></div><div class="metric"><div class="label">戰術燈號</div><div class="value ${signalClass(state.market.signal)}">${state.market.signal.toUpperCase()}</div></div>`; $('marketExplainBox').innerHTML=(state.market.explainParts||[]).length ? state.market.explainParts.map(x=>`<div class="explain-item">${x}</div>`).join('') : `<div class="footnote">尚無燈號判定說明。</div>`; }
@@ -2020,7 +2157,7 @@ ${candidatesText}
     }
 
     function renderPerformance(){ if($('strategyHealthPanel')) $('strategyHealthPanel').innerHTML = renderStrategyHealthPanel(); const perf=getPerformance(); $('performanceMetrics').innerHTML=`<div class="metric"><div class="label">總交易筆數</div><div class="value">${fmt(perf.totalTrades)}</div></div><div class="metric"><div class="label">勝率</div><div class="value ${perf.winRate>=50?'green':'yellow'}">${pct(perf.winRate,1)}</div></div><div class="metric"><div class="label">累積損益</div><div class="value ${perf.totalPnl>=0?'green':'red'}">NT$ ${fmt(perf.totalPnl)}</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value ${perf.avgReturn>=0?'green':'red'}">${pct(perf.avgReturn,2)}</div></div><div class="metric"><div class="label">飛輪累積 %</div><div class="value ${perf.flywheelPct>=0?'green':'red'}">${pct(perf.flywheelPct,2)}</div></div>`; if(state.logs.length===0){ $('logsTable').innerHTML=`<div class="footnote">尚無歷史紀錄。</div>`; return; } $('logsTable').innerHTML=`<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>原因</th><th>日期</th></tr></thead><tbody>${state.logs.slice(0,12).map(l=>`<tr><td class="mono">${l.symbol}</td><td>${fmt(l.entryPrice,2)}</td><td>${fmt(l.exitPrice,2)}</td><td>${fmt(l.shares)}</td><td class="${l.pnl>=0?'green':'red'}">NT$ ${fmt(l.pnl)}</td><td class="${l.returnPct>=0?'green':'red'}">${pct(l.returnPct,2)}</td><td class="${l.result==='win'?'green':(l.result==='loss'?'red':'yellow')}">${l.result}</td><td>${l.reason||'-'}</td><td class="mono">${l.exitDate}</td></tr>`).join('')}</tbody></table>`; }
-    function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); if($('orderSummaryBox') && $('ordersTable')) renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
+    function renderAll(){ fillInputsFromState(); renderTvFilterHint(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); if($('orderSummaryBox') && $('ordersTable')) renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
       if(btn){ btn.textContent = (state.ui?.candidateCardsExpanded ? '收合候選詳卡' : '展開候選詳卡'); }
       const body=$('candidateCardsPanelBody');
       if(body){ body.classList.toggle('hidden-panel', !state.ui?.candidateCardsExpanded); } }
@@ -2385,6 +2522,8 @@ ${candidatesText}
         applyDecisionMode(false);
       });
       $('showDecisionBtn')?.addEventListener('click', ()=>applyDecisionMode(true));
+      $("copyTvFilterBtn")?.addEventListener("click", copyTvFilterText);
+      $("refreshTvFilterBtn")?.addEventListener("click", renderTvFilterHint);
       $('resetLocalBtn')?.addEventListener('click', resetToLocalSelection);
       $('calcPositionBtn')?.addEventListener('click', updatePositionPreview);
       $('addPositionBtn')?.addEventListener('click', addOrUpdatePosition);
