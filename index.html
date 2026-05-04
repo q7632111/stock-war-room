@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.19｜完整績效分析版</title>
+<title>AI 戰艦 Pro Max v10.20｜績效進場分類修正版</title>
 <style>
     :root{
       --bg:#071019;
@@ -238,7 +238,7 @@
 
 
 
-/* ===== v10.19 完整績效分析版 ===== */
+/* ===== v10.20 進場分類績效修正版 ===== */
 .perf-lab{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 @media(max-width:900px){.perf-lab{grid-template-columns:1fr}}
 .segment-table{width:100%;min-width:760px;border-collapse:collapse;font-size:12px}
@@ -260,14 +260,15 @@
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.19 </h1>
-<div class="sub">完整績效分析版｜模式PF排行｜Delta績效｜市場結構回饋｜20筆驗證儀表板</div>
+<h1>AI 戰艦 Pro Max v10.20 </h1>
+<div class="sub">績效進場分類修正版｜進場模式PF排行｜Delta績效｜市場結構回饋｜舊資料相容</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
 </div>
 
 <div class="quicknav">
+  <a href="#step1TvFilterAnchor">TV條件</a>
   <a href="#step2Panel">STEP 2｜CSV</a>
   <a href="#step4Panel">STEP 4｜AI</a>
   <a href="#step45Panel">STEP 4.5｜決策</a>
@@ -322,6 +323,9 @@
 <div class="grid-5" id="marketSummary"></div>
 <div class="divider"></div>
 <div class="explain-list" id="marketExplainBox"></div>
+<div class="divider"></div>
+<div id="step1TvFilterAnchor" class="sticky-note" style="margin-bottom:10px">下一步：複製下方 TradingView 條件 → 到 TradingView 篩選 → 匯出 CSV → 回 STEP 2 貼上。</div>
+<div id="tvFilterStep1Panel"></div>
 </div>
 </section>
 
@@ -329,7 +333,7 @@
 <div class="col">
 <section class="panel" id="step2Panel">
 <div class="panel-head"><div><h2 class="panel-title">STEP 2｜貼 CSV 做雙引擎初篩</h2><div class="panel-sub">先貼資料做本地排雷，再往下看候選結果</div></div></div>
-<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 貼 CSV → 看本地評級 (S+/A/B/C/X) → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v10.14.1 整合：狂牛必須綠燈才放寬；綠燈高分允許 A 級送 AI；假突破直接封鎖；AI 即時微調層會實際調整 RSI、量比、乖離與假突破強度。</div>
+<div class="panel-body"><div class="ok-box">今晚流程：先輸入市場 → 直接複製 STEP 1 下方 TradingView 條件 → TradingView 篩選匯出 CSV → 貼 CSV → 看本地評級 (S+/A/B/C/X) → 產生 AI Prompt → 貼回 AI 結果 → 自己決定是否帶入持倉。</div><div class="footnote" style="margin-top:8px">v10.14.1 整合：狂牛必須綠燈才放寬；綠燈高分允許 A 級送 AI；假突破直接封鎖；AI 即時微調層會實際調整 RSI、量比、乖離與假突破強度。</div>
 <label>貼上 TradingView CSV（保留標題列）</label>
 <div class="footnote" style="margin-bottom:8px">這格只負責貼入資料，貼完通常就不需要再看，已縮成短框避免佔畫面。</div>
 <textarea id="candidateTextarea" placeholder="直接貼上 TradingView CSV，例如：商品,描述,價格,價格變化 % 1天,相對成交量 1天,本益比,..."></textarea>
@@ -450,7 +454,7 @@
 </div>
 </section>
 <section class="panel">
-<div class="panel-head"><div><h2 class="panel-title">股票戰報艙｜v10.19 完整績效分析</h2><div class="panel-sub">拆解攻防模式、選股模板、Delta、Structure 與市場燈號績效，不混基金飛輪</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">股票戰報艙｜v10.20 進場分類績效分析</h2><div class="panel-sub">依「進場當下」拆解攻防模式、選股模板、Delta、Structure 與市場燈號績效，避免出場日錯位</div></div></div>
 <div class="panel-body">
 <div class="grid-5" id="performanceMetrics"></div>
 <div class="divider"></div>
@@ -555,7 +559,7 @@
 
 <div class="close-overlay" id="uiGuideModal">
   <div class="close-modal" style="width:min(1040px,95%)">
-    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.19｜完整績效分析版</div>
+    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.20｜績效進場分類修正版</div>
     <div class="ok-box" style="font-size:14px;line-height:1.75">
       <strong>核心定位：</strong><br>
       這不是單純選股工具，而是一套從「市場判斷 → 選股篩選 → AI覆核 → 攻防決策 → 倉位風控 → 出場管理 → 覆盤進化」串成閉環的戰情室系統。<br>
@@ -563,7 +567,7 @@
     </div>
 
     <div class="help-grid" style="margin-top:14px">
-      <div class="help-item"><strong>NEW｜市場方向與無標的保護</strong>Delta 顯示市場分數是升溫還是退潮；Structure 顯示市場結構健康度；若 TradingView 連續無標的，系統會提示是否維持空手或切換模式，避免手癢亂放寬條件。</div>
+      <div class="help-item"><strong>NEW｜流程優化與市場保護</strong>TradingView 條件已前移到 STEP 1，下完市場資料立刻可複製；Delta 顯示市場升溫/退潮，Structure 顯示結構健康度，連續無標的時系統會提示是否維持空手或切換模式。</div>
       <div class="help-item"><strong>1｜三層戰鬥架構</strong>市場層判斷紅 / 黃 / 綠燈；選股層切換防守、精準、動能、狂牛；戰術層再決定 🛡防守、⚖平衡、🔥攻擊。系統不是只會篩股，而是會決定「什麼行情該怎麼打」。</div>
       <div class="help-item"><strong>2｜攻防雙模式 NEW</strong>平常用防守與平衡保護本金；綠燈高分、勝率與PF達標時，才進入攻擊模式。攻擊模式會放寬RSI、量比、乖離與假突破容忍，讓強勢行情有機會跑出大段。</div>
       <div class="help-item"><strong>3｜TradingView + 本地雙引擎</strong>TradingView負責粗篩股票池，AI戰艦負責二次精篩。系統會用技術動能、量能、趨勢、基本面排雷與假突破偵測，將垃圾股、過熱股、出貨股先擋掉。</div>
@@ -572,7 +576,7 @@
       <div class="help-item"><strong>6｜機構級倉位風控</strong>系統不是叫你「買多少錢」，而是用總資金、單筆風險與停損距離反推出建議股數。每一筆交易都能看見：最多可能虧多少、建議部位多少、風險使用率多少。</div>
       <div class="help-item"><strong>7｜整張 / 零股雙軌出場</strong>整張模式不強迫分批，保留完整停損、鎖利與移動停利；零股模式啟用機構級分批落袋，讓小資金也能做到部分獲利了結、剩餘部位續抱。</div>
       <div class="help-item"><strong>8｜階梯式保本與移動停利</strong>獲利達標後，系統會逐步把風險往上推：呼吸保本、鎖定底利、再啟動高點回撤追蹤。目標不是賣在最高，而是避免「賺到變倒賠」。</div>
-      <div class="help-item"><strong>9｜完整績效回饋 NEW</strong>不只看總勝率，系統會拆解精準/動能/狂牛、防守/平衡/攻擊、Delta升溫/降溫、Structure結構強弱下的PF與勝率，讓你知道到底是哪個模式在賺錢。</div><div class="help-item"><strong>10｜AI戰術覆盤室</strong>系統會整理最近交易紀錄，讓AI分析勝率、盈虧比、PF、被洗盤情況與參數偏差，提供下一階段調整建議。這是讓系統持續進化的核心。</div>
+      <div class="help-item"><strong>9｜進場分類績效 NEW</strong>不只看總勝率，系統會以「建倉當下」的精準/動能/狂牛、防守/平衡/攻擊、Delta與Structure分類PF與勝率，避免用平倉當天狀態誤判。</div><div class="help-item"><strong>10｜AI戰術覆盤室</strong>系統會整理最近交易紀錄，讓AI分析勝率、盈虧比、PF、被洗盤情況與參數偏差，提供下一階段調整建議。這是讓系統持續進化的核心。</div>
       <div class="help-item"><strong>11｜半雲端協作</strong>市場、CSV候選、AI覆核與決策模式可同步共用；個人持倉、火控與績效保留在自己的裝置，避免朋友或家人互相覆蓋資料。</div>
     </div>
 
@@ -1202,8 +1206,8 @@ let state = loadState();
 
     function validateCandidate(c){ const errors=[]; if(state.market.signal==='red') errors.push('紅燈日禁止開新倉'); if(c.stop >= c.entry) errors.push('停損不得高於或等於買價'); if(c.takeProfit <= c.entry) errors.push('停利不得低於或等於買價'); if(c.shares <= 0) errors.push('可買股數為 0'); const { effectiveMaxNewPositions } = getEffectiveSettings(); const selectedCount = state.candidates.filter(x=>x.selected).length; if(!c.selected && selectedCount >= effectiveMaxNewPositions) errors.push('已達可開新倉上限'); if(c.rejected) errors.push(...(c.rejectReasons || [])); return errors; }
     function toggleSelectCandidate(id){ const c = state.candidates.find(x=>x.id===id); if(!c) return; if(c.selected){ c.selected=false; saveState(); return; } const { effectiveMaxNewPositions } = getEffectiveSettings(); const selectedCount = state.candidates.filter(x=>x.selected).length; if(selectedCount >= effectiveMaxNewPositions) return alert('已達今晚可鎖定的新倉上限。'); const errors = validateCandidate(c); if(errors.length) return alert('此標的目前不可鎖定：\n- '+errors.join('\n- ')); c.selected=true; saveState(); }
-    function addPositionFromCandidate(id){ if(state.pendingAddCandidateId===id) return; const c = state.candidates.find(x=>x.id===id); if(!c) return; if(state.positions.some(p=>p.symbol===c.symbol && p.isOpen)) return alert('此股票已在持倉中。'); const errors = validateCandidate(c); if(errors.length) return alert('此標的目前不可建倉：\n- '+errors.join('\n- ')); state.pendingAddCandidateId=id; state.positions.push({ id:uid('pos'), symbol:c.symbol, name:c.name||'', entryPrice:c.entry, shares:c.shares, boardLots:c.boardLots, oddLots:c.oddLots, entryDate:nowString(), currentPrice:c.close, highestPrice:Math.max(c.high,c.close), lastClose:c.close, initialStop:c.stop, trailingStop:c.stop, takeProfitRef:c.takeProfit, rr:c.rr, invested:c.invested, status:'持有觀察', note:'', isOpen:true }); state.pendingAddCandidateId=null; saveState(); }
-    function addManualHolding(){ const symbol=$('holdSymbol').value.trim(); const entryPrice=num($('holdBuy').value,NaN); const shares=Math.max(1,Math.floor(num($('holdShares').value,1000))); const currentPrice=num($('holdCurrent').value,NaN); if(!symbol) return alert('請輸入代號'); if(!Number.isFinite(entryPrice)||entryPrice<=0) return alert('買入價錯誤'); if(!Number.isFinite(currentPrice)||currentPrice<=0) return alert('收盤現價錯誤'); if(state.positions.some(p=>p.symbol===symbol&&p.isOpen)) return alert('此股票已在持倉監控中'); const initialStop=Number((entryPrice*0.97).toFixed(2)), takeProfit=Number((entryPrice*1.05).toFixed(2)); state.positions.push({ id:uid('pos'), symbol, name:'', entryPrice, shares, boardLots:Math.floor(shares/1000), oddLots:shares%1000, entryDate:nowString(), currentPrice, highestPrice:Math.max(entryPrice,currentPrice), lastClose:currentPrice, initialStop, trailingStop:initialStop, takeProfitRef:takeProfit, rr:calcRR(entryPrice,initialStop,takeProfit), invested:entryPrice*shares, status:'手動監控', note:'manual', isOpen:true }); $('holdSymbol').value=''; $('holdBuy').value=''; $('holdCurrent').value=''; $('holdShares').value='1000'; saveState(); }
+    function addPositionFromCandidate(id){ if(state.pendingAddCandidateId===id) return; const c = state.candidates.find(x=>x.id===id); if(!c) return; if(state.positions.some(p=>p.symbol===c.symbol && p.isOpen)) return alert('此股票已在持倉中。'); const errors = validateCandidate(c); if(errors.length) return alert('此標的目前不可建倉：\n- '+errors.join('\n- ')); state.pendingAddCandidateId=id; state.positions.push({ id:uid('pos'), symbol:c.symbol, name:c.name||'', entryPrice:c.entry, shares:c.shares, boardLots:c.boardLots, oddLots:c.oddLots, entryDate:nowString(), currentPrice:c.close, highestPrice:Math.max(c.high,c.close), lastClose:c.close, initialStop:c.stop, trailingStop:c.stop, takeProfitRef:c.takeProfit, rr:c.rr, invested:c.invested, status:'持有觀察', note:'', ...getEntrySnapshot(c), isOpen:true }); state.pendingAddCandidateId=null; saveState(); }
+    function addManualHolding(){ const symbol=$('holdSymbol').value.trim(); const entryPrice=num($('holdBuy').value,NaN); const shares=Math.max(1,Math.floor(num($('holdShares').value,1000))); const currentPrice=num($('holdCurrent').value,NaN); if(!symbol) return alert('請輸入代號'); if(!Number.isFinite(entryPrice)||entryPrice<=0) return alert('買入價錯誤'); if(!Number.isFinite(currentPrice)||currentPrice<=0) return alert('收盤現價錯誤'); if(state.positions.some(p=>p.symbol===symbol&&p.isOpen)) return alert('此股票已在持倉監控中'); const initialStop=Number((entryPrice*0.97).toFixed(2)), takeProfit=Number((entryPrice*1.05).toFixed(2)); state.positions.push({ id:uid('pos'), symbol, name:'', entryPrice, shares, boardLots:Math.floor(shares/1000), oddLots:shares%1000, entryDate:nowString(), currentPrice, highestPrice:Math.max(entryPrice,currentPrice), lastClose:currentPrice, initialStop, trailingStop:initialStop, takeProfitRef:takeProfit, rr:calcRR(entryPrice,initialStop,takeProfit), invested:entryPrice*shares, status:'手動監控', note:'manual', ...getEntrySnapshot(findCandidateBySymbol(symbol) || null), isOpen:true }); $('holdSymbol').value=''; $('holdBuy').value=''; $('holdCurrent').value=''; $('holdShares').value='1000'; saveState(); }
     function loadTopCandidate(){ const stats=getPortfolioStats(); const allowed=state.candidates.filter(c=>!c.rejected && state.market.signal!=='red' && !(stats&&stats.drop<=-5)); const top=allowed[0]; if(!top) return alert('目前沒有符合風控條件的可帶入標的'); $('holdSymbol').value=top.symbol; $('holdCurrent').value=top.close||''; $('holdBuy').value=top.entry||top.close||''; $('holdShares').value=top.shares||1000; }
     function loadAiTopCandidate(){
       const parsed = state.aiReview?.parsed;
@@ -1501,6 +1505,26 @@ let state = loadState();
         warnNearPct: metrics.warnNearPct,
         rr: calcRR(metrics.buyPrice, metrics.stopLossPrice ?? (metrics.buyPrice*0.97), metrics.takeProfit1Price ?? (metrics.buyPrice*1.05)),
         invested: (metrics.buyPrice || 0) * (metrics.qty || 0),
+        ...(idx >= 0 ? {
+          entryMode: state.positions[idx].entryMode,
+          entryModeKey: state.positions[idx].entryModeKey,
+          entryTacticalMode: state.positions[idx].entryTacticalMode,
+          entryTacticalKey: state.positions[idx].entryTacticalKey,
+          entryStrategyMode: state.positions[idx].entryStrategyMode,
+          entryTvMode: state.positions[idx].entryTvMode,
+          entryTvBias: state.positions[idx].entryTvBias,
+          entryTvBiasKey: state.positions[idx].entryTvBiasKey,
+          entryMarketSignal: state.positions[idx].entryMarketSignal,
+          entryMarketScore: state.positions[idx].entryMarketScore,
+          entrySentimentScore: state.positions[idx].entrySentimentScore,
+          entryDelta: state.positions[idx].entryDelta,
+          entryStructure: state.positions[idx].entryStructure,
+          entryDecisionMode: state.positions[idx].entryDecisionMode,
+          entryCandidateGrade: state.positions[idx].entryCandidateGrade,
+          entryCandidateScore: state.positions[idx].entryCandidateScore,
+          entrySource: state.positions[idx].entrySource,
+          entrySnapshotAt: state.positions[idx].entrySnapshotAt
+        } : getEntrySnapshot(findCandidateBySymbol(metrics.symbol) || null)),
         status: metrics.status,
         note: 'advanced',
         isOpen: true
@@ -1733,18 +1757,22 @@ let state = loadState();
       const entryPrice = Number(l.entryPrice ?? l.buyPrice ?? 0);
       const exitPrice = Number(l.exitPrice ?? l.closePrice ?? 0);
       const shares = Number(l.shares ?? l.qty ?? 0);
-      const tacticalMode = l.tacticalMode || l.tactical || l.tacticalLabel || '-';
-      const strategyMode = l.strategyMode || l.marketMode || l.templateMode || l.tvMode || l.modeLabel || '-';
-      const deltaRaw = l.marketDelta ?? l.delta ?? null;
+      // v10.20：績效歸因一律優先使用「進場當下」快照；舊資料才 fallback 到舊欄位。
+      const tacticalMode = l.entryTacticalMode || l.entryMode || l.entryModeKey || l.tacticalMode || l.tactical || l.tacticalLabel || 'legacy/未記錄';
+      const tacticalKey = l.entryTacticalKey || l.entryModeKey || l.tacticalKey || '-';
+      const strategyMode = l.entryStrategyMode || l.entryTvMode || l.strategyMode || l.marketMode || l.templateMode || l.tvMode || l.modeLabel || 'legacy/未記錄';
+      const deltaRaw = l.entryDelta ?? l.marketDelta ?? l.delta ?? null;
       const delta = deltaRaw === null || deltaRaw === undefined || deltaRaw === '' ? null : Number(deltaRaw);
-      const structureRaw = l.structureScore ?? l.structure ?? null;
+      const structureRaw = l.entryStructure ?? l.structureScore ?? l.structure ?? null;
       const structureScore = structureRaw === null || structureRaw === undefined || structureRaw === '' ? null : Number(structureRaw);
-      const signal = l.marketSignal || l.signal || '-';
-      const totalScore = Number(l.marketScore ?? l.totalScore ?? 0);
+      const signal = l.entryMarketSignal || l.marketSignal || l.signal || 'legacy/未記錄';
+      const totalScore = Number(l.entryMarketScore ?? l.marketScore ?? l.totalScore ?? 0);
+      const exitTacticalMode = l.exitTacticalMode || l.exitModeLabel || l.exitTactical || '-';
+      const exitMarketSignal = l.exitMarketSignal || l.closeMarketSignal || '-';
       return { ...l, pnl, ret, returnPct: ret, pnlPct: ret, entryPrice, exitPrice, closePrice: exitPrice, shares,
         result: pnl > 0 ? 'win' : (pnl < 0 ? 'loss' : 'flat'),
         exitDate: l.exitDate || l.time || l.date || '-', reason: l.reason || l.closeReason || '-',
-        tacticalMode, strategyMode, delta, structureScore, signal, totalScore };
+        tacticalMode, tacticalKey, strategyMode, delta, structureScore, signal, totalScore, exitTacticalMode, exitMarketSignal };
     }
 
     function buildSegmentStats(logs, keyFn, labelFn){
@@ -1934,6 +1962,36 @@ let state = loadState();
       const tactical = getTacticalMode(state.market);
       return `TradingView 條件\n趨勢：價格 > SMA20；SMA20 > SMA60\nRSI：${f.rsiMin} ~ ${f.rsiMax}\n相對成交量：> ${f.rvol}\n今日漲幅：> ${f.change}%\n成交量：10日平均成交量 ${f.avgVol}\nDelta：${fmt(num(state.market.delta,0),1)}｜Structure：${structure.score}/3｜攻防：${tactical.label}\n說明：${f.reason}`;
     }
+
+    // ===== v10.20 進場分類績效修正：在建倉當下鎖定歸因資料 =====
+    function getEntrySnapshot(source=null){
+      const tacticalSnap = (typeof getTacticalMode === 'function') ? getTacticalMode(state.market) : { label:'未記錄', mode:'legacy' };
+      const tvSnap = (typeof getTodayTvFilter === 'function') ? getTodayTvFilter() : { modeLabel:'未記錄', biasLabel:'未記錄', biasKey:'legacy' };
+      const candidate = source || null;
+      const setupLabel = candidate?.tvProfileLabel || candidate?.setupMode || candidate?.modeLabel || tvSnap.modeLabel || '未記錄';
+      return {
+        entryMode: tacticalSnap.label || tacticalSnap.mode || '未記錄',
+        entryModeKey: tacticalSnap.mode || 'legacy',
+        entryTacticalMode: tacticalSnap.label || tacticalSnap.mode || '未記錄',
+        entryTacticalKey: tacticalSnap.mode || 'legacy',
+        entryStrategyMode: setupLabel,
+        entryTvMode: tvSnap.modeLabel || setupLabel || '未記錄',
+        entryTvBias: tvSnap.biasLabel || '未記錄',
+        entryTvBiasKey: tvSnap.biasKey || 'legacy',
+        entryMarketSignal: state.market?.signal || '未記錄',
+        entryMarketScore: num(state.market?.totalScore, 0),
+        entrySentimentScore: num(state.market?.sentimentScore, 0),
+        entryDelta: num(state.market?.delta, 0),
+        entryStructure: num(state.market?.structureScore, 0),
+        entryDecisionMode: state.decision?.mode || '未記錄',
+        entryDecisionSummary: state.decision?.summary || '',
+        entryCandidateGrade: candidate?.grade || candidate?.dynamicGrade || '',
+        entryCandidateScore: num(candidate?.decisionScore ?? candidate?.score ?? candidate?.finalScore, 0),
+        entrySource: candidate ? 'candidate' : 'manual',
+        entrySnapshotAt: nowString()
+      };
+    }
+
     function copyTodayTvFilter(){
       const text = getTodayTvFilterText();
       if(navigator.clipboard && navigator.clipboard.writeText){
@@ -1946,13 +2004,20 @@ let state = loadState();
       try{ document.execCommand('copy'); alert('已複製今日 TradingView 條件'); }catch(e){ alert('複製失敗，請手動複製'); }
       document.body.removeChild(ta);
     }
-    function renderTvFilterPanel(){
-      if(!$('tvFilterPanel')) return;
+    function buildTvFilterPanelHtml(location='step5'){
       const f = getTodayTvFilter();
       const delta = getDeltaInfo();
       const structure = getStructureInfo();
       const tactical = getTacticalMode(state.market);
-      $('tvFilterPanel').innerHTML = `<div class="tv-filter-box"><div class="tv-filter-title">🎯 TradingView 篩選條件｜AI微調一鍵複製</div><div class="tv-filter-line"><strong>今日模板：</strong>${f.modeLabel}（AI：${f.biasLabel}）</div><div class="tv-filter-line"><strong>趨勢：</strong>價格 &gt; SMA20；SMA20 &gt; SMA60</div><div class="tv-filter-line"><strong>RSI：</strong>${f.rsiMin} ~ ${f.rsiMax}</div><div class="tv-filter-line"><strong>相對成交量：</strong>&gt; ${f.rvol}</div><div class="tv-filter-line"><strong>今日漲幅：</strong>&gt; ${f.change}%</div><div class="tv-filter-line"><strong>成交量：</strong>10日平均成交量 ${f.avgVol}</div><div class="tv-filter-note"><span class="delta-chip ${delta.cls}">Delta：${delta.text}</span>　<span class="delta-chip">Structure：${structure.score}/3</span>　<span class="delta-chip ${tactical.cls}">攻防：${tactical.label}</span><br>${structure.bars}<br>${f.reason}</div><div class="tv-filter-actions"><button class="btn small" type="button" onclick="copyTodayTvFilter()">📋 複製今日 TradingView 條件</button></div></div>`;
+      const title = location === 'step1' ? '🎯 今日 TradingView 篩選條件｜先複製再篩選' : '🎯 TradingView 篩選條件｜AI微調一鍵複製';
+      const stepHint = location === 'step1' ? '<div class="tv-filter-note"><strong>下一步：</strong>按下複製 → 到 TradingView 套用條件 → 匯出 CSV → 回 STEP 2 貼上。</div>' : '';
+      return `<div class="tv-filter-box"><div class="tv-filter-title">${title}</div><div class="tv-filter-line"><strong>今日模板：</strong>${f.modeLabel}（AI：${f.biasLabel}）</div><div class="tv-filter-line"><strong>趨勢：</strong>價格 &gt; SMA20；SMA20 &gt; SMA60</div><div class="tv-filter-line"><strong>RSI：</strong>${f.rsiMin} ~ ${f.rsiMax}</div><div class="tv-filter-line"><strong>相對成交量：</strong>&gt; ${f.rvol}</div><div class="tv-filter-line"><strong>今日漲幅：</strong>&gt; ${f.change}%</div><div class="tv-filter-line"><strong>成交量：</strong>10日平均成交量 ${f.avgVol}</div><div class="tv-filter-note"><span class="delta-chip ${delta.cls}">Delta：${delta.text}</span>　<span class="delta-chip">Structure：${structure.score}/3</span>　<span class="delta-chip ${tactical.cls}">攻防：${tactical.label}</span><br>${structure.bars}<br>${f.reason}</div>${stepHint}<div class="tv-filter-actions"><button class="btn small" type="button" onclick="copyTodayTvFilter()">📋 複製今日 TradingView 條件</button></div></div>`;
+    }
+    function renderTvFilterPanel(){
+      const htmlStep5 = buildTvFilterPanelHtml('step5');
+      const htmlStep1 = buildTvFilterPanelHtml('step1');
+      if($('tvFilterPanel')) $('tvFilterPanel').innerHTML = htmlStep5;
+      if($('tvFilterStep1Panel')) $('tvFilterStep1Panel').innerHTML = htmlStep1;
     }
     function getNoTargetSuggestion(count){
       const n = num(count, 0);
@@ -2246,7 +2311,7 @@ ${candidatesText}
       const signalRows = buildSegmentStats(logs, l=>l.signal || '未記錄').slice(0,6);
       const insight = getPerformanceInsights();
       return '<div class="card" style="border-color:rgba(86,215,255,.22);box-shadow:0 0 0 1px rgba(86,215,255,.10),0 0 22px rgba(28,183,255,.08)">'+
-        '<div class="card-head"><div><div class="symbol">🧠 v10.19 完整績效回饋艙</div><div class="muted">不只看勝率：拆解模式、Delta、Structure 與市場燈號下的 PF / 勝率 / 期望值</div></div><span class="badge '+verdict.cls+'">'+verdict.label+'</span></div>'+ 
+        '<div class="card-head"><div><div class="symbol">🧠 v10.20 進場分類績效回饋艙</div><div class="muted">不只看勝率：依進場模式拆解 PF / 勝率 / 期望值，避免平倉日市場狀態錯位</div></div><span class="badge '+verdict.cls+'">'+verdict.label+'</span></div>'+ 
         '<div class="mini">'+
           '<div class="cell"><div class="k">總樣本</div><div class="v">'+fmt(perf.totalTrades)+' 筆</div></div>'+ 
           '<div class="cell"><div class="k">總勝率</div><div class="v '+(perf.winRate>=50?'green':'yellow')+'">'+winRateText+'</div></div>'+ 
@@ -2259,12 +2324,12 @@ ${candidatesText}
         '</div><div class="divider"></div>'+ 
         '<div class="perf-insight '+insight.cls+'"><strong>回饋結論：</strong>'+insight.html+'</div>'+ 
         '<div class="divider"></div><div class="perf-lab">'+
-          '<div class="card"><div class="symbol" style="font-size:16px">⚔ 攻防模式績效</div>'+renderSegmentTable('攻防', tacticalRows)+'</div>'+ 
-          '<div class="card"><div class="symbol" style="font-size:16px">🎯 選股模板績效</div>'+renderSegmentTable('模板', strategyRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">⚔ 進場攻防模式績效</div><div class="footnote">依建倉當下模式分類，不受平倉當天市場狀態影響。</div>'+renderSegmentTable('進場攻防', tacticalRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">🎯 進場選股模板績效</div><div class="footnote">依建倉當下 TradingView/選股模板分類。</div>'+renderSegmentTable('進場模板', strategyRows)+'</div>'+ 
           '<div class="card"><div class="symbol" style="font-size:16px">📈 Delta 方向績效</div>'+renderSegmentTable('Delta', deltaRows)+'</div>'+ 
           '<div class="card"><div class="symbol" style="font-size:16px">🧱 Structure 結構績效</div>'+renderSegmentTable('Structure', structureRows)+'</div>'+ 
           '<div class="card"><div class="symbol" style="font-size:16px">🚦 市場燈號績效</div>'+renderSegmentTable('燈號', signalRows)+'</div>'+ 
-          '<div class="card"><div class="symbol" style="font-size:16px">🛡 系統建議</div><div class="'+(verdict.cls==='red'?'warning-box':'ok-box')+'"><strong>健康建議：</strong>'+verdict.advice+'<br><span class="footnote">v10.19 只提供數據回饋，不自動鎖單、不自動改風險。請至少累積 20 筆後再調參。</span></div></div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">🛡 系統建議</div><div class="'+(verdict.cls==='red'?'warning-box':'ok-box')+'"><strong>健康建議：</strong>'+verdict.advice+'<br><span class="footnote">v10.20 只修正績效歸因，不自動鎖單、不自動改風險。請至少累積 20 筆後再調參。</span></div></div>'+ 
         '</div></div>';
     }
 
@@ -2275,9 +2340,9 @@ ${candidatesText}
       const pfText = perf.pf === null ? '-' : (perf.pf >= 999 ? '∞' : fmt(perf.pf,2));
       if($('performanceMetrics')) $('performanceMetrics').innerHTML='<div class="metric"><div class="label">總交易筆數</div><div class="value">'+fmt(perf.totalTrades)+'</div></div><div class="metric"><div class="label">勝率</div><div class="value '+(perf.winRate>=50?'green':'yellow')+'">'+pct(perf.winRate,1)+'</div></div><div class="metric"><div class="label">PF</div><div class="value '+(perf.pf!==null && perf.pf>=1.2?'green':'red')+'">'+pfText+'</div></div><div class="metric"><div class="label">累積損益</div><div class="value '+(perf.totalPnl>=0?'green':'red')+'">NT$ '+fmt(perf.totalPnl)+'</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value '+(perf.avgReturn>=0?'green':'red')+'">'+pct(perf.avgReturn,2)+'</div></div>';
       if(!$('logsTable')) return;
-      if((state.logs||[]).length===0){ $('logsTable').innerHTML='<div class="footnote">尚無歷史紀錄。平倉後會自動記錄當時的攻防模式、選股模板、Delta 與 Structure。</div>'; return; }
+      if((state.logs||[]).length===0){ $('logsTable').innerHTML='<div class="footnote">尚無歷史紀錄。平倉後會自動以「建倉當下」記錄攻防模式、選股模板、Delta 與 Structure。</div>'; return; }
       const logs = (state.logs || []).map(normalizeTradeLog);
-      $('logsTable').innerHTML='<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>模式</th><th>Delta</th><th>Structure</th><th>原因</th><th>日期</th></tr></thead><tbody>'+logs.slice(0,20).map(l=>'<tr><td class="mono">'+l.symbol+'</td><td>'+fmt(l.entryPrice,2)+'</td><td>'+fmt(l.exitPrice,2)+'</td><td>'+fmt(l.shares)+'</td><td class="'+(l.pnl>=0?'green':'red')+'">NT$ '+fmt(l.pnl)+'</td><td class="'+(l.ret>=0?'green':'red')+'">'+pct(l.ret,2)+'</td><td class="'+(l.result==='win'?'green':(l.result==='loss'?'red':'yellow'))+'">'+l.result+'</td><td>'+l.strategyMode+'<br><span class="footnote">'+l.tacticalMode+'</span></td><td>'+(l.delta===null?'-':fmt(l.delta,1))+'</td><td>'+(l.structureScore===null?'-':fmt(l.structureScore)+'/3')+'</td><td>'+(l.reason||'-')+'</td><td class="mono">'+l.exitDate+'</td></tr>').join('')+'</tbody></table>';
+      $('logsTable').innerHTML='<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>進場模式</th><th>進場Delta</th><th>進場Structure</th><th>出場環境</th><th>原因</th><th>日期</th></tr></thead><tbody>'+logs.slice(0,20).map(l=>'<tr><td class="mono">'+l.symbol+'</td><td>'+fmt(l.entryPrice,2)+'</td><td>'+fmt(l.exitPrice,2)+'</td><td>'+fmt(l.shares)+'</td><td class="'+(l.pnl>=0?'green':'red')+'">NT$ '+fmt(l.pnl)+'</td><td class="'+(l.ret>=0?'green':'red')+'">'+pct(l.ret,2)+'</td><td class="'+(l.result==='win'?'green':(l.result==='loss'?'red':'yellow'))+'">'+l.result+'</td><td>'+l.strategyMode+'<br><span class="footnote">'+l.tacticalMode+'</span></td><td>'+(l.delta===null?'-':fmt(l.delta,1))+'</td><td>'+(l.structureScore===null?'-':fmt(l.structureScore)+'/3')+'</td><td><span class="footnote">'+(l.exitTacticalMode||'-')+' / '+(l.exitMarketSignal||'-')+'</span></td><td>'+(l.reason||'-')+'</td><td class="mono">'+l.exitDate+'</td></tr>').join('')+'</tbody></table>';
     }
 
     function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderTvFilterPanel(); renderNoTargetHint(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); if($('orderSummaryBox') && $('ordersTable')) renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
@@ -2791,6 +2856,7 @@ ${candidatesText}
       };
       const tacticalSnap = (typeof getTacticalMode === 'function') ? getTacticalMode(state.market) : { label:'-', mode:'-' };
       const tvSnap = (typeof getTodayTvFilter === 'function') ? getTodayTvFilter() : { modeLabel:'-', biasLabel:'-' };
+      const entrySnap = (p.entryMode || p.entryTacticalMode || p.entryStrategyMode) ? p : getEntrySnapshot(findCandidateBySymbol(p.symbol) || null);
       state.logs.push({
         id: uid('log'),
         symbol: p.symbol,
@@ -2809,16 +2875,45 @@ ${candidatesText}
         closeReason: reason,
         time: nowString(),
         exitDate: nowString(),
-        marketSignal: state.market?.signal || '-',
-        marketScore: num(state.market?.totalScore,0),
-        sentimentScore: num(state.market?.sentimentScore,0),
-        marketDelta: num(state.market?.delta,0),
-        structureScore: num(state.market?.structureScore,0),
-        tacticalMode: tacticalSnap.label || tacticalSnap.mode || '-',
-        tacticalKey: tacticalSnap.mode || '-',
-        strategyMode: tvSnap.modeLabel || '-',
-        tvBias: tvSnap.biasLabel || '-',
-        aiMode: state.decision?.mode || '-'
+        // v10.20：績效歸因欄位，全部優先以建倉當下快照為準
+        entryMode: entrySnap.entryMode || entrySnap.entryTacticalMode || 'legacy/未記錄',
+        entryModeKey: entrySnap.entryModeKey || entrySnap.entryTacticalKey || 'legacy',
+        entryTacticalMode: entrySnap.entryTacticalMode || entrySnap.entryMode || 'legacy/未記錄',
+        entryTacticalKey: entrySnap.entryTacticalKey || entrySnap.entryModeKey || 'legacy',
+        entryStrategyMode: entrySnap.entryStrategyMode || entrySnap.entryTvMode || 'legacy/未記錄',
+        entryTvMode: entrySnap.entryTvMode || entrySnap.entryStrategyMode || 'legacy/未記錄',
+        entryTvBias: entrySnap.entryTvBias || 'legacy/未記錄',
+        entryTvBiasKey: entrySnap.entryTvBiasKey || 'legacy',
+        entryMarketSignal: entrySnap.entryMarketSignal || 'legacy/未記錄',
+        entryMarketScore: num(entrySnap.entryMarketScore,0),
+        entrySentimentScore: num(entrySnap.entrySentimentScore,0),
+        entryDelta: num(entrySnap.entryDelta,0),
+        entryStructure: num(entrySnap.entryStructure,0),
+        entryDecisionMode: entrySnap.entryDecisionMode || 'legacy/未記錄',
+        entryCandidateGrade: entrySnap.entryCandidateGrade || '',
+        entryCandidateScore: num(entrySnap.entryCandidateScore,0),
+        entrySnapshotAt: entrySnap.entrySnapshotAt || p.entryDate || '-',
+        // 出場環境保留作輔助，不再作為主要績效分類
+        exitMarketSignal: state.market?.signal || '-',
+        exitMarketScore: num(state.market?.totalScore,0),
+        exitSentimentScore: num(state.market?.sentimentScore,0),
+        exitMarketDelta: num(state.market?.delta,0),
+        exitStructureScore: num(state.market?.structureScore,0),
+        exitTacticalMode: tacticalSnap.label || tacticalSnap.mode || '-',
+        exitTacticalKey: tacticalSnap.mode || '-',
+        exitStrategyMode: tvSnap.modeLabel || '-',
+        exitTvBias: tvSnap.biasLabel || '-',
+        // 舊欄位保留相容，但其值同步為進場歸因，避免統計錯位
+        marketSignal: entrySnap.entryMarketSignal || 'legacy/未記錄',
+        marketScore: num(entrySnap.entryMarketScore,0),
+        sentimentScore: num(entrySnap.entrySentimentScore,0),
+        marketDelta: num(entrySnap.entryDelta,0),
+        structureScore: num(entrySnap.entryStructure,0),
+        tacticalMode: entrySnap.entryTacticalMode || entrySnap.entryMode || 'legacy/未記錄',
+        tacticalKey: entrySnap.entryTacticalKey || entrySnap.entryModeKey || 'legacy',
+        strategyMode: entrySnap.entryStrategyMode || entrySnap.entryTvMode || 'legacy/未記錄',
+        tvBias: entrySnap.entryTvBias || 'legacy/未記錄',
+        aiMode: entrySnap.entryDecisionMode || state.decision?.mode || '-'
       });
       state.pendingCloseId = null;
       state.isClosing = false;
