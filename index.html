@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.21｜抗洗出場引擎版</title>
+<title>AI 戰艦 Pro Max v10.23.1｜機構自學穩定版</title>
 <style>
     :root{
       --bg:#071019;
@@ -262,14 +262,20 @@
 .antiwash-cell .k{font-size:10px;color:var(--muted)}
 .antiwash-cell .v{font-size:14px;font-weight:900;margin-top:4px}
 
+/* ===== v10.23.1 機構自學穩定出場 ===== */
+.exit-ai-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);margin:4px 6px 4px 0}
+.exit-ai-chip.aggressive{color:#d9fff1;border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.10)}
+.exit-ai-chip.balanced{color:#dff6ff;border-color:rgba(86,215,255,.35);background:rgba(86,215,255,.08)}
+.exit-ai-chip.defensive{color:#ffe2e2;border-color:rgba(248,113,113,.45);background:rgba(248,113,113,.10)}
+
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<h1>AI 戰艦 Pro Max v10.21 </h1>
-<div class="sub">抗洗出場引擎版｜延遲移動停利｜分段回撤｜動態分批｜時間止盈提醒｜進場分類相容</div>
+<h1>AI 戰艦 Pro Max v10.23.1 </h1>
+<div class="sub">機構自學穩定版｜30筆PF平滑｜48小時模式冷卻｜防爆鎖利優化｜進場分類相容</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -462,7 +468,7 @@
 </div>
 </section>
 <section class="panel">
-<div class="panel-head"><div><h2 class="panel-title">股票戰報艙｜v10.21 抗洗出場 + 進場分類績效</h2><div class="panel-sub">保留進場分類績效，並加入抗洗出場：延遲移動停利、分段回撤、動態分批與時間止盈提醒</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">股票戰報艙｜v10.23.1 機構自學穩定出場 + 進場分類績效</h2><div class="panel-sub">保留進場分類績效，並加入機構自學穩定出場：30筆PF平滑、48小時模式冷卻、動態回撤、動態分批與防爆鎖利</div></div></div>
 <div class="panel-body">
 <div class="grid-5" id="performanceMetrics"></div>
 <div class="divider"></div>
@@ -567,7 +573,7 @@
 
 <div class="close-overlay" id="uiGuideModal">
   <div class="close-modal" style="width:min(1040px,95%)">
-    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.21｜抗洗出場引擎版</div>
+    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.23.1｜機構自學穩定版</div>
     <div class="ok-box" style="font-size:14px;line-height:1.75">
       <strong>核心定位：</strong><br>
       這不是單純選股工具，而是一套從「市場判斷 → 選股篩選 → AI覆核 → 攻防決策 → 倉位風控 → 出場管理 → 覆盤進化」串成閉環的戰情室系統。<br>
@@ -575,7 +581,7 @@
     </div>
 
     <div class="help-grid" style="margin-top:14px">
-      <div class="help-item"><strong>NEW｜抗洗出場引擎</strong>TradingView 條件仍在 STEP 1；出場引擎改為 +8% 後才啟動移動停利，並依獲利幅度使用 5%~8% 分段回撤，強勢盤少賣、弱勢盤快跑，降低第2天/第3天被洗掉後隔日噴出的問題。</div>
+      <div class="help-item"><strong>NEW｜v10.23.1 機構自學穩定出場</strong>TradingView 條件仍在 STEP 1；出場引擎加入近30筆PF/勝率平滑、48小時模式冷卻、強勢放寬、弱勢收緊與防爆鎖利優化，降低被洗掉與頻繁切換的問題。</div>
       <div class="help-item"><strong>1｜三層戰鬥架構</strong>市場層判斷紅 / 黃 / 綠燈；選股層切換防守、精準、動能、狂牛；戰術層再決定 🛡防守、⚖平衡、🔥攻擊。系統不是只會篩股，而是會決定「什麼行情該怎麼打」。</div>
       <div class="help-item"><strong>2｜攻防雙模式 NEW</strong>平常用防守與平衡保護本金；綠燈高分、勝率與PF達標時，才進入攻擊模式。攻擊模式會放寬RSI、量比、乖離與假突破容忍，讓強勢行情有機會跑出大段。</div>
       <div class="help-item"><strong>3｜TradingView + 本地雙引擎</strong>TradingView負責粗篩股票池，AI戰艦負責二次精篩。系統會用技術動能、量能、趨勢、基本面排雷與假突破偵測，將垃圾股、過熱股、出貨股先擋掉。</div>
@@ -654,6 +660,73 @@
     const $ = id => document.getElementById(id);
     const STORAGE_KEY = 'warroom_v10_13_3_institutional_exit';
 
+    // ===== v10.23.1 機構自學穩定出場引擎 =====
+    function getMarketExitBiasV10231(market){
+      const delta = num(market && market.delta, 0);
+      const structure = num(market && market.structureScore, 0);
+      const total = num(market && market.totalScore, 0);
+      if(delta < -3 || structure <= 1 || total < 60) return 'defensive';
+      if(delta > 2 && structure >= 2 && total >= 75) return 'aggressive';
+      return 'balanced';
+    }
+
+    function getSystemStatsStableV10231(){
+      const trades = (state.logs || []).slice(-30);
+      let win = 0, loss = 0, profit = 0, lossAmt = 0;
+      trades.forEach(t=>{
+        const pnl = num(t && (t.pnl ?? t.netPnl ?? t.profit ?? t.realizedPnl), 0);
+        if(pnl > 0){ win++; profit += pnl; }
+        else if(pnl < 0){ loss++; lossAmt += Math.abs(pnl); }
+      });
+      const winRate = trades.length ? win / trades.length : 0;
+      const pfRaw = lossAmt > 0 ? profit / lossAmt : (profit > 0 ? 999 : 0);
+      const prev = (state.prevPfV10231 === null || state.prevPfV10231 === undefined) ? pfRaw : num(state.prevPfV10231, pfRaw);
+      const pf = pfRaw * 0.7 + prev * 0.3;
+      state.prevPfV10231 = pf;
+      return { trades: trades.length, win, loss, winRate, pfRaw, pf };
+    }
+
+    function getStrategyBiasStableV10231(){
+      const stats = getSystemStatsStableV10231();
+      if(stats.trades < 10) return 'balanced';
+      if(stats.pf < 1 || stats.winRate < 0.4) return 'defensive';
+      if(stats.pf > 1.5 && stats.winRate > 0.55) return 'aggressive';
+      return 'balanced';
+    }
+
+    function getFinalExitBiasStableV10231(market){
+      const marketMode = getMarketExitBiasV10231(market);
+      const systemMode = getStrategyBiasStableV10231();
+      const newMode = (marketMode === 'defensive' || systemMode === 'defensive') ? 'defensive' :
+        (marketMode === 'aggressive' && systemMode === 'aggressive') ? 'aggressive' : 'balanced';
+      const now = Date.now();
+      if(state.lastExitModeV10231 && state.lastExitModeTimeV10231){
+        const diff = now - num(state.lastExitModeTimeV10231, 0);
+        if(diff < 48 * 3600 * 1000) return state.lastExitModeV10231;
+      }
+      state.lastExitModeV10231 = newMode;
+      state.lastExitModeTimeV10231 = now;
+      return newMode;
+    }
+
+    function getExitBiasMetaV10231(){
+      const stats = getSystemStatsStableV10231();
+      const marketMode = getMarketExitBiasV10231(state.market);
+      const systemMode = getStrategyBiasStableV10231();
+      const finalMode = getFinalExitBiasStableV10231(state.market);
+      const labelMap = {
+        aggressive:'🔥 放寬｜吃趨勢',
+        balanced:'⚖ 平衡｜正常追蹤',
+        defensive:'🛡 收緊｜保利潤'
+      };
+      return { stats, marketMode, systemMode, finalMode, label: labelMap[finalMode] || '⚖ 平衡｜正常追蹤' };
+    }
+
+    function getExitBiasClassV10231(mode){
+      return mode === 'aggressive' ? 'aggressive' : (mode === 'defensive' ? 'defensive' : 'balanced');
+    }
+
+
     const defaultState = {
       market: { advancers:0, decliners:0, limitUp:0, limitDown:0, otcChange:0, taiexChange:0, breadthScore:0, sentimentScore:0, totalScore:0, prevScore:0, delta:0, structureScore:0, signal:'yellow', maxNewPositionsAllowed:1, instruction:'等待市場狀態更新', explainParts:[], radar:{} },
       risk: { capital:200000, availableCash:200000, dailyRiskPercent:1, singlePositionCapitalPercent:25, maxNewPositions:2, lossStreak:0 },
@@ -662,7 +735,8 @@
       decision: { mode:'auto', finalSymbols:[], summary:'', autoHeatThreshold:20, autoScoreGap:12, liveAdjEnabled:'true', liveAdjStrength:'conservative' },
       cloud: { apiUrl:'https://script.google.com/macros/s/AKfycbxTNAT3bzlh9ZbvzDsW71lgkLWgD9RqoW4L5fYT-VifK5PHvNKSFV2FhAhqEFNhpDxI/exec', roomId:'main_room', token:'', lastSharedSync:'' },
       ui: { candidateCardsExpanded:false, candidateCardsMode:'top5' },
-      noTarget: { days:0, lastDate:'' }
+      noTarget: { days:0, lastDate:'' },
+      prevPfV10231:null, lastExitModeV10231:null, lastExitModeTimeV10231:null
     };
 
     
@@ -1626,29 +1700,38 @@ let state = loadState();
 
     function getAntiWashDynamicPullback(pnlPct, tacticalMode){
       const p = num(pnlPct, 0);
-      let pb = 0;
-      if(p < 8) pb = 0;          // +8% 前不啟動移動停利，避免初期被洗掉
-      else if(p < 10) pb = 5;
-      else if(p < 15) pb = 6;
-      else if(p < 20) pb = 7;
-      else pb = 8;
-      if(tacticalMode === 'attack' && pb > 0) pb = Math.min(8, pb + 1); // 攻擊模式給主升段更多空間
-      return pb;
+      const finalMode = getFinalExitBiasStableV10231(state.market);
+      if(p < 8) return 0; // +8% 前不啟動移動停利，避免初期被洗掉
+      if(finalMode === 'aggressive'){
+        if(p < 10) return 7;
+        if(p < 15) return 8;
+        return 9;
+      }
+      if(finalMode === 'defensive'){
+        if(p < 10) return 4;
+        if(p < 15) return 5;
+        return 6;
+      }
+      if(p < 10) return 5;
+      if(p < 15) return 6;
+      return 7;
     }
 
     function getAntiWashPartialRatio(pnlPct, market, tacticalMode){
       const p = num(pnlPct, 0);
-      const delta = num(market && market.delta, 0);
-      const structure = num(market && market.structureScore, 0);
+      const finalMode = getFinalExitBiasStableV10231(market || state.market);
       if(p < 6) return 0; // 未達 +6% 不分批，避免太早抽掉主升段部位
-      if(delta > 0 && structure >= 2 && tacticalMode === 'attack') return p >= 10 ? 0.2 : 0;
-      if(delta > 0 && structure >= 2) return p >= 8 ? 0.2 : 0;
-      if(delta < 0 || structure <= 1) return 0.5;
+      if(finalMode === 'aggressive') return p >= 10 ? 0.05 : 0;
+      if(finalMode === 'defensive') return p >= 6 ? 0.6 : 0;
       return p >= 8 ? 0.3 : 0;
     }
 
     function shouldAntiWashTimeExit(daysHeld, pnlPct){
-      return daysHeld >= 5 && num(pnlPct, 0) < 5;
+      const p = num(pnlPct, 0);
+      const finalMode = getFinalExitBiasStableV10231(state.market);
+      if(finalMode === 'aggressive') return false;
+      if(finalMode === 'defensive') return daysHeld >= 3 && p < 5;
+      return daysHeld >= 5 && p < 5;
     }
 
     function getInstitutionalExitPlan(pos){
@@ -1666,6 +1749,7 @@ let state = loadState();
       const trailingActive = dynamicPullback > 0;
       const partialRatio = getAntiWashPartialRatio(pnlPct, state.market, tactical.mode);
       const timeExit = shouldAntiWashTimeExit(daysHeld, pnlPct);
+      const exitBiasMeta = getExitBiasMetaV10231();
 
       let stop = baseStop;
       let stage = '原始停損';
@@ -1675,9 +1759,9 @@ let state = loadState();
 
       // +4% ~ +8%：只做呼吸保本，不急著移動停利，避免 Day2/Day3 被洗掉。
       if(pnlPct >= 4 && pnlPct < 8){
-        stop = Math.max(stop, entry * 0.99);
+        stop = Math.max(stop, entry * 1.01);
         stage = '抗洗觀察';
-        suggestion = '已達 +4%，但尚未達 +8% 抗洗門檻；只把風險收斂到成本附近，不急著分批或啟動移動停利，避免被正常回檔洗出。';
+        suggestion = '已達 +4%，但尚未達 +8% 抗洗門檻；先小幅鎖住約成本 +1%，不急著分批或啟動移動停利，避免被正常回檔洗出。';
       }
 
       // +6% 後才視市場狀態給分批建議；強勢盤少賣，弱勢盤多賣。
@@ -1705,6 +1789,15 @@ let state = loadState();
         suggestion = `獲利達 +15% 以上，進入主升段追蹤；目前回撤容忍 ${dynamicPullback}% ，最低鎖住約成本 +3% 以上，優先讓獲利奔跑。`;
       }
 
+      // v10.23.1：防爆鎖利放寬，需獲利 >15% 且市場 Delta 明顯轉弱才強制鎖住底利。
+      if(pnlPct > 15 && num(state.market && state.market.delta, 0) < -1){
+        stop = Math.max(stop, entry * 1.03);
+        if(stage !== '時間止盈 / 換股'){
+          stage = '防爆鎖利';
+          suggestion += ' 市場 Delta 明顯轉弱，啟動 v10.23.1 防爆鎖利，至少保住約成本 +3% 底利。';
+        }
+      }
+
       if(timeExit){
         stage = '時間止盈 / 換股';
         suggestion = `持有已 ${daysHeld} 天但報酬仍低於 +5%，資金效率偏低；若沒有新高或題材延續，明日可考慮出場換股。`;
@@ -1728,7 +1821,12 @@ let state = loadState();
         dynamicPullback,
         trailingActive,
         trailingStartPct:8,
-        timeExit
+        timeExit,
+        exitBiasMode:exitBiasMeta.finalMode,
+        exitBiasLabel:exitBiasMeta.label,
+        exitBiasMarketMode:exitBiasMeta.marketMode,
+        exitBiasSystemMode:exitBiasMeta.systemMode,
+        exitBiasStats:exitBiasMeta.stats
       };
     }
 
@@ -1740,7 +1838,7 @@ let state = loadState();
         pos.initialStop = pos.stopLossPrice ?? pos.trailingStop ?? (pos.entryPrice ? Number((pos.entryPrice * 0.97).toFixed(2)) : null);
       }
       const plan = getInstitutionalExitPlan(pos);
-      // v10.21：保留 initialStop / stopLossPrice 作為原始紀錄；有效停損只寫 trailingStop / effectiveStopLossPrice。
+      // v10.23.1：保留 initialStop / stopLossPrice 作為原始紀錄；有效停損只寫 trailingStop / effectiveStopLossPrice。
       pos.trailingStop = plan.stopLossPrice;
       pos.effectiveStopLossPrice = plan.stopLossPrice;
       pos.exitMode = plan.mode;
@@ -1753,6 +1851,10 @@ let state = loadState();
       pos.exitTrailingActive = plan.trailingActive;
       pos.exitDaysHeld = plan.daysHeld;
       pos.exitTimeExit = plan.timeExit;
+      pos.exitBiasMode = plan.exitBiasMode;
+      pos.exitBiasLabel = plan.exitBiasLabel;
+      pos.exitBiasMarketMode = plan.exitBiasMarketMode;
+      pos.exitBiasSystemMode = plan.exitBiasSystemMode;
       return pos;
     }
 
@@ -1969,7 +2071,11 @@ let state = loadState();
         ? '<br>分批建議：可先賣 '+fmt(plan.partialSellQty)+' 股（約 '+plan.partialSellPct+'%），剩餘續抱'
         : (plan.mode === 'odd' ? '<br>分批建議：目前不急著分批，保留部位等待主升段確認' : '<br>分批建議：整張模式不分批，依停損停利管理');
       const trailLine = '<br>抗洗設定：移動停利門檻 +'+plan.trailingStartPct+'%｜目前回撤容忍 '+(plan.dynamicPullback ? plan.dynamicPullback+'%' : '未啟動')+'｜持有 '+plan.daysHeld+' 天';
-      return '<div class="antiwash-box"><strong>v10.21 抗洗出場引擎</strong><br>出場模式：'+plan.modeLabel+'｜階段：'+plan.stage+'｜原始停損：'+fmt(p.initialStop ?? p.stopLossPrice,2)+'｜目前停損：'+fmt(plan.stopLossPrice,2)+partialLine+trailLine+'<br>'+plan.suggestion+'</div>';
+      const stats = plan.exitBiasStats || {trades:0, winRate:0, pf:0};
+      const aiLine = '<br><span class="exit-ai-chip '+getExitBiasClassV10231(plan.exitBiasMode)+'">'+plan.exitBiasLabel+'</span>'+
+        '<span class="exit-ai-chip balanced">市場:'+plan.exitBiasMarketMode+'｜系統:'+plan.exitBiasSystemMode+'</span>'+
+        '<span class="exit-ai-chip balanced">近30筆 '+stats.trades+' 筆｜勝率 '+fmt((stats.winRate||0)*100,1)+'%｜PF '+fmt(stats.pf||0,2)+'</span>';
+      return '<div class="antiwash-box"><strong>v10.23.1 機構自學穩定出場</strong>'+aiLine+'<br>出場模式：'+plan.modeLabel+'｜階段：'+plan.stage+'｜原始停損：'+fmt(p.initialStop ?? p.stopLossPrice,2)+'｜目前停損：'+fmt(plan.stopLossPrice,2)+partialLine+trailLine+'<br>'+plan.suggestion+'</div>';
     }
 
 
