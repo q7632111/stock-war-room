@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <meta content="#050a12" name="theme-color"/>
-<title>AI 戰艦 Pro Max v10.23.1｜機構自學穩定版</title>
+<title>AI 戰艦 Pro Max v10.23.2｜控制強化版</title>
 <style>
     :root{
       --bg:#071019;
@@ -264,7 +264,7 @@
 .antiwash-cell .k{font-size:10px;color:var(--muted)}
 .antiwash-cell .v{font-size:14px;font-weight:900;margin-top:4px}
 
-/* ===== v10.23.1 機構自學穩定出場 ===== */
+/* ===== v10.23.2 控制強化 ===== */
 .exit-ai-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);margin:4px 6px 4px 0}
 .exit-ai-chip.aggressive{color:#d9fff1;border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.10)}
 .exit-ai-chip.balanced{color:#dff6ff;border-color:rgba(86,215,255,.35);background:rgba(86,215,255,.08)}
@@ -276,14 +276,26 @@
   .guide-author-plate{align-items:flex-start}
 }
 
+/* ===== v10.23.2 控制強化：出手信心 / 弱勢提前提示 / 交易品質標記 ===== */
+.confidence-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+.confidence-chip.high{color:#d9fff1;border-color:rgba(52,211,153,.48);background:rgba(52,211,153,.11)}
+.confidence-chip.mid{color:#fff3bf;border-color:rgba(251,191,36,.42);background:rgba(251,191,36,.10)}
+.confidence-chip.low{color:#ffe2e2;border-color:rgba(248,113,113,.45);background:rgba(248,113,113,.10)}
+.control-box{border:1px solid rgba(86,215,255,.22);background:linear-gradient(180deg,rgba(12,34,50,.72),rgba(7,18,29,.82));border-radius:14px;padding:12px 14px;margin-top:10px;line-height:1.75;font-size:13px}
+.weak-stock-alert{border:1px solid rgba(251,191,36,.34);background:linear-gradient(180deg,rgba(95,71,8,.16),rgba(45,35,5,.13));color:#fff3bf;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.65;margin-top:10px}
+.quality-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);white-space:nowrap}
+.quality-badge.disciplined{color:#bbf7d0;border-color:rgba(52,211,153,.36);background:rgba(52,211,153,.08)}
+.quality-badge.warning{color:#fde68a;border-color:rgba(251,191,36,.36);background:rgba(251,191,36,.08)}
+.quality-badge.manual{color:#fecaca;border-color:rgba(248,113,113,.38);background:rgba(248,113,113,.08)}
+
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="topbar">
 <div class="brand">
-<div class="brand-title-row"><h1>AI 戰艦 Pro Max v10.23.1</h1><span class="author-tag"><span class="by">Created by</span> 清潔隊神人</span></div>
-<div class="sub">機構自學穩定版｜30筆PF平滑｜48小時模式冷卻｜防爆鎖利優化｜進場分類相容</div>
+<div class="brand-title-row"><h1>AI 戰艦 Pro Max v10.23.2</h1><span class="author-tag"><span class="by">Created by</span> 清潔隊神人</span></div>
+<div class="sub">控制強化版｜出手信心｜弱勢提前提示｜交易品質標記｜機構自學穩定出場</div>
 </div>
 <div class="statusbar" id="topStatusBar"></div>
 <div class="toolbar"><button class="btn secondary" onclick="document.getElementById('settingsModal').classList.add('show')">⚙️ 系統設定</button></div>
@@ -476,7 +488,7 @@
 </div>
 </section>
 <section class="panel">
-<div class="panel-head"><div><h2 class="panel-title">股票戰報艙｜v10.23.1 機構自學穩定出場 + 進場分類績效</h2><div class="panel-sub">保留進場分類績效，並加入機構自學穩定出場：30筆PF平滑、48小時模式冷卻、動態回撤、動態分批與防爆鎖利</div></div></div>
+<div class="panel-head"><div><h2 class="panel-title">股票戰報艙｜v10.23.2 控制強化 + 進場分類績效</h2><div class="panel-sub">保留進場分類績效，加入出手信心、弱勢提前提示、交易品質標記與機構自學穩定出場</div></div></div>
 <div class="panel-body">
 <div class="grid-5" id="performanceMetrics"></div>
 <div class="divider"></div>
@@ -504,7 +516,7 @@
 <div class="close-overlay" id="evolutionModal">
   <div class="close-modal" style="width:min(860px,95%)">
     <div class="panel-title" style="margin-bottom:12px">🤖 AI 戰術覆盤室（系統進化）</div>
-    <div class="ok-box"><strong>運作邏輯：</strong><br>系統會抓取最近 20 筆交易紀錄，交給 AI 量化風控長分析。AI 不會自動亂改你的參數，而是給出安全範圍內的微調建議；本版另有「即時微調層」，會依市場狀態在本地評分中自動調整 RSI、量比、乖離與假突破強度。</div>
+    <div class="ok-box"><strong>運作邏輯：</strong><br>系統會抓取最近 30 筆交易紀錄，交給 AI 量化風控長分析。AI 不會自動亂改你的參數，而是給出安全範圍內的微調建議；本版另有「即時微調層」，會依市場狀態在本地評分中自動調整 RSI、量比、乖離與假突破強度。</div>
     <div class="btnrow" style="margin-top:14px; margin-bottom:10px;"><button class="btn purple" id="genEvoPromptBtn">1. 產生覆盤 Prompt</button><button class="btn secondary" id="copyEvoPromptBtn">2. 複製 Prompt</button></div>
     <div><textarea id="evoPromptBox" placeholder="系統會自動將近期交易紀錄轉換為 AI 覆盤指令"></textarea></div>
     <div style="margin-top:14px;"><label>貼上 AI JSON 覆盤建議</label><textarea id="evoResultBox" placeholder='例如：{"diagnosis":"...","adjustments":[{"param":"...","advice":"...","reason":"..."}],"psychological_advice":"..."}'></textarea></div>
@@ -581,10 +593,10 @@
 
 <div class="close-overlay" id="uiGuideModal">
   <div class="close-modal" style="width:min(1040px,95%)">
-    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.23.1｜機構自學穩定版</div>
+    <div class="panel-title" style="margin-bottom:12px;font-size:20px">🚀 AI 戰艦 Pro Max v10.23.2｜控制強化版</div>
     <div class="guide-author-plate">
       <div class="creator">系統設計｜<strong>清潔隊神人</strong></div>
-      <div class="seal">AI量化戰情室・機構自學穩定版</div>
+      <div class="seal">AI量化戰情室・控制強化版</div>
     </div>
     <div class="ok-box" style="font-size:14px;line-height:1.75">
       <strong>核心定位：</strong><br>
@@ -593,7 +605,7 @@
     </div>
 
     <div class="help-grid" style="margin-top:14px">
-      <div class="help-item"><strong>NEW｜v10.23.1 機構自學穩定出場</strong>TradingView 條件仍在 STEP 1；出場引擎加入近30筆PF/勝率平滑、48小時模式冷卻、強勢放寬、弱勢收緊與防爆鎖利優化，降低被洗掉與頻繁切換的問題。</div>
+      <div class="help-item"><strong>NEW｜v10.23.2 控制強化</strong>TradingView 條件仍在 STEP 1；出場引擎加入近30筆PF/勝率平滑、48小時模式冷卻、強勢放寬、弱勢收緊與防爆鎖利優化，降低被洗掉與頻繁切換的問題。</div><div class="help-item"><strong>NEW｜出手信心 / 弱勢提示 / 交易品質</strong>系統會用市場、Delta、Structure與近期PF評估今日信心；持倉若3天仍低於+2%會提前提醒；平倉紀錄會標記紀律執行、分批減碼或手動干預，幫你分清楚是策略問題還是執行問題。</div>
       <div class="help-item"><strong>1｜三層戰鬥架構</strong>市場層判斷紅 / 黃 / 綠燈；選股層切換防守、精準、動能、狂牛；戰術層再決定 🛡防守、⚖平衡、🔥攻擊。系統不是只會篩股，而是會決定「什麼行情該怎麼打」。</div>
       <div class="help-item"><strong>2｜攻防雙模式 NEW</strong>平常用防守與平衡保護本金；綠燈高分、勝率與PF達標時，才進入攻擊模式。攻擊模式會放寬RSI、量比、乖離與假突破容忍，讓強勢行情有機會跑出大段。</div>
       <div class="help-item"><strong>3｜TradingView + 本地雙引擎</strong>TradingView負責粗篩股票池，AI戰艦負責二次精篩。系統會用技術動能、量能、趨勢、基本面排雷與假突破偵測，將垃圾股、過熱股、出貨股先擋掉。</div>
@@ -672,7 +684,7 @@
     const $ = id => document.getElementById(id);
     const STORAGE_KEY = 'warroom_v10_13_3_institutional_exit';
 
-    // ===== v10.23.1 機構自學穩定出場引擎 =====
+    // ===== v10.23.2 控制強化引擎 =====
     function getMarketExitBiasV10231(market){
       const delta = num(market && market.delta, 0);
       const structure = num(market && market.structureScore, 0);
@@ -737,6 +749,94 @@
     function getExitBiasClassV10231(mode){
       return mode === 'aggressive' ? 'aggressive' : (mode === 'defensive' ? 'defensive' : 'balanced');
     }
+
+    // ===== v10.23.2 控制強化模組：出手信心 / 弱勢提前提示 / 交易品質標記 =====
+    function getTradeConfidenceV10232(){
+      const market = state.market || {};
+      const score = num(market.totalScore, 0);
+      const structure = num(market.structureScore, 0);
+      const delta = num(market.delta, 0);
+      const exitMeta = (typeof getExitBiasMetaV10231 === 'function') ? getExitBiasMetaV10231() : { finalMode:'balanced', stats:{ trades:0, pf:0, winRate:0 } };
+      const stats = exitMeta.stats || {};
+      const pf = num(stats.pf, 0);
+      const winRate = num(stats.winRate, 0);
+      const trades = num(stats.trades, 0);
+      const finalMode = exitMeta.finalMode || 'balanced';
+
+      let point = 0;
+      if(score >= 75) point += 2; else if(score >= 60) point += 1; else if(score < 45) point -= 2;
+      if(structure >= 2) point += 1; else point -= 1;
+      if(delta > 2) point += 1; else if(delta < -2) point -= 1;
+      if(finalMode === 'aggressive') point += 1;
+      if(finalMode === 'defensive') point -= 2;
+      if(trades >= 10){
+        if(pf >= 1.35 && winRate >= 0.52) point += 1;
+        if(pf < 1 || winRate < 0.4) point -= 2;
+      }
+
+      if(point >= 4){
+        return { level:'high', cls:'high', title:'🔥 高信心', action:'可出手，但仍只打 S+ / 主攻級標的', score:point, pf, winRate, trades };
+      }
+      if(point >= 1){
+        return { level:'mid', cls:'mid', title:'⚖ 中信心', action:'只做 S+，不主觀放寬條件', score:point, pf, winRate, trades };
+      }
+      return { level:'low', cls:'low', title:'🛡 低信心', action:'建議觀望，無標的就是最好決策', score:point, pf, winRate, trades };
+    }
+
+    function renderTradeConfidenceCardV10232(){
+      const c = getTradeConfidenceV10232();
+      return '<div class="control-box"><div class="confidence-chip '+c.cls+'">'+c.title+'</div><div style="margin-top:8px"><strong>今日控制建議：</strong>'+c.action+'</div><div class="footnote">依市場總分、Delta、Structure、v10.23.1 出場模式與近30筆PF/勝率綜合判斷；這是控制提示，不會自動改策略。</div></div>';
+    }
+
+    function detectWeakStockV10232(pos){
+      if(!pos) return null;
+      const days = (typeof getAntiWashHeldDays === 'function') ? getAntiWashHeldDays(pos) : 0;
+      const entry = num(pos.entryPrice ?? pos.buyPrice, 0);
+      const current = num(pos.currentPrice ?? pos.close ?? pos.lastClose, 0);
+      const highest = num(pos.highestPrice ?? current, current);
+      const pnlPct = entry > 0 ? ((current - entry) / entry * 100) : 0;
+      const highPct = entry > 0 ? ((highest - entry) / entry * 100) : 0;
+      const market = state.market || {};
+      const isWeakTape = num(market.delta,0) < 0 || num(market.structureScore,0) <= 1;
+
+      if(days >= 3 && pnlPct < 2 && highPct < 4){
+        return { level:'watch', text:'⚠ 弱勢提前提示：持有已達 '+days+' 天，報酬仍低於 +2%，且尚未走出有效高點。這不是強制賣出，但明日應提高警覺。' };
+      }
+      if(days >= 5 && pnlPct < 5){
+        return { level:'exit', text:'🟠 時間效率警示：持有已達 '+days+' 天，報酬仍低於 +5%。若沒有題材延續或市場轉強，優先考慮換股。' };
+      }
+      if(days >= 3 && pnlPct < 3 && isWeakTape){
+        return { level:'defense', text:'🛡 弱勢盤防守提示：市場轉弱且此股未能擴大利潤，明日不建議加碼，優先守停損。' };
+      }
+      return null;
+    }
+
+    function renderWeakStockAlertV10232(pos){
+      const w = detectWeakStockV10232(pos);
+      if(!w) return '';
+      return '<div class="weak-stock-alert">'+w.text+'</div>';
+    }
+
+    function getTradeQualityV10232(log){
+      const reason = String(log?.reason || log?.closeReason || '').toLowerCase();
+      const note = String(log?.note || '').toLowerCase();
+      if(reason.includes('manual') || note.includes('manual') || log?.manualOverride){
+        return { cls:'manual', text:'❌ 手動干預' };
+      }
+      if(reason.includes('tp') || reason.includes('sl') || reason.includes('system') || reason.includes('trail')){
+        return { cls:'disciplined', text:'✔ 紀律執行' };
+      }
+      if(reason.includes('trim')){
+        return { cls:'warning', text:'⚠ 分批/減碼' };
+      }
+      return { cls:'warning', text:'⚠ 待判斷' };
+    }
+
+    function renderTradeQualityBadgeV10232(log){
+      const q = getTradeQualityV10232(log);
+      return '<span class="quality-badge '+q.cls+'">'+q.text+'</span>';
+    }
+
 
 
     const defaultState = {
@@ -2087,7 +2187,7 @@ let state = loadState();
       const aiLine = '<br><span class="exit-ai-chip '+getExitBiasClassV10231(plan.exitBiasMode)+'">'+plan.exitBiasLabel+'</span>'+
         '<span class="exit-ai-chip balanced">市場:'+plan.exitBiasMarketMode+'｜系統:'+plan.exitBiasSystemMode+'</span>'+
         '<span class="exit-ai-chip balanced">近30筆 '+stats.trades+' 筆｜勝率 '+fmt((stats.winRate||0)*100,1)+'%｜PF '+fmt(stats.pf||0,2)+'</span>';
-      return '<div class="antiwash-box"><strong>v10.23.1 機構自學穩定出場</strong>'+aiLine+'<br>出場模式：'+plan.modeLabel+'｜階段：'+plan.stage+'｜原始停損：'+fmt(p.initialStop ?? p.stopLossPrice,2)+'｜目前停損：'+fmt(plan.stopLossPrice,2)+partialLine+trailLine+'<br>'+plan.suggestion+'</div>';
+      return '<div class="antiwash-box"><strong>v10.23.2 控制強化</strong>'+aiLine+'<br>出場模式：'+plan.modeLabel+'｜階段：'+plan.stage+'｜原始停損：'+fmt(p.initialStop ?? p.stopLossPrice,2)+'｜目前停損：'+fmt(plan.stopLossPrice,2)+partialLine+trailLine+'<br>'+plan.suggestion+'</div>';
     }
 
 
@@ -2228,7 +2328,30 @@ let state = loadState();
       $('noTargetHintPanel').innerHTML = `<div class="no-target-alert ${s.cls}">${s.html}</div>`;
     }
 
-    function renderHero(){ const summary = getDashboardSummary(); const perf=getPerformance(); const tactical = getTacticalMode(state.market); const structure = getStructureInfo(); const delta = getDeltaInfo(); const items=[{label:'市場總分',value:fmt(state.market.totalScore,1),color:signalClass(state.market.signal)},{label:'Delta方向',value:delta.text,color:state.market.delta>=0?'green':'red'},{label:'Structure',value:`${structure.score}/3`,color:structure.score>=2?'green':'yellow'},{label:'攻防模式',value:tactical.label,color:tactical.cls},{label:'今日可開新倉',value:`${summary.effectiveMaxNewPositions} 檔`},{label:'單日風險額',value:`NT$ ${fmt(summary.dailyRiskAmount)}`},{label:'持倉數量',value:`${summary.openPositions.length} 檔`},{label:'剩餘資金',value:`NT$ ${fmt(summary.remainingCash)}`},{label:'飛輪累積 %',value:pct(perf.flywheelPct,2),color:perf.flywheelPct>=0?'green':'red'},{label:'平倉勝率',value:pct(perf.winRate,1),color:perf.winRate>=50?'green':'yellow'}]; $('heroMetrics').innerHTML=items.map(x=>`<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color||''}">${x.value}</div></div>`).join(''); $('todayInstruction').textContent=state.market.instruction; $('lastSyncTime').textContent=state.lastSync||'-'; }
+    function renderHero(){
+      const summary = getDashboardSummary();
+      const perf=getPerformance();
+      const tactical = getTacticalMode(state.market);
+      const structure = getStructureInfo();
+      const delta = getDeltaInfo();
+      const confidence = getTradeConfidenceV10232();
+      const items=[
+        {label:'出手信心',value:confidence.title,color:confidence.level==='high'?'green':(confidence.level==='mid'?'yellow':'red')},
+        {label:'市場總分',value:fmt(state.market.totalScore,1),color:signalClass(state.market.signal)},
+        {label:'Delta方向',value:delta.text,color:state.market.delta>=0?'green':'red'},
+        {label:'Structure',value:`${structure.score}/3`,color:structure.score>=2?'green':'yellow'},
+        {label:'攻防模式',value:tactical.label,color:tactical.cls},
+        {label:'今日可開新倉',value:`${summary.effectiveMaxNewPositions} 檔`},
+        {label:'單日風險額',value:`NT$ ${fmt(summary.dailyRiskAmount)}`},
+        {label:'持倉數量',value:`${summary.openPositions.length} 檔`},
+        {label:'剩餘資金',value:`NT$ ${fmt(summary.remainingCash)}`},
+        {label:'飛輪累積 %',value:pct(perf.flywheelPct,2),color:perf.flywheelPct>=0?'green':'red'},
+        {label:'平倉勝率',value:pct(perf.winRate,1),color:perf.winRate>=50?'green':'yellow'}
+      ];
+      $('heroMetrics').innerHTML=items.map(x=>`<div class="metric"><div class="label">${x.label}</div><div class="value ${x.color||''}">${x.value}</div></div>`).join('');
+      $('todayInstruction').innerHTML = state.market.instruction + '<div style="margin-top:8px">' + renderTradeConfidenceCardV10232() + '</div>';
+      $('lastSyncTime').textContent=state.lastSync||'-';
+    }
 
     function renderMarket(){
       const r=state.market.radar||{};
@@ -2427,7 +2550,7 @@ ${candidatesText}
       $('ordersTable').innerHTML = `<table><thead><tr><th>角色</th><th>股票</th><th>決策分</th><th>本地分</th><th>買價</th><th>停損</th><th>停利參考</th><th>股數</th><th>倉位風控</th><th>理由</th></tr></thead><tbody>${finalRows.map((c,idx)=>`<tr><td>${idx===0?'🔥 主攻':'⚡ 次選'}</td><td><strong>${c.symbol}</strong> ${c.name||''} <span class="badge ${badgeClass(c.grade)}">${c.grade}</span></td><td>${fmt(c.decisionScore,1)}</td><td>${fmt(c.localScore,1)}</td><td>${fmt(c.entry,2)}</td><td>${fmt(c.stop,2)}</td><td>${fmt(c.takeProfit,2)}</td><td>${fmt(c.shares)}</td><td>${renderRiskSizingInfo(c)}</td><td>${getDecisionTag(c, idx).reason}</td></tr>`).join('')}</tbody></table>`;
     }
 
-    function renderPositions(){ const openPositions=getOpenPositions(); if(openPositions.length===0){ $('positionsBox').innerHTML=`<div class="footnote">目前沒有開啟中的持倉。</div>`; return; } const portfolioStats=getPortfolioStats(); const lossMode=getLossMode(state.risk.lossStreak); const profile=getAdaptiveExitProfile(); let topAlert=`<div class="ok-box" style="margin-bottom:12px"><strong>目前出場模式：</strong>v10.21 抗洗出場｜初始停損 ${profile.stopLossPct}%｜+8% 後啟動移動停利｜分段回撤 5%~8%｜時間止盈 5天低於+5%</div>`; if(state.market.signal==='red'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 市場紅燈：</strong>禁止新倉，持倉全面進入防守狀態。</div>`; } else if(portfolioStats.drop <= -5){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 組合熔斷：</strong>總回撤 ${pct(portfolioStats.drop,2)}，優先降倉保命，只減不加。</div>`; } else if(lossMode.mode==='冷卻模式'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🧊 冷卻模式：</strong>連敗達標，禁止新倉，只管理舊倉。</div>`; } $('positionsBox').innerHTML=topAlert + openPositions.map(p=>{ const pnl=(p.currentPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((p.currentPrice-p.entryPrice)/p.entryPrice)*100:0; const stopDistance=p.currentPrice-p.trailingStop; const action=getHoldingAction(p, portfolioStats); const risk=getHoldingRiskInfo(p, portfolioStats); const dynamicCandidate = findCandidateBySymbol(p.symbol); const dynamicGrade = dynamicCandidate?.grade || p.dynamicGrade || ''; const dynamicRejected = dynamicCandidate ? isHardForbidden(dynamicCandidate) : false; return `<div class="card"><div class="card-head"><div><div class="symbol">${p.symbol} ${p.name||''}</div><div class="muted">建倉 ${p.entryDate}</div></div><span class="badge ${p.status.includes('撤退')?'red':(p.status.includes('鎖利')||p.status.includes('防守')?'yellow':'green')}">${p.status}</span></div><div class="mini"><div class="cell"><div class="k">成本</div><div class="v">${fmt(p.entryPrice,2)}</div></div><div class="cell"><div class="k">現價</div><div class="v">${fmt(p.currentPrice,2)}</div></div><div class="cell"><div class="k">浮盈虧</div><div class="v ${pnl>=0?'green':'red'}">NT$ ${fmt(pnl)}</div></div><div class="cell"><div class="k">報酬率</div><div class="v ${returnPct>=0?'green':'red'}">${pct(returnPct,2)}</div></div><div class="cell"><div class="k">歷史高點</div><div class="v">${fmt(p.highestPrice,2)}</div></div><div class="cell"><div class="k">移動停損</div><div class="v red">${fmt(p.trailingStop,2)}</div></div><div class="cell"><div class="k">初始停損</div><div class="v">${fmt(p.initialStop,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(p.shares)}</div></div><div class="cell"><div class="k">距停損空間</div><div class="v ${stopDistance<=0?'red':'yellow'}">${fmt(stopDistance,2)}</div></div><div class="cell"><div class="k">明日動作</div><div class="v">${action}</div></div><div class="cell"><div class="k">風險等級</div><div class="v ${risk.cls}">${risk.level}</div></div><div class="cell"><div class="k">診斷</div><div class="v">${risk.text}</div></div><div class="cell"><div class="k">動態評級</div><div class="v ${dynamicRejected?'red':'green'}">${dynamicGrade || '未同步'}</div></div><div class="cell"><div class="k">出場模式</div><div class="v">${p.exitModeLabel || getInstitutionalExitPlan(p).modeLabel}</div></div><div class="cell"><div class="k">階段</div><div class="v">${p.exitStage || getInstitutionalExitPlan(p).stage}</div></div></div>${renderInstitutionalExitInfo(p)}${dynamicRejected ? `<div class="warning-box" style="margin-top:10px">v10.8 持倉動態降級：此股已不符合 S+ 條件，明日優先防守／減碼／出場，不再加碼。</div>` : ''}${(state.market.signal==='red' || portfolioStats.drop <= -5 || lossMode.mode==='冷卻模式') ? `<div class="warning-box" style="margin-top:10px">系統防守警報：目前僅建議防守、減碼或平倉，不建議任何加碼動作。</div>` : ''}<div class="btnrow" style="margin-top:10px"><button class="btn small" onclick="updatePositionMarket('${p.id}')">更新收盤 / 高點</button><button class="btn small red" onclick="openClose('${p.id}')">真實平倉</button></div></div>`; }).join(''); }
+    function renderPositions(){ const openPositions=getOpenPositions(); if(openPositions.length===0){ $('positionsBox').innerHTML=`<div class="footnote">目前沒有開啟中的持倉。</div>`; return; } const portfolioStats=getPortfolioStats(); const lossMode=getLossMode(state.risk.lossStreak); const profile=getAdaptiveExitProfile(); let topAlert=`<div class="ok-box" style="margin-bottom:12px"><strong>目前出場模式：</strong>v10.21 抗洗出場｜初始停損 ${profile.stopLossPct}%｜+8% 後啟動移動停利｜分段回撤 5%~8%｜時間止盈 5天低於+5%</div>`; if(state.market.signal==='red'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 市場紅燈：</strong>禁止新倉，持倉全面進入防守狀態。</div>`; } else if(portfolioStats.drop <= -5){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 組合熔斷：</strong>總回撤 ${pct(portfolioStats.drop,2)}，優先降倉保命，只減不加。</div>`; } else if(lossMode.mode==='冷卻模式'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🧊 冷卻模式：</strong>連敗達標，禁止新倉，只管理舊倉。</div>`; } $('positionsBox').innerHTML=topAlert + openPositions.map(p=>{ const pnl=(p.currentPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((p.currentPrice-p.entryPrice)/p.entryPrice)*100:0; const stopDistance=p.currentPrice-p.trailingStop; const action=getHoldingAction(p, portfolioStats); const risk=getHoldingRiskInfo(p, portfolioStats); const dynamicCandidate = findCandidateBySymbol(p.symbol); const dynamicGrade = dynamicCandidate?.grade || p.dynamicGrade || ''; const dynamicRejected = dynamicCandidate ? isHardForbidden(dynamicCandidate) : false; return `<div class="card"><div class="card-head"><div><div class="symbol">${p.symbol} ${p.name||''}</div><div class="muted">建倉 ${p.entryDate}</div></div><span class="badge ${p.status.includes('撤退')?'red':(p.status.includes('鎖利')||p.status.includes('防守')?'yellow':'green')}">${p.status}</span></div><div class="mini"><div class="cell"><div class="k">成本</div><div class="v">${fmt(p.entryPrice,2)}</div></div><div class="cell"><div class="k">現價</div><div class="v">${fmt(p.currentPrice,2)}</div></div><div class="cell"><div class="k">浮盈虧</div><div class="v ${pnl>=0?'green':'red'}">NT$ ${fmt(pnl)}</div></div><div class="cell"><div class="k">報酬率</div><div class="v ${returnPct>=0?'green':'red'}">${pct(returnPct,2)}</div></div><div class="cell"><div class="k">歷史高點</div><div class="v">${fmt(p.highestPrice,2)}</div></div><div class="cell"><div class="k">移動停損</div><div class="v red">${fmt(p.trailingStop,2)}</div></div><div class="cell"><div class="k">初始停損</div><div class="v">${fmt(p.initialStop,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(p.shares)}</div></div><div class="cell"><div class="k">距停損空間</div><div class="v ${stopDistance<=0?'red':'yellow'}">${fmt(stopDistance,2)}</div></div><div class="cell"><div class="k">明日動作</div><div class="v">${action}</div></div><div class="cell"><div class="k">風險等級</div><div class="v ${risk.cls}">${risk.level}</div></div><div class="cell"><div class="k">診斷</div><div class="v">${risk.text}</div></div><div class="cell"><div class="k">動態評級</div><div class="v ${dynamicRejected?'red':'green'}">${dynamicGrade || '未同步'}</div></div><div class="cell"><div class="k">出場模式</div><div class="v">${p.exitModeLabel || getInstitutionalExitPlan(p).modeLabel}</div></div><div class="cell"><div class="k">階段</div><div class="v">${p.exitStage || getInstitutionalExitPlan(p).stage}</div></div></div>${renderInstitutionalExitInfo(p)}${renderWeakStockAlertV10232(p)}${dynamicRejected ? `<div class="warning-box" style="margin-top:10px">v10.8 持倉動態降級：此股已不符合 S+ 條件，明日優先防守／減碼／出場，不再加碼。</div>` : ''}${(state.market.signal==='red' || portfolioStats.drop <= -5 || lossMode.mode==='冷卻模式') ? `<div class="warning-box" style="margin-top:10px">系統防守警報：目前僅建議防守、減碼或平倉，不建議任何加碼動作。</div>` : ''}<div class="btnrow" style="margin-top:10px"><button class="btn small" onclick="updatePositionMarket('${p.id}')">更新收盤 / 高點</button><button class="btn small red" onclick="openClose('${p.id}')">真實平倉</button></div></div>`; }).join(''); }
 
 
     // ===== v10.15.2.2 半自動健康控管：只顯示，不鎖單 =====
@@ -2525,7 +2648,7 @@ ${candidatesText}
       if(!$('logsTable')) return;
       if((state.logs||[]).length===0){ $('logsTable').innerHTML='<div class="footnote">尚無歷史紀錄。平倉後會自動以「建倉當下」記錄攻防模式、選股模板、Delta 與 Structure。</div>'; return; }
       const logs = (state.logs || []).map(normalizeTradeLog);
-      $('logsTable').innerHTML='<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>進場模式</th><th>進場Delta</th><th>進場Structure</th><th>出場環境</th><th>原因</th><th>日期</th></tr></thead><tbody>'+logs.slice(0,20).map(l=>'<tr><td class="mono">'+l.symbol+'</td><td>'+fmt(l.entryPrice,2)+'</td><td>'+fmt(l.exitPrice,2)+'</td><td>'+fmt(l.shares)+'</td><td class="'+(l.pnl>=0?'green':'red')+'">NT$ '+fmt(l.pnl)+'</td><td class="'+(l.ret>=0?'green':'red')+'">'+pct(l.ret,2)+'</td><td class="'+(l.result==='win'?'green':(l.result==='loss'?'red':'yellow'))+'">'+l.result+'</td><td>'+l.strategyMode+'<br><span class="footnote">'+l.tacticalMode+'</span></td><td>'+(l.delta===null?'-':fmt(l.delta,1))+'</td><td>'+(l.structureScore===null?'-':fmt(l.structureScore)+'/3')+'</td><td><span class="footnote">'+(l.exitTacticalMode||'-')+' / '+(l.exitMarketSignal||'-')+'</span></td><td>'+(l.reason||'-')+'</td><td class="mono">'+l.exitDate+'</td></tr>').join('')+'</tbody></table>';
+      $('logsTable').innerHTML='<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>進場模式</th><th>進場Delta</th><th>進場Structure</th><th>出場環境</th><th>原因</th><th>品質</th><th>日期</th></tr></thead><tbody>'+logs.slice(0,20).map(l=>'<tr><td class="mono">'+l.symbol+'</td><td>'+fmt(l.entryPrice,2)+'</td><td>'+fmt(l.exitPrice,2)+'</td><td>'+fmt(l.shares)+'</td><td class="'+(l.pnl>=0?'green':'red')+'">NT$ '+fmt(l.pnl)+'</td><td class="'+(l.ret>=0?'green':'red')+'">'+pct(l.ret,2)+'</td><td class="'+(l.result==='win'?'green':(l.result==='loss'?'red':'yellow'))+'">'+l.result+'</td><td>'+l.strategyMode+'<br><span class="footnote">'+l.tacticalMode+'</span></td><td>'+(l.delta===null?'-':fmt(l.delta,1))+'</td><td>'+(l.structureScore===null?'-':fmt(l.structureScore)+'/3')+'</td><td><span class="footnote">'+(l.exitTacticalMode||'-')+' / '+(l.exitMarketSignal||'-')+'</span></td><td>'+(l.reason||'-')+'</td><td>'+renderTradeQualityBadgeV10232(l)+'</td><td class="mono">'+l.exitDate+'</td></tr>').join('')+'</tbody></table>';
     }
 
     function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderTvFilterPanel(); renderNoTargetHint(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); if($('orderSummaryBox') && $('ordersTable')) renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
