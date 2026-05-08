@@ -478,8 +478,6 @@
 <button class="btn primary" id="loadFromSelectionBtn" onclick="openPositionModalFromFinalSelection()">帶入最終標的</button>
 <button class="btn secondary" id="refreshAllPositionsBtn">重新計算全部持倉</button>
 <button class="btn secondary" id="exportPositionsBtn">匯出持倉監控</button>
-<button class="btn secondary" id="importPositionsBtn" onclick="document.getElementById('importFile').click()">📂 匯入持倉與戰報</button>
-<input type="file" id="importFile" style="display:none" accept=".json">
 <button class="btn red" id="clearAllPositionsBtn">清空全部持倉</button>
 </div>
 
@@ -854,66 +852,10 @@
     };
 
     
-    function loadState(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        // 沒資料 → 回傳預設
-        if(!raw){
-          return clone(defaultState);
-        }
-        const parsed = JSON.parse(raw);
-
-        // =========================================
-        // v10.23.2 穩定修正版
-        // 防止舊 localStorage 整份覆蓋 state
-        // 只保留個人資料
-        // =========================================
-        const safeState = clone(defaultState);
-
-        // ===== 個人持倉 =====
-        if(Array.isArray(parsed.positions)){
-          safeState.positions = parsed.positions;
-        }
-        // ===== 個人歷史戰報 =====
-        if(Array.isArray(parsed.logs)){
-          safeState.logs = parsed.logs;
-        }
-        // ===== AI 自學記憶 =====
-        if(parsed.prevPfV10231 !== undefined){
-          safeState.prevPfV10231 = parsed.prevPfV10231;
-        }
-        // ===== 出場模式記憶 =====
-        if(parsed.lastExitModeV10231){
-          safeState.lastExitModeV10231 = parsed.lastExitModeV10231;
-        }
-        // ===== 出場模式時間 =====
-        if(parsed.lastExitModeTimeV10231){
-          safeState.lastExitModeTimeV10231 = parsed.lastExitModeTimeV10231;
-        }
-        // ===== 個人火控與UI設定 =====
-        if(parsed.risk){
-          safeState.risk = deepMerge(safeState.risk || {}, parsed.risk || {});
-        }
-        if(parsed.ui){
-          safeState.ui = deepMerge(safeState.ui || {}, parsed.ui || {});
-        }
-        // ===== 雲端設定保留 =====
-        if(parsed.cloud){
-          safeState.cloud = deepMerge(safeState.cloud || {}, parsed.cloud || {});
-        }
-
-        console.log('✅ v10.23.2 穩定版 loadState 修正完成');
-        return safeState;
-      }catch(e){
-        console.error('❌ loadState error:', e);
-        return clone(defaultState);
-      }
-    }
+let state = loadState();
 
     const FORCED_CLOUD_API = 'https://script.google.com/macros/s/AKfycbxTNAT3bzlh9ZbvzDsW71lgkLWgD9RqoW4L5fYT-VifK5PHvNKSFV2FhAhqEFNhpDxI/exec';
     const FORCED_CLOUD_ROOM = 'main_room';
-    
-    let state = loadState();
 
     function ensureCloudDefaults(){
       if(!state.cloud) state.cloud = {};
@@ -980,7 +922,85 @@
 
     function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
     function deepMerge(target, source){ for(const key in source){ if(source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])){ if(!target[key]) target[key]={}; deepMerge(target[key], source[key]); } else target[key]=source[key]; } return target; }
-    
+    function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+
+    // 沒有本地資料 → 使用乾淨預設值
+    if(!raw) return clone(defaultState);
+
+    const parsed = JSON.parse(raw);
+    const safeState = clone(defaultState);
+
+    // =========================================
+    // v10.23.2 穩定修正版
+    // 目的：避免舊 localStorage 把市場 / CSV / AI / 決策蓋回舊日期
+    // 只保留真正屬於個人的資料
+    // =========================================
+
+    // 個人持倉監控
+    if(Array.isArray(parsed.positions)){
+      safeState.positions = parsed.positions;
+    }
+
+    // 個人歷史戰報 / AI 自學紀錄
+    if(Array.isArray(parsed.logs)){
+      safeState.logs = parsed.logs;
+    }
+
+    // 個人火控設定
+    if(parsed.risk && typeof parsed.risk === 'object'){
+      safeState.risk = deepMerge(safeState.risk || {}, parsed.risk || {});
+    }
+
+    // UI 展開狀態
+    if(parsed.ui && typeof parsed.ui === 'object'){
+      safeState.ui = deepMerge(safeState.ui || {}, parsed.ui || {});
+    }
+
+    // 無標的天數紀錄
+    if(parsed.noTarget && typeof parsed.noTarget === 'object'){
+      safeState.noTarget = deepMerge(safeState.noTarget || {}, parsed.noTarget || {});
+    }
+
+    // 雲端設定只保留設定值，不保留舊共用資料
+    if(parsed.cloud && typeof parsed.cloud === 'object'){
+      safeState.cloud = deepMerge(safeState.cloud || {}, {
+        apiUrl: parsed.cloud.apiUrl,
+        roomId: parsed.cloud.roomId,
+        token: parsed.cloud.token,
+        lastSharedSync: parsed.cloud.lastSharedSync
+      });
+    }
+
+    // v10.23.1 / v10.23.2 AI 自學出場記憶
+    if(parsed.prevPfV10231 !== undefined){
+      safeState.prevPfV10231 = parsed.prevPfV10231;
+    }
+    if(parsed.lastExitModeV10231 !== undefined){
+      safeState.lastExitModeV10231 = parsed.lastExitModeV10231;
+    }
+    if(parsed.lastExitModeTimeV10231 !== undefined){
+      safeState.lastExitModeTimeV10231 = parsed.lastExitModeTimeV10231;
+    }
+
+    // 保留最後本地儲存時間，方便顯示
+    if(parsed.lastSync){
+      safeState.lastSync = parsed.lastSync;
+    }
+
+    // 禁止從 localStorage 載入以下共用資料：
+    // market / candidatesRawText / candidates / aiReview / decision
+    // 這些資料只能透過「讀取共用資料」從雲端取得，避免回到舊日期。
+
+    console.log('✅ v10.23.2 localStorage 回溯修正：只載入個人資料');
+    return safeState;
+
+  }catch(e){
+    console.error('❌ loadState error:', e);
+    return clone(defaultState);
+  }
+}
     function nowString(){ const d = new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
     function saveState(){ state.lastSync = nowString(); localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderAll(); }
     function num(v, fallback=0){ const n = Number(v); return Number.isFinite(n) ? n : fallback; }
@@ -2605,4 +2625,699 @@ ${candidatesText}
       const summaryLines = [`<strong>STEP 5 最終掛單清單｜v10.13.3 機構版：S+ 優先，綠燈高分允許 A 級備胎</strong>`, source, `主攻：${finalRows[0].symbol} ${finalRows[0].name||''} <span class="badge ${badgeClass(finalRows[0].grade)}">${finalRows[0].grade}</span>｜決策分 ${fmt(finalRows[0].decisionScore,1)}｜停損 ${fmt(finalRows[0].stop,2)}｜模式 ${exitProfile.label}`, renderRiskSizingInfo(finalRows[0])];
       if(finalRows[1]){ summaryLines.push(`次選：${finalRows[1].symbol} ${finalRows[1].name||''} <span class="badge ${badgeClass(finalRows[1].grade)}">${finalRows[1].grade}</span>｜決策分 ${fmt(finalRows[1].decisionScore,1)}｜停損 ${fmt(finalRows[1].stop,2)}`); summaryLines.push(renderRiskSizingInfo(finalRows[1])); }
       $('orderSummaryBox').innerHTML = `<div class="decision-pick">${summaryLines.join('<br>')}</div>`;
-      $('ordersTable').innerHTML = `<table><thead><tr><th>角色</th><th>股票</th><th>決策分</th><th>本地分</th><th>買價</th><th>停損</th><th>停利參考</th><th>股數</th><th>倉位風控</th><th>理由</th></tr></thead><tbody>${finalRows.map((c,idx)=>`<tr><td>${idx===0?'🔥 主攻':'⚡ 次選'}</td><td><strong>${c.symbol}</strong> ${c.name||''} <span class="badge ${badgeClass(c.grade)}">${c.grade}</span></td><td>${fmt(c.decisionScore,1)}</td><td>${fmt(c.localScore,1)}</td><td>${fmt(c.entry,2)}</td><td>${fmt(c.stop
+      $('ordersTable').innerHTML = `<table><thead><tr><th>角色</th><th>股票</th><th>決策分</th><th>本地分</th><th>買價</th><th>停損</th><th>停利參考</th><th>股數</th><th>倉位風控</th><th>理由</th></tr></thead><tbody>${finalRows.map((c,idx)=>`<tr><td>${idx===0?'🔥 主攻':'⚡ 次選'}</td><td><strong>${c.symbol}</strong> ${c.name||''} <span class="badge ${badgeClass(c.grade)}">${c.grade}</span></td><td>${fmt(c.decisionScore,1)}</td><td>${fmt(c.localScore,1)}</td><td>${fmt(c.entry,2)}</td><td>${fmt(c.stop,2)}</td><td>${fmt(c.takeProfit,2)}</td><td>${fmt(c.shares)}</td><td>${renderRiskSizingInfo(c)}</td><td>${getDecisionTag(c, idx).reason}</td></tr>`).join('')}</tbody></table>`;
+    }
+
+    function renderPositions(){ const openPositions=getOpenPositions(); if(openPositions.length===0){ $('positionsBox').innerHTML=`<div class="footnote">目前沒有開啟中的持倉。</div>`; return; } const portfolioStats=getPortfolioStats(); const lossMode=getLossMode(state.risk.lossStreak); const profile=getAdaptiveExitProfile(); let topAlert=`<div class="ok-box" style="margin-bottom:12px"><strong>目前出場模式：</strong>v10.21 抗洗出場｜初始停損 ${profile.stopLossPct}%｜+8% 後啟動移動停利｜分段回撤 5%~8%｜時間止盈 5天低於+5%</div>`; if(state.market.signal==='red'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 市場紅燈：</strong>禁止新倉，持倉全面進入防守狀態。</div>`; } else if(portfolioStats.drop <= -5){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🚨 組合熔斷：</strong>總回撤 ${pct(portfolioStats.drop,2)}，優先降倉保命，只減不加。</div>`; } else if(lossMode.mode==='冷卻模式'){ topAlert=`<div class="warning-box" style="margin-bottom:12px"><strong>🧊 冷卻模式：</strong>連敗達標，禁止新倉，只管理舊倉。</div>`; } $('positionsBox').innerHTML=topAlert + openPositions.map(p=>{ const pnl=(p.currentPrice-p.entryPrice)*p.shares; const returnPct=p.entryPrice>0?((p.currentPrice-p.entryPrice)/p.entryPrice)*100:0; const stopDistance=p.currentPrice-p.trailingStop; const action=getHoldingAction(p, portfolioStats); const risk=getHoldingRiskInfo(p, portfolioStats); const dynamicCandidate = findCandidateBySymbol(p.symbol); const dynamicGrade = dynamicCandidate?.grade || p.dynamicGrade || ''; const dynamicRejected = dynamicCandidate ? isHardForbidden(dynamicCandidate) : false; return `<div class="card"><div class="card-head"><div><div class="symbol">${p.symbol} ${p.name||''}</div><div class="muted">建倉 ${p.entryDate}</div></div><span class="badge ${p.status.includes('撤退')?'red':(p.status.includes('鎖利')||p.status.includes('防守')?'yellow':'green')}">${p.status}</span></div><div class="mini"><div class="cell"><div class="k">成本</div><div class="v">${fmt(p.entryPrice,2)}</div></div><div class="cell"><div class="k">現價</div><div class="v">${fmt(p.currentPrice,2)}</div></div><div class="cell"><div class="k">浮盈虧</div><div class="v ${pnl>=0?'green':'red'}">NT$ ${fmt(pnl)}</div></div><div class="cell"><div class="k">報酬率</div><div class="v ${returnPct>=0?'green':'red'}">${pct(returnPct,2)}</div></div><div class="cell"><div class="k">歷史高點</div><div class="v">${fmt(p.highestPrice,2)}</div></div><div class="cell"><div class="k">移動停損</div><div class="v red">${fmt(p.trailingStop,2)}</div></div><div class="cell"><div class="k">初始停損</div><div class="v">${fmt(p.initialStop,2)}</div></div><div class="cell"><div class="k">股數</div><div class="v">${fmt(p.shares)}</div></div><div class="cell"><div class="k">距停損空間</div><div class="v ${stopDistance<=0?'red':'yellow'}">${fmt(stopDistance,2)}</div></div><div class="cell"><div class="k">明日動作</div><div class="v">${action}</div></div><div class="cell"><div class="k">風險等級</div><div class="v ${risk.cls}">${risk.level}</div></div><div class="cell"><div class="k">診斷</div><div class="v">${risk.text}</div></div><div class="cell"><div class="k">動態評級</div><div class="v ${dynamicRejected?'red':'green'}">${dynamicGrade || '未同步'}</div></div><div class="cell"><div class="k">出場模式</div><div class="v">${p.exitModeLabel || getInstitutionalExitPlan(p).modeLabel}</div></div><div class="cell"><div class="k">階段</div><div class="v">${p.exitStage || getInstitutionalExitPlan(p).stage}</div></div></div>${renderInstitutionalExitInfo(p)}${renderWeakStockAlertV10232(p)}${dynamicRejected ? `<div class="warning-box" style="margin-top:10px">v10.8 持倉動態降級：此股已不符合 S+ 條件，明日優先防守／減碼／出場，不再加碼。</div>` : ''}${(state.market.signal==='red' || portfolioStats.drop <= -5 || lossMode.mode==='冷卻模式') ? `<div class="warning-box" style="margin-top:10px">系統防守警報：目前僅建議防守、減碼或平倉，不建議任何加碼動作。</div>` : ''}<div class="btnrow" style="margin-top:10px"><button class="btn small" onclick="updatePositionMarket('${p.id}')">更新收盤 / 高點</button><button class="btn small red" onclick="openClose('${p.id}')">真實平倉</button></div></div>`; }).join(''); }
+
+
+    // ===== v10.15.2.2 半自動健康控管：只顯示，不鎖單 =====
+    function getStrategyHealthStats(limit=20){
+      const logs = (state.logs || []).slice(0, limit);
+      let wins = 0, losses = 0, grossWin = 0, grossLoss = 0;
+      let avgWinPctSum = 0, avgLossPctSum = 0;
+      let curLossStreak = 0, maxLossStreak = 0;
+      logs.forEach(l=>{
+        const pnl = Number(l.pnl || 0);
+        const ret = Number(l.returnPct || 0);
+        if(pnl > 0){
+          wins++; grossWin += pnl; avgWinPctSum += ret; curLossStreak = 0;
+        }else if(pnl < 0){
+          losses++; grossLoss += Math.abs(pnl); avgLossPctSum += Math.abs(ret); curLossStreak++; maxLossStreak = Math.max(maxLossStreak, curLossStreak);
+        }
+      });
+      const total = wins + losses;
+      const winRate = total ? wins / total * 100 : null;
+      const pf = grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? 999 : null);
+      return {
+        count: logs.length,
+        total,
+        wins,
+        losses,
+        winRate,
+        pf,
+        grossWin,
+        grossLoss,
+        avgWinPct: wins ? avgWinPctSum / wins : 0,
+        avgLossPct: losses ? avgLossPctSum / losses : 0,
+        maxLossStreak
+      };
+    }
+
+    function getStrategyHealthVerdict(stats){
+      if(!stats || stats.total < 5){
+        return { label:'🟦 樣本累積中', cls:'cyan', level:'觀測', advice:'交易樣本未滿 5 筆，暫不判斷策略強弱；先照系統紀律累積紀錄。' };
+      }
+      const pf = stats.pf === null ? 0 : stats.pf;
+      const wr = stats.winRate === null ? 0 : stats.winRate;
+      if(pf >= 1.4 && wr >= 55){
+        return { label:'🔥 健康｜可維持攻擊觀察', cls:'green', level:'健康', advice:'近況具備正期望，允許依系統攻防模式執行；不要手動亂放大風險。' };
+      }
+      if(pf >= 1.2){
+        return { label:'⚖ 正常｜穩定觀測', cls:'yellow', level:'正常', advice:'策略仍在可接受區間，維持目前設定，避免因短期波動過度調參。' };
+      }
+      if(pf >= 1.0){
+        return { label:'⚠ 低效｜建議收縮觀察', cls:'orange', level:'警告', advice:'獲利因子偏低，建議暫時避免手動加碼與主觀開攻擊，優先觀察選股與出場是否過早。' };
+      }
+      return { label:'🚨 失血｜只建議防守覆盤', cls:'red', level:'危險', advice:'近 20 筆呈現慢性失血，先停止主觀放寬條件，檢查假突破、出場與 TradingView 篩選模板。' };
+    }
+    function renderStrategyHealthPanel(){
+      const stats = getStrategyHealthStats(20);
+      const verdict = getStrategyHealthVerdict(stats);
+      const perf = getPerformance();
+      const pfText = perf.pf === null ? '-' : (perf.pf >= 999 ? '∞' : fmt(perf.pf,2));
+      const winRateText = perf.totalTrades ? pct(perf.winRate,1) : '-';
+      const logs = (state.logs || []).map(normalizeTradeLog);
+      const tacticalRows = buildSegmentStats(logs, l=>l.tacticalMode || '未記錄').slice(0,6);
+      const strategyRows = buildSegmentStats(logs, l=>l.strategyMode || '未記錄').slice(0,6);
+      const deltaRows = buildSegmentStats(logs, getDeltaBucket).slice(0,6);
+      const structureRows = buildSegmentStats(logs, getStructureBucket).slice(0,6);
+      const signalRows = buildSegmentStats(logs, l=>l.signal || '未記錄').slice(0,6);
+      const insight = getPerformanceInsights();
+      return '<div class="card" style="border-color:rgba(86,215,255,.22);box-shadow:0 0 0 1px rgba(86,215,255,.10),0 0 22px rgba(28,183,255,.08)">'+
+        '<div class="card-head"><div><div class="symbol">🧠 v10.20 進場分類績效回饋艙</div><div class="muted">不只看勝率：依進場模式拆解 PF / 勝率 / 期望值，避免平倉日市場狀態錯位</div></div><span class="badge '+verdict.cls+'">'+verdict.label+'</span></div>'+ 
+        '<div class="mini">'+
+          '<div class="cell"><div class="k">總樣本</div><div class="v">'+fmt(perf.totalTrades)+' 筆</div></div>'+ 
+          '<div class="cell"><div class="k">總勝率</div><div class="v '+(perf.winRate>=50?'green':'yellow')+'">'+winRateText+'</div></div>'+ 
+          '<div class="cell"><div class="k">總PF</div><div class="v '+(perf.pf!==null && perf.pf>=1.2?'green':'red')+'">'+pfText+'</div></div>'+ 
+          '<div class="cell"><div class="k">累積損益</div><div class="v '+(perf.totalPnl>=0?'green':'red')+'">NT$ '+fmt(perf.totalPnl)+'</div></div>'+ 
+          '<div class="cell"><div class="k">平均賺幅</div><div class="v green">'+pct(stats.avgWinPct,2)+'</div></div>'+ 
+          '<div class="cell"><div class="k">平均賠幅</div><div class="v red">-'+pct(stats.avgLossPct,2)+'</div></div>'+ 
+          '<div class="cell"><div class="k">最大連敗</div><div class="v '+(stats.maxLossStreak>=3?'red':'yellow')+'">'+fmt(stats.maxLossStreak)+'</div></div>'+ 
+          '<div class="cell"><div class="k">建議狀態</div><div class="v '+verdict.cls+'">'+verdict.level+'</div></div>'+ 
+        '</div><div class="divider"></div>'+ 
+        '<div class="perf-insight '+insight.cls+'"><strong>回饋結論：</strong>'+insight.html+'</div>'+ 
+        '<div class="divider"></div><div class="perf-lab">'+
+          '<div class="card"><div class="symbol" style="font-size:16px">⚔ 進場攻防模式績效</div><div class="footnote">依建倉當下模式分類，不受平倉當天市場狀態影響。</div>'+renderSegmentTable('進場攻防', tacticalRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">🎯 進場選股模板績效</div><div class="footnote">依建倉當下 TradingView/選股模板分類。</div>'+renderSegmentTable('進場模板', strategyRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">📈 Delta 方向績效</div>'+renderSegmentTable('Delta', deltaRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">🧱 Structure 結構績效</div>'+renderSegmentTable('Structure', structureRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">🚦 市場燈號績效</div>'+renderSegmentTable('燈號', signalRows)+'</div>'+ 
+          '<div class="card"><div class="symbol" style="font-size:16px">🛡 系統建議</div><div class="'+(verdict.cls==='red'?'warning-box':'ok-box')+'"><strong>健康建議：</strong>'+verdict.advice+'<br><span class="footnote">v10.20 只修正績效歸因，不自動鎖單、不自動改風險。請至少累積 20 筆後再調參。</span></div></div>'+ 
+        '</div></div>';
+    }
+
+
+    function renderPerformance(){
+      if($('strategyHealthPanel')) $('strategyHealthPanel').innerHTML = renderStrategyHealthPanel();
+      const perf=getPerformance();
+      const pfText = perf.pf === null ? '-' : (perf.pf >= 999 ? '∞' : fmt(perf.pf,2));
+      if($('performanceMetrics')) $('performanceMetrics').innerHTML='<div class="metric"><div class="label">總交易筆數</div><div class="value">'+fmt(perf.totalTrades)+'</div></div><div class="metric"><div class="label">勝率</div><div class="value '+(perf.winRate>=50?'green':'yellow')+'">'+pct(perf.winRate,1)+'</div></div><div class="metric"><div class="label">PF</div><div class="value '+(perf.pf!==null && perf.pf>=1.2?'green':'red')+'">'+pfText+'</div></div><div class="metric"><div class="label">累積損益</div><div class="value '+(perf.totalPnl>=0?'green':'red')+'">NT$ '+fmt(perf.totalPnl)+'</div></div><div class="metric"><div class="label">平均單筆報酬</div><div class="value '+(perf.avgReturn>=0?'green':'red')+'">'+pct(perf.avgReturn,2)+'</div></div>';
+      if(!$('logsTable')) return;
+      if((state.logs||[]).length===0){ $('logsTable').innerHTML='<div class="footnote">尚無歷史紀錄。平倉後會自動以「建倉當下」記錄攻防模式、選股模板、Delta 與 Structure。</div>'; return; }
+      const logs = (state.logs || []).map(normalizeTradeLog);
+      $('logsTable').innerHTML='<table><thead><tr><th>股票</th><th>進場</th><th>出場</th><th>股數</th><th>損益</th><th>報酬率</th><th>結果</th><th>進場模式</th><th>進場Delta</th><th>進場Structure</th><th>出場環境</th><th>原因</th><th>品質</th><th>日期</th></tr></thead><tbody>'+logs.slice(0,20).map(l=>'<tr><td class="mono">'+l.symbol+'</td><td>'+fmt(l.entryPrice,2)+'</td><td>'+fmt(l.exitPrice,2)+'</td><td>'+fmt(l.shares)+'</td><td class="'+(l.pnl>=0?'green':'red')+'">NT$ '+fmt(l.pnl)+'</td><td class="'+(l.ret>=0?'green':'red')+'">'+pct(l.ret,2)+'</td><td class="'+(l.result==='win'?'green':(l.result==='loss'?'red':'yellow'))+'">'+l.result+'</td><td>'+l.strategyMode+'<br><span class="footnote">'+l.tacticalMode+'</span></td><td>'+(l.delta===null?'-':fmt(l.delta,1))+'</td><td>'+(l.structureScore===null?'-':fmt(l.structureScore)+'/3')+'</td><td><span class="footnote">'+(l.exitTacticalMode||'-')+' / '+(l.exitMarketSignal||'-')+'</span></td><td>'+(l.reason||'-')+'</td><td>'+renderTradeQualityBadgeV10232(l)+'</td><td class="mono">'+l.exitDate+'</td></tr>').join('')+'</tbody></table>';
+    }
+
+    function renderAll(){ fillInputsFromState(); getOpenPositions().forEach(updateTrailingStop); renderTopStatusBar(); renderHero(); renderMarket(); renderRiskMode(); renderMainAttackSummary(); renderTvFilterPanel(); renderNoTargetHint(); renderCandidateRanking(); renderAiPanel(); renderDecisionPanel(); if($('orderSummaryBox') && $('ordersTable')) renderOrders(); renderPositions(); renderPositionPreview(null); renderAdvancedPositionsTable(); renderPerformance(); const btn=$('toggleCandidateCardsBtn');
+      if(btn){ btn.textContent = (state.ui?.candidateCardsExpanded ? '收合候選詳卡' : '展開候選詳卡'); }
+      const body=$('candidateCardsPanelBody');
+      if(body){ body.classList.toggle('hidden-panel', !state.ui?.candidateCardsExpanded); } }
+
+    function saveMarketInputs(){
+      const prevScore = num(state.market.totalScore, 0);
+      state.market.advancers=num($('advancersInput').value);
+      state.market.decliners=num($('declinersInput').value);
+      state.market.limitUp=num($('limitUpInput').value);
+      state.market.limitDown=num($('limitDownInput').value);
+      state.market.otcChange=num($('otcChangeInput').value);
+      state.market.taiexChange=num($('taiexChangeInput').value);
+      calculateMarket();
+      const newScore = num(state.market.totalScore, 0);
+      state.market.prevScore = prevScore;
+      state.market.delta = Math.round((newScore - prevScore) * 10) / 10;
+      saveState();
+    }
+
+    function fillPositionFormFromSource(src = {}, { openModal = true } = {}){
+      const exitProfile = getAdaptiveExitProfile();
+      const symbol = normalizeSymbol(src.symbol || '');
+      const name = src.name || '';
+      const buy = num(src.entry || src.buyPrice || src.close || src.currentPrice, 0);
+      const current = num(src.close || src.currentPrice || src.entry || src.buyPrice, buy);
+      const qty = Math.max(1, Math.floor(num(src.shares || src.qty || 1000, 1000)));
+      const highest = Math.max(num(src.highestPrice || 0, 0), current || buy);
+
+      $('holdSymbol').value = symbol || '';
+      $('holdName').value = name || '';
+      $('holdBuy').value = buy || '';
+      $('holdCurrent').value = current || '';
+      $('holdQty').value = qty || 1000;
+      $('holdShares').value = qty || 1000;
+      $('highestPrice').value = highest || '';
+
+      if(buy > 0){
+        const stop = Number((buy * (1 - exitProfile.stopLossPct/100)).toFixed(2));
+        const tp1 = Number((buy * (1 + exitProfile.lock1/100)).toFixed(2));
+        const tp2 = Number((buy * (1 + exitProfile.lock2/100)).toFixed(2));
+        $('stopLossPrice').value = stop;
+        $('takeProfit1Price').value = tp1;
+        $('takeProfit2Price').value = tp2;
+        $('trailPullback').value = exitProfile.trailGapPct;
+      }
+
+      if(openModal && $('addPosModal')) $('addPosModal').classList.add('show');
+    }
+
+    function autofillPositionTargetsByBuyPrice(){
+      const buy = num($('holdBuy')?.value, 0);
+      if(!(buy > 0)) return;
+      const exitProfile = getAdaptiveExitProfile();
+      $('stopLossPrice').value = Number((buy * (1 - exitProfile.stopLossPct/100)).toFixed(2));
+      $('takeProfit1Price').value = Number((buy * (1 + exitProfile.lock1/100)).toFixed(2));
+      $('takeProfit2Price').value = Number((buy * (1 + exitProfile.lock2/100)).toFixed(2));
+      $('trailPullback').value = exitProfile.trailGapPct;
+      if(!$('holdCurrent').value) $('holdCurrent').value = buy;
+      if(!$('highestPrice').value) $('highestPrice').value = buy;
+    }
+
+    function openPositionModalWithTop(){
+      const top = getLocalDecisionTop(1)[0];
+      if(!top) return alert('目前沒有可帶入的本地首選');
+      fillPositionFormFromSource(top, { openModal: true });
+    }
+
+    function openPositionModalWithAiTop(){
+      const parsed = state.aiReview?.parsed;
+      const aiTopCode = normalizeSymbol(parsed?.top_pick?.symbol || '');
+      if(!aiTopCode) return alert('目前沒有 AI 主攻結果');
+      const target = state.candidates.find(c => normalizeSymbol(c.symbol) === aiTopCode);
+      if(!target) return alert(`AI 主攻股 ${aiTopCode} 不在目前候選清單中`);
+      fillPositionFormFromSource(target, { openModal: true });
+    }
+
+    function openPositionModalFromFinalSelection(){
+      const top = getFinalSelectedRows(1)[0];
+      if(!top) return alert('目前沒有最終標的可帶入');
+      fillPositionFormFromSource(top, { openModal: true });
+    }
+
+
+    function updateCloudBadge(text){
+      const el = $('cloudStatusBadge');
+      if(el) el.textContent = text;
+    }
+
+    function buildSharedPayload(){
+      return {
+        market: clone(state.market),
+        candidatesRawText: state.candidatesRawText || '',
+        candidates: clone(state.candidates || []),
+        aiReview: {
+          prompt: state.aiReview?.prompt || '',
+          rawResponse: state.aiReview?.rawResponse || '',
+          parsed: clone(state.aiReview?.parsed || null),
+          mode: state.aiReview?.mode || 'local_only'
+        },
+        decision: clone(state.decision || {}),
+        sharedUpdatedAt: new Date().toLocaleString('zh-TW')
+      };
+    }
+
+    function applySharedPayload(payload){
+      if(!payload || typeof payload !== 'object') throw new Error('共用資料格式不正確');
+      if(payload.market) state.market = { ...state.market, ...payload.market };
+      if(typeof payload.candidatesRawText === 'string') state.candidatesRawText = payload.candidatesRawText;
+      if(Array.isArray(payload.candidates)) state.candidates = payload.candidates;
+      if(payload.aiReview) state.aiReview = { ...state.aiReview, ...payload.aiReview };
+      if(payload.decision) state.decision = { ...state.decision, ...payload.decision };
+      state.cloud.lastSharedSync = payload.sharedUpdatedAt || new Date().toLocaleString('zh-TW');
+    }
+
+    async function saveSharedToCloud(){
+      ensureCloudDefaults();
+      syncCloudInputs();
+      const apiUrl = state.cloud?.apiUrl || FORCED_CLOUD_API;
+      const roomId = state.cloud?.roomId || FORCED_CLOUD_ROOM;
+      if(!apiUrl) return alert('請先在雲端設定填入共用 API 網址');
+
+      updateCloudBadgeFinal('同步中...');
+
+      const payload = {
+        roomId: roomId,
+        token: state.cloud?.token || '',
+        action: 'save_shared',
+        shared: buildSharedPayload()
+      };
+
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+
+      if(!res.ok) throw new Error('雲端寫入失敗');
+
+      let data = {};
+      try { data = await res.json(); } catch(e) {}
+
+      if(data && data.ok === false) throw new Error(data.error || '雲端寫入失敗');
+
+      state.cloud.lastSharedSync = new Date().toLocaleString('zh-TW');
+      saveState();
+      syncCloudInputs();
+      updateCloudBadgeFinal('同步成功');
+      alert('✅ 共用資料已同步');
+    }
+
+    async function loadSharedFromCloud(){
+      ensureCloudDefaults();
+      syncCloudInputs();
+
+      const apiUrl = state.cloud?.apiUrl || FORCED_CLOUD_API;
+      const roomId = state.cloud?.roomId || FORCED_CLOUD_ROOM;
+
+      if(!apiUrl) return alert('請先在雲端設定填入共用 API 網址');
+
+      updateCloudBadgeFinal('讀取中...');
+
+      try {
+        const url = apiUrl + (apiUrl.includes('?') ? '&' : '?') + 'action=load_shared&roomId=' + encodeURIComponent(roomId);
+        const res = await fetch(url, { method: 'GET' });
+
+        if(!res.ok) throw new Error('雲端讀取失敗');
+
+        const data = await res.json();
+
+        if(!data || !data.shared){
+          updateCloudBadgeFinal('首次初始化中...');
+          await saveSharedToCloud();
+          updateCloudBadgeFinal('初始化完成');
+          alert('🟢 已自動建立共用資料（首次使用）');
+          return;
+        }
+
+        applySharedPayload(data.shared);
+        saveState();
+        syncCloudInputs();
+        updateCloudBadgeFinal('已載入共用資料');
+        alert('✅ 已讀取共用資料');
+
+      } catch(err){
+        console.error(err);
+        updateCloudBadgeFinal('連線失敗');
+        alert('❌ 同步共用資料失敗：' + err.message);
+      }
+    }
+
+    function saveCloudConfig(){
+      ensureCloudDefaults();
+
+      const apiInput = document.getElementById('sharedApiUrlInput') || document.getElementById('cloudApiUrl');
+      const roomInput = document.getElementById('sharedRoomIdInput') || document.getElementById('cloudRoomId');
+      const tokenInput = document.getElementById('sharedTokenInput') || document.getElementById('cloudToken');
+
+      state.cloud.apiUrl = (apiInput?.value || FORCED_CLOUD_API).trim() || FORCED_CLOUD_API;
+      state.cloud.roomId = (roomInput?.value || FORCED_CLOUD_ROOM).trim() || FORCED_CLOUD_ROOM;
+      state.cloud.token = (tokenInput?.value || '').trim();
+      saveState();
+      ensureCloudDefaults();
+      syncCloudInputs();
+      updateCloudBadgeFinal('雲端設定已儲存');
+      if($('cloudModal')) $('cloudModal').classList.remove('show');
+      alert('✅ 雲端設定已儲存');
+    }
+
+
+    function runCsvParseSafe(){
+      try{
+        const box = $('candidateTextarea');
+        const raw = box ? box.value : '';
+        state.candidatesRawText = raw || '';
+        if(!state.candidatesRawText.trim()){
+          const msg = '請先貼上 TradingView CSV；目前欄位是空的。';
+          if($('candidateWarnings')) $('candidateWarnings').innerHTML = '<div class="warning-box">' + msg + '</div>';
+          alert(msg);
+          return;
+        }
+        parseTradingViewCsv();
+        const count = (state.candidates || []).length;
+        renderNoTargetHint(count);
+        if($('candidateWarnings')){
+          $('candidateWarnings').innerHTML = count
+            ? '<div class="ok-box">✅ CSV 已解析成功，共 ' + count + ' 檔候選股。</div>'
+            : '<div class="warning-box">⚠️ CSV 有讀到，但沒有產生候選股。請確認至少有：商品、描述、價格、相對成交量、MA20、MA60、RSI。</div>';
+        }
+        if(!count) alert('CSV 有讀到，但沒有產生候選股；請檢查欄位名稱或數值。');
+      }catch(err){
+        console.error('CSV parse failed', err);
+        const msg = 'CSV 解析失敗：' + (err && err.message ? err.message : err);
+        if($('candidateWarnings')) $('candidateWarnings').innerHTML = '<div class="warning-box">' + msg + '</div>';
+        alert(msg);
+      }
+    }
+    window.runCsvParseSafe = runCsvParseSafe;
+
+
+
+    // ===== v10.14.2b AI覆盤室按鈕修正：補齊缺失函數 =====
+    function buildEvolutionSnapshot(limit=20){
+      const logs = (state.logs || []).slice(0, limit);
+      const wins = logs.filter(l => Number(l.pnl || l.realizedPnL || 0) > 0);
+      const losses = logs.filter(l => Number(l.pnl || l.realizedPnL || 0) < 0);
+      const grossWin = wins.reduce((s,l)=>s + Number(l.pnl || l.realizedPnL || 0), 0);
+      const grossLoss = Math.abs(losses.reduce((s,l)=>s + Number(l.pnl || l.realizedPnL || 0), 0));
+      const avgReturn = logs.length ? logs.reduce((s,l)=>s + Number(l.returnPct || l.pnlPct || l.realizedPct || 0), 0) / logs.length : 0;
+      return {
+        count: logs.length,
+        wins: wins.length,
+        losses: losses.length,
+        winRate: logs.length ? wins.length / logs.length * 100 : null,
+        grossWin,
+        grossLoss,
+        pf: grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? 999 : null),
+        avgReturn,
+        logs
+      };
+    }
+
+    function generateEvoPrompt(){
+      const snap = buildEvolutionSnapshot(20);
+      const adj = getAiLiveAdjustment ? getAiLiveAdjustment(state.market) : null;
+      const recentRows = snap.logs.map((l, i)=>{
+        const pnl = Number(l.pnl || l.realizedPnL || 0);
+        const ret = Number(l.returnPct || l.pnlPct || l.realizedPct || 0);
+        return `${i+1}. ${l.symbol || '-'} ${l.name || ''}｜損益 ${Math.round(pnl)}｜報酬 ${ret.toFixed(2)}%｜原因 ${l.reason || l.closeReason || '-'}`;
+      }).join('\n') || '尚無足夠交易紀錄。';
+      const prompt = `你現在是台股量化交易系統的風控長。請根據最近交易紀錄，給出保守、可執行的參數微調建議。請不要要求大幅改參數，所有建議都必須維持在安全範圍內。\n\n【目前市場】\n燈號：${state.market?.signal || '-'}\n市場總分：${state.market?.totalScore ?? '-'}\n情緒分數：${state.market?.sentimentScore ?? '-'}\nAI即時微調：${state.decision?.liveAdjEnabled !== 'false' ? '開啟' : '關閉'}\n微調強度：${state.decision?.liveAdjStrength || 'conservative'}\n目前微調狀態：${adj?.modeLabel || '-'}\n\n【最近20筆統計】\n交易筆數：${snap.count}\n勝率：${snap.winRate === null ? '-' : snap.winRate.toFixed(1) + '%'}\nPF：${snap.pf === null ? '-' : snap.pf.toFixed(2)}\n平均報酬：${snap.avgReturn.toFixed(2)}%\n\n【最近交易】\n${recentRows}\n\n請用 JSON 回覆，格式如下：\n{\n  "diagnosis":"整體診斷",\n  "adjustments":[{"param":"參數名稱","advice":"建議","reason":"理由"}],\n  "risk_warning":"主要風險",\n  "psychological_advice":"執行紀律建議"\n}`;
+      if($('evoPromptBox')) $('evoPromptBox').value = prompt;
+      return prompt;
+    }
+
+    function copyEvoPrompt(){
+      const text = $('evoPromptBox')?.value || generateEvoPrompt();
+      if(!text) return alert('目前沒有覆盤 Prompt 可複製');
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(()=>alert('已複製覆盤 Prompt')).catch(()=>{
+          $('evoPromptBox')?.select();
+          document.execCommand('copy');
+          alert('已複製覆盤 Prompt');
+        });
+      }else{
+        $('evoPromptBox')?.select();
+        document.execCommand('copy');
+        alert('已複製覆盤 Prompt');
+      }
+    }
+
+    function parseEvoResult(){
+      const raw = ($('evoResultBox')?.value || '').trim();
+      if(!raw){
+        if($('evoResultPanel')) $('evoResultPanel').innerHTML = '<div class="warning-box">請先貼上 AI JSON 覆盤建議。</div>';
+        return;
+      }
+      let parsed = null;
+      try{
+        parsed = JSON.parse(raw);
+      }catch(e){
+        const match = raw.match(/\{[\s\S]*\}/);
+        if(match){
+          try{ parsed = JSON.parse(match[0]); }catch(err){}
+        }
+      }
+      if(!parsed){
+        if($('evoResultPanel')) $('evoResultPanel').innerHTML = '<div class="warning-box">AI 覆盤內容不是有效 JSON，請確認格式後再解析。</div>';
+        return;
+      }
+      const adjustments = Array.isArray(parsed.adjustments) ? parsed.adjustments : [];
+      if($('evoResultPanel')){
+        $('evoResultPanel').innerHTML = `
+          <div class="card">
+            <div class="badge purple">AI 覆盤診斷</div>
+            <div style="margin-top:8px">${parsed.diagnosis || '未提供診斷'}</div>
+          </div>
+          <div class="card">
+            <div class="badge cyan">參數微調建議</div>
+            <div style="margin-top:8px">
+              ${adjustments.length ? adjustments.map(a=>`<div class="explain-item"><strong>${a.param || '參數'}</strong>：${a.advice || '-'}<br><span class="muted">${a.reason || ''}</span></div>`).join('') : '<span class="muted">AI 未提出具體調整。</span>'}
+            </div>
+          </div>
+          <div class="warning-box"><strong>風險提醒：</strong><br>${parsed.risk_warning || '未提供'}</div>
+          <div class="ok-box" style="margin-top:10px"><strong>紀律建議：</strong><br>${parsed.psychological_advice || '未提供'}</div>
+        `;
+      }
+      state.evolutionReview = { rawResponse: raw, parsed, updatedAt: nowString() };
+      saveState();
+    }
+
+    function bindEvents(){
+      $('calcMarketBtn')?.addEventListener('click', saveMarketInputs);
+      $('saveMarketBtn')?.addEventListener('click', saveMarketInputs);
+
+      $('saveRiskBtn')?.addEventListener('click', ()=>{
+        state.risk.capital = num($('capitalInput')?.value);
+        state.risk.availableCash = num($('availableCashInput')?.value);
+        state.risk.dailyRiskPercent = num($('dailyRiskPercentInput')?.value);
+        state.risk.singlePositionCapitalPercent = num($('singlePositionCapitalPercentInput')?.value);
+        state.risk.maxNewPositions = Math.max(1, num($('maxNewPositionsInput')?.value,1));
+        state.risk.lossStreak = Math.max(0, num($('lossStreakInput')?.value,0));
+        if(state.candidates.length){
+          state.candidatesRawText = $('candidateTextarea')?.value || '';
+          parseTradingViewCsv();
+          return;
+        }
+        saveState();
+      });
+
+      $('parseCandidatesBtn')?.addEventListener('click', (e)=>{ runCsvParseSafe(); });
+      $('clearCandidatesBtn')?.addEventListener('click', ()=>{
+        state.candidatesRawText = '';
+        state.candidates = [];
+        saveState();
+      });
+
+      $('resetAllBtn')?.addEventListener('click', ()=>{
+        if(!confirm('確定重置全部資料？')) return;
+        state = clone(defaultState);
+        saveState();
+      });
+
+      $('addHoldBtn')?.addEventListener('click', addManualHolding);
+      $('loadTopBtn')?.addEventListener('click', loadTopCandidate);
+      $('loadAiTopBtn')?.addEventListener('click', loadAiTopCandidate);
+      $('genAiPromptBtn')?.addEventListener('click', generateAiPrompt);
+      $('copyAiPromptBtn')?.addEventListener('click', copyAiPrompt);
+      $('parseAiBtn')?.addEventListener('click', parseAiResult);
+      $('clearAiBtn')?.addEventListener('click', clearAiResult);
+      $('genEvoPromptBtn')?.addEventListener('click', generateEvoPrompt);
+      $('copyEvoPromptBtn')?.addEventListener('click', copyEvoPrompt);
+      $('parseEvoBtn')?.addEventListener('click', parseEvoResult);
+      $('runDecisionBtn')?.addEventListener('click', ()=>applyDecisionMode(false));
+      $('autoDecisionBtn')?.addEventListener('click', ()=>{
+        if($('decisionMode')) $('decisionMode').value = 'auto';
+        applyDecisionMode(false);
+      });
+      $('showDecisionBtn')?.addEventListener('click', ()=>applyDecisionMode(true));
+      $('resetLocalBtn')?.addEventListener('click', resetToLocalSelection);
+      $('calcPositionBtn')?.addEventListener('click', updatePositionPreview);
+      $('addPositionBtn')?.addEventListener('click', addOrUpdatePosition);
+      $('loadFromSelectionBtn')?.addEventListener('click', autoFillFromSelection);
+      $('clearPositionInputsBtn')?.addEventListener('click', clearPositionInputs);
+      $('refreshAllPositionsBtn')?.addEventListener('click', refreshAllPositions);
+      $('exportPositionsBtn')?.addEventListener('click', exportPositions);
+      $('clearAllPositionsBtn')?.addEventListener('click', ()=>{
+        state.positions = [];
+        saveState();
+        clearPositionInputs();
+      });
+
+      $('confirmCloseBtn')?.addEventListener('click', confirmClosePosition);
+      $('cancelCloseBtn')?.addEventListener('click', cancelClosePosition);
+
+      // 半雲端按鈕修正
+      $('saveCloudConfigBtn')?.addEventListener('click', saveCloudConfig);
+      document.querySelectorAll("button[onclick=\"openCloudModal()\"]").forEach(btn=>btn.addEventListener('click', ()=>{ ensureCloudDefaults(); syncCloudInputs(); }));
+      const runLoadShared = ()=>{
+        loadSharedFromCloud().catch(err=>{
+          console.error(err);
+          updateCloudBadge('半雲端模式｜讀取失敗');
+          alert('讀取共用資料失敗：' + err.message);
+        });
+      };
+      $('loadSharedBtn')?.addEventListener('click', runLoadShared);
+      $('loadSharedTopBtn')?.addEventListener('click', runLoadShared);
+      $('saveSharedBtn')?.addEventListener('click', ()=>{
+        saveSharedToCloud().catch(err=>{
+          console.error(err);
+          updateCloudBadge('半雲端模式｜同步失敗');
+          alert('同步共用資料失敗：' + err.message);
+        });
+      });
+
+      $('closeOverlay')?.addEventListener('click', (e)=>{
+        if(e.target === $('closeOverlay')) cancelClosePosition();
+      });
+
+      ['settingsModal','addPosModal','uiGuideModal','cloudModal','evolutionModal'].forEach(id=>{
+        const el = $(id);
+        if(el){
+          el.addEventListener('click', (e)=>{
+            if(e.target === el) el.classList.remove('show');
+          });
+        }
+      });
+    }
+
+    function bindUiEvents(){
+      $('toggleCandidateCardsBtn')?.addEventListener('click', ()=>{
+        state.ui.candidateCardsExpanded = !state.ui.candidateCardsExpanded;
+        saveState();
+      });
+      $('showTop5Btn')?.addEventListener('click', ()=>{
+        state.ui.candidateCardsMode = 'top5';
+        state.ui.candidateCardsExpanded = true;
+        saveState();
+      });
+      $('showAllCardsBtn')?.addEventListener('click', ()=>{
+        state.ui.candidateCardsMode = 'all';
+        state.ui.candidateCardsExpanded = true;
+        saveState();
+      });
+    }
+
+
+
+    // ===== v10.7.5 修復：補齊缺失的持倉操作函式，避免初始化中斷 =====
+    function updatePositionMarket(ref){
+      const { p, realIdx } = resolveOpenPositionRef(ref);
+      if(!p || realIdx < 0) { alert('找不到這筆持倉資料，請重新整理後再試。'); return; }
+      const current = prompt('請輸入最新收盤價 / 現價', p.currentPrice ?? p.lastClose ?? p.entryPrice ?? '');
+      if(current === null) return;
+      const price = num(current, NaN);
+      if(!Number.isFinite(price) || price <= 0) return alert('現價格式錯誤');
+      const highInput = prompt('請輸入今日最高價（可直接按確定用現價更新）', Math.max(num(p.highestPrice,0), price));
+      if(highInput === null) return;
+      const todayHigh = num(highInput, price);
+      if(!Number.isFinite(todayHigh) || todayHigh <= 0) return alert('高點格式錯誤');
+      const oldPos = state.positions[realIdx];
+      const highest = Math.max(num(oldPos.highestPrice, 0), price, todayHigh);
+      const merged = { ...oldPos, currentPrice: price, lastClose: price, highestPrice: highest };
+      state.positions[realIdx] = {
+        ...merged,
+        ...computePositionMetrics(merged)
+      };
+      saveState();
+    }
+
+    function openClose(ref){
+      const { p } = resolveOpenPositionRef(ref);
+      if(!p) { alert('找不到這筆持倉資料，請重新整理後再試。'); return; }
+      state.pendingCloseId = p.id;
+      if($('closeInfo')) $('closeInfo').textContent = `${p.symbol} ${p.name || ''}｜成本 ${fmtMoney(p.entryPrice || p.buyPrice)}｜現價 ${fmtMoney(p.currentPrice || p.lastClose)}`;
+      if($('closePrice')) $('closePrice').value = p.currentPrice || p.lastClose || p.entryPrice || p.buyPrice || '';
+      $('closeOverlay')?.classList.add('show');
+    }
+    function cancelClosePosition(){
+      state.pendingCloseId = null;
+      $('closeOverlay')?.classList.remove('show');
+    }
+
+    function confirmClosePosition(){
+      if(state.isClosing) return;
+      const id = state.pendingCloseId;
+      if(!id) return cancelClosePosition();
+      const idx = state.positions.findIndex(p => p.id === id);
+      if(idx < 0) return cancelClosePosition();
+      const p = state.positions[idx];
+      const closePrice = num($('closePrice')?.value, NaN);
+      if(!Number.isFinite(closePrice) || closePrice <= 0) return alert('請輸入正確平倉價格');
+      const shares = num(p.shares ?? p.qty, 0);
+      const entry = num(p.entryPrice ?? p.buyPrice, 0);
+      const pnl = (closePrice - entry) * shares;
+      const pnlPct = entry > 0 ? ((closePrice - entry) / entry) * 100 : 0;
+      const reason = $('closeReason')?.value || 'Manual';
+      state.isClosing = true;
+      state.positions[idx] = {
+        ...p,
+        isOpen: false,
+        closePrice,
+        exitPrice: closePrice,
+        exitDate: nowString(),
+        closeReason: reason,
+        realizedPnL: pnl,
+        realizedPct: pnlPct,
+        status: '已平倉'
+      };
+      const tacticalSnap = (typeof getTacticalMode === 'function') ? getTacticalMode(state.market) : { label:'-', mode:'-' };
+      const tvSnap = (typeof getTodayTvFilter === 'function') ? getTodayTvFilter() : { modeLabel:'-', biasLabel:'-' };
+      const entrySnap = (p.entryMode || p.entryTacticalMode || p.entryStrategyMode) ? p : getEntrySnapshot(findCandidateBySymbol(p.symbol) || null);
+      state.logs.push({
+        id: uid('log'),
+        symbol: p.symbol,
+        name: p.name || '',
+        entryPrice: entry,
+        closePrice,
+        exitPrice: closePrice,
+        shares,
+        pnl,
+        pnlPct,
+        returnPct: pnlPct,
+        realizedPnL: pnl,
+        realizedPct: pnlPct,
+        result: pnl > 0 ? 'win' : (pnl < 0 ? 'loss' : 'flat'),
+        reason,
+        closeReason: reason,
+        time: nowString(),
+        exitDate: nowString(),
+        // v10.20：績效歸因欄位，全部優先以建倉當下快照為準
+        entryMode: entrySnap.entryMode || entrySnap.entryTacticalMode || 'legacy/未記錄',
+        entryModeKey: entrySnap.entryModeKey || entrySnap.entryTacticalKey || 'legacy',
+        entryTacticalMode: entrySnap.entryTacticalMode || entrySnap.entryMode || 'legacy/未記錄',
+        entryTacticalKey: entrySnap.entryTacticalKey || entrySnap.entryModeKey || 'legacy',
+        entryStrategyMode: entrySnap.entryStrategyMode || entrySnap.entryTvMode || 'legacy/未記錄',
+        entryTvMode: entrySnap.entryTvMode || entrySnap.entryStrategyMode || 'legacy/未記錄',
+        entryTvBias: entrySnap.entryTvBias || 'legacy/未記錄',
+        entryTvBiasKey: entrySnap.entryTvBiasKey || 'legacy',
+        entryMarketSignal: entrySnap.entryMarketSignal || 'legacy/未記錄',
+        entryMarketScore: num(entrySnap.entryMarketScore,0),
+        entrySentimentScore: num(entrySnap.entrySentimentScore,0),
+        entryDelta: num(entrySnap.entryDelta,0),
+        entryStructure: num(entrySnap.entryStructure,0),
+        entryDecisionMode: entrySnap.entryDecisionMode || 'legacy/未記錄',
+        entryCandidateGrade: entrySnap.entryCandidateGrade || '',
+        entryCandidateScore: num(entrySnap.entryCandidateScore,0),
+        entrySnapshotAt: entrySnap.entrySnapshotAt || p.entryDate || '-',
+        // 出場環境保留作輔助，不再作為主要績效分類
+        exitMarketSignal: state.market?.signal || '-',
+        exitMarketScore: num(state.market?.totalScore,0),
+        exitSentimentScore: num(state.market?.sentimentScore,0),
+        exitMarketDelta: num(state.market?.delta,0),
+        exitStructureScore: num(state.market?.structureScore,0),
+        exitTacticalMode: tacticalSnap.label || tacticalSnap.mode || '-',
+        exitTacticalKey: tacticalSnap.mode || '-',
+        exitStrategyMode: tvSnap.modeLabel || '-',
+        exitTvBias: tvSnap.biasLabel || '-',
+        // 舊欄位保留相容，但其值同步為進場歸因，避免統計錯位
+        marketSignal: entrySnap.entryMarketSignal || 'legacy/未記錄',
+        marketScore: num(entrySnap.entryMarketScore,0),
+        sentimentScore: num(entrySnap.entrySentimentScore,0),
+        marketDelta: num(entrySnap.entryDelta,0),
+        structureScore: num(entrySnap.entryStructure,0),
+        tacticalMode: entrySnap.entryTacticalMode || entrySnap.entryMode || 'legacy/未記錄',
+        tacticalKey: entrySnap.entryTacticalKey || entrySnap.entryModeKey || 'legacy',
+        strategyMode: entrySnap.entryStrategyMode || entrySnap.entryTvMode || 'legacy/未記錄',
+        tvBias: entrySnap.entryTvBias || 'legacy/未記錄',
+        aiMode: entrySnap.entryDecisionMode || state.decision?.mode || '-'
+      });
+      state.pendingCloseId = null;
+      state.isClosing = false;
+      $('closeOverlay')?.classList.remove('show');
+      saveState();
+    }
+
+    window.toggleSelectCandidate = toggleSelectCandidate;
+    window.addPositionFromCandidate = addPositionFromCandidate;
+    window.updatePositionMarket = updatePositionMarket;
+    window.openClose = openClose;
+    window.loadPositionToForm = loadPositionToForm;
+    window.removePosition = removePosition;
+    window.copyTodayTvFilter = copyTodayTvFilter;
+
+    bindEvents();
+    bindUiEvents();
+    calculateMarket();
+    renderAll();
+  </script>
+</body>
+</html>
+<!-- force deploy 20260506 -->
